@@ -19,15 +19,16 @@ export const metadata: Metadata = {
   description: "Dark mode futuristic login system",
 };
 
-// Root Layout (ONLY ONE DEFAULT EXPORT)
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+      >
         {children}
       </body>
     </html>

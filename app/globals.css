@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
+/* ===== CSS Variables ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #ffffff;
 }
 
+/* Tailwind theme bridge */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,37 +14,66 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode system fallback */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617;
+    --foreground: #ffffff;
   }
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
+/* ===== GLOBAL BODY ===== */
 body {
-background: radial-gradient(circle at top left, #1a1a2e, #0f172a);
-color: white;
+  background: radial-gradient(circle at top left, #1a1a2e, #020617);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow: hidden;
 }
 
-
+/* ===== Floating Astronaut Animation ===== */
 .astronaut-float {
-animation: float 6s ease-in-out infinite;
+  animation: float 7s ease-in-out infinite;
 }
-
 
 @keyframes float {
-0% { transform: translateY(0px); }
-50% { transform: translateY(-20px); }
-100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ===== Glassmorphism Card ===== */
+.glass {
+  background: rgba(20, 20, 30, 0.45);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Gradient Blobs (like reference UI) ===== */
+.blob {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  filter: blur(140px);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.blob-pink {
+  background: #ff00ff;
+  top: 10%;
+  right: 10%;
+}
+
+.blob-blue {
+  background: #00c6ff;
+  bottom: 5%;
+  left: 15%;
 }

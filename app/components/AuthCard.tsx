@@ -1,8 +1,11 @@
 export default function AuthCard({ title, children }: any) {
-return (
-<div className="bg-black/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-[350px]">
-<h2 className="text-2xl font-bold mb-6">{title}</h2>
-{children}
-</div>
-);
+  return (
+    <div className="glass p-10 rounded-3xl shadow-2xl w-[420px] border border-white/20">
+      <h2 className="text-3xl font-semibold mb-6 text-white">
+        {title}
+      </h2>
+
+      {children}
+    </div>
+  );
 }
