@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ===== CSS Variables ===== */
 :root {
   --background: #020617;
@@ -14,20 +18,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Dark mode system fallback */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617;
-    --foreground: #ffffff;
-  }
-}
-
 /* ===== GLOBAL BODY ===== */
 body {
   background: radial-gradient(circle at top left, #1a1a2e, #020617);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 /* ===== Floating Astronaut Animation ===== */
@@ -39,41 +35,161 @@ body {
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-30px);
   }
+
   100% {
     transform: translateY(0px);
   }
 }
 
-/* ===== Glassmorphism Card ===== */
-.glass {
-  background: rgba(20, 20, 30, 0.45);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-}
-
-/* ===== Gradient Blobs (like reference UI) ===== */
+/* ===== Gradient Blobs ===== */
 .blob {
   position: absolute;
-  width: 600px;
-  height: 600px;
-  filter: blur(140px);
-  opacity: 0.5;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.6;
   z-index: 0;
+  animation: blob-move 20s ease-in-out infinite;
+}
+
+@keyframes blob-move {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate(30px, -40px) scale(1.05);
+  }
+
+  50% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+
+  75% {
+    transform: translate(20px, 15px) scale(1.02);
+  }
 }
 
 .blob-pink {
-  background: #ff00ff;
-  top: 10%;
-  right: 10%;
+  background: linear-gradient(135deg, #ff00ff, #ec4899);
+  width: 500px;
+  height: 500px;
 }
 
-.blob-blue {
-  background: #00c6ff;
-  bottom: 5%;
-  left: 15%;
+.blob-cyan {
+  background: linear-gradient(135deg, #00c6ff, #06b6d4);
+  width: 400px;
+  height: 400px;
+  animation-delay: -7s;
+}
+
+.blob-coral {
+  background: linear-gradient(135deg, #fb7185, #f472b6);
+  width: 350px;
+  height: 350px;
+  animation-delay: -14s;
+}
+
+.blob-purple {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  width: 300px;
+  height: 300px;
+  animation-delay: -10s;
+}
+
+/* ===== Glassmorphism Card ===== */
+.glass-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Astronaut Frame ===== */
+.astronaut-frame {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Form Input Styles ===== */
+.form-input {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  color: #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+/* ===== Primary Button ===== */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.5);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Secondary Button ===== */
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  color: #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(100, 116, 139, 0.6);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Text Styles ===== */
+.text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+.text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.text-slate-500 {
+  color: #64748b !important;
 }
