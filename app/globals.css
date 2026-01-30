@@ -19,6 +19,28 @@
   }
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+background: radial-gradient(circle at top left, #1a1a2e, #0f172a);
+color: white;
+}
+
+
+.astronaut-float {
+animation: float 6s ease-in-out infinite;
+}
+
+
+@keyframes float {
+0% { transform: translateY(0px); }
+50% { transform: translateY(-20px); }
+100% { transform: translateY(0px); }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
