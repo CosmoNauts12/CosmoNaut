@@ -9,8 +9,8 @@ export default function Astronaut() {
       <Image
         src="/astronaut.png"
         alt="Astronaut"
-        width={650}
-        height={650}
+        width={750}
+        height={750}
         className="relative drop-shadow-2xl"
         priority
       />
