@@ -45,23 +45,22 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Gradient Blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="blob blob-pink" style={{ top: '10%', right: '20%' }} />
-        <div className="blob blob-cyan" style={{ bottom: '20%', left: '5%' }} />
-        <div className="blob blob-coral" style={{ top: '50%', right: '5%' }} />
-        <div className="blob blob-purple" style={{ top: '5%', left: '30%' }} />
-      </div>
+      {/* Background Image */}
+      <div className="login-bg" />
 
       {/* Main Content */}
-      <div className="min-h-screen flex items-center justify-center gap-16 px-8 relative z-10">
+      <div className="min-h-screen flex items-center justify-center gap-4 px-8 relative z-10">
         {/* Login Card */}
         <AuthCard>
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Welcome back</h1>
-          <p className="text-slate-500 mb-8">Continue with one of the following options</p>
+          <h1 className="text-3xl font-bold text-glass-title mb-2 tracking-tight">
+            Welcome back
+          </h1>
+          <p className="text-glass-subtitle mb-8">
+            Sign in to continue your journey
+          </p>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm">
+            <div className="glass-error px-4 py-3 rounded-xl mb-5 text-sm">
               {error}
             </div>
           )}
@@ -69,40 +68,47 @@ export default function SignIn() {
           <form onSubmit={handleEmailLogin}>
             {/* Email Field */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+              <label className="block text-sm glass-label mb-2">
+                Email Address
+              </label>
               <input
                 type="email"
-                placeholder="Email Address"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="form-input w-full px-4 py-3 rounded-xl text-base"
+                className="glass-input w-full px-4 py-3.5 rounded-xl text-base"
                 required
               />
             </div>
 
             {/* Password Field */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+              <label className="block text-sm glass-label mb-2">
+                Password
+              </label>
               <input
                 type="password"
-                placeholder="Password 8-16 character"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="form-input w-full px-4 py-3 rounded-xl text-base"
+                className="glass-input w-full px-4 py-3.5 rounded-xl text-base"
                 required
               />
             </div>
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between mb-6">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="glass-checkbox"
                 />
-                <span className="text-sm text-slate-600">Remember me</span>
+                <span className="text-sm text-glass-muted">Remember me</span>
               </label>
-              <Link href="/forgot-password" className="text-sm font-medium text-slate-700 hover:text-indigo-600">
+              <Link 
+                href="/forgot-password" 
+                className="text-sm font-medium glass-link"
+              >
                 Forgot Password?
               </Link>
             </div>
@@ -111,17 +117,42 @@ export default function SignIn() {
             <button 
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-3.5 rounded-xl font-semibold text-base mb-4 disabled:opacity-50"
+              className="glass-btn-primary w-full py-3.5 rounded-xl text-base mb-4 disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle 
+                      className="opacity-25" 
+                      cx="12" cy="12" r="10" 
+                      stroke="currentColor" 
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path 
+                      className="opacity-75" 
+                      fill="currentColor" 
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Signing in...
+                </span>
+              ) : "Sign in"}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="glass-divider flex-1" />
+            <span className="text-sm text-glass-muted">or continue with</span>
+            <div className="glass-divider flex-1" />
+          </div>
 
           {/* Google Button */}
           <button 
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="btn-secondary w-full py-3.5 rounded-xl font-medium text-base flex items-center justify-center gap-3 mb-6 disabled:opacity-50"
+            className="glass-btn-secondary w-full py-3.5 rounded-xl font-medium text-base flex items-center justify-center gap-3 mb-6 disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -133,16 +164,19 @@ export default function SignIn() {
           </button>
 
           {/* Sign Up Link */}
-          <p className="text-center text-slate-600">
+          <p className="text-center text-glass-muted">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-semibold text-slate-800 hover:text-indigo-600">
+            <Link 
+              href="/signup" 
+              className="font-semibold text-white hover:text-indigo-300 transition-colors"
+            >
               Sign Up
             </Link>
           </p>
         </AuthCard>
 
-        {/* Astronaut Section */}
-        <div className="astronaut-frame rounded-3xl p-6 hidden lg:block">
+        {/* Astronaut Section - No container, bigger and closer */}
+        <div className="hidden lg:block relative -ml-8">
           <Astronaut />
         </div>
       </div>
