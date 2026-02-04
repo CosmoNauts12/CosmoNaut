@@ -1,30 +1,67 @@
 # Next.js + Bun Application
 
-This is a **Next.js** application bootstrapped using
-[`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app)
-and configured to use **Bun** as the runtime and package manager.
-
-The project is optimized for fast installs, quick development startup, and
-modern full-stack development with the Next.js App Router.
-
+A minimal **Next.js App Router** project configured to use **Bun** as the runtime and package manager.
 
 ---
 
 ## Prerequisites
 
-Ensure **Bun** is installed on your system.
+Ensure **Bun** is installed on your system:
 
 ```bash
 bun --version
 ```
 
-## project Structure:
-.
-├── app/                  # App Router pages and layouts
-│   └── page.tsx          # Main application entry page
-├── public/               # Static assets
-├── bun.lockb             # Bun lock file
-├── next.config.js        # Next.js configuration
-├── package.json          # Project metadata and scripts
-└── README.md             # Project documentation
+If Bun is not installed:
 
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+---
+
+## Installation
+
+Install project dependencies:
+
+```bash
+bun install
+```
+
+---
+
+## Run the Application
+
+Start the development server:
+
+```bash
+bun dev
+```
+
+Open the application in your browser:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## Project Structure (Brief)
+
+```text
+.
+├── app/            # App Router pages and layouts
+├── components/     # Reusable UI components
+├── public/         # Static assets
+├── bun.lockb       # Bun lock file
+├── package.json    # Project scripts and dependencies
+└── README.md       # Project documentation
+```
+
+---
+
+## Notes
+
+* Uses **Next.js App Router**
+* Uses **Bun** for faster installs and startup
+* Tailwind CSS is used for styling
