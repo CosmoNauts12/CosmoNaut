@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Astronaut from "../components/Astronaut";
 import AuthCard from "../components/AuthCard";
-import { signUpWithEmail, loginWithGoogle } from "@/app/lib/firebase";
+import { signUpWithEmail, loginWithGoogle, logout } from "@/app/lib/firebase";
 
 export default function SignUp() {
   const router = useRouter();
@@ -14,11 +14,13 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -34,7 +36,12 @@ export default function SignUp() {
 
     try {
       await signUpWithEmail(email, password);
-      router.push("/dashboard");
+      // Sign out immediately so they have to log in manually
+      await logout();
+      setSuccess("Account created successfully! Redirecting to login...");
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
         setError("Email is already registered");
@@ -81,6 +88,12 @@ export default function SignUp() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-xl mb-5 text-sm">
+              {success}
             </div>
           )}
 
