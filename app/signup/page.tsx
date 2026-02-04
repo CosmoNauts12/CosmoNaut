@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Astronaut from "../components/Astronaut";
 import AuthCard from "../components/AuthCard";
-import { signUpWithEmail, loginWithGoogle } from "@/app/lib/firebase";
+import { signUpWithEmail, loginWithGoogle, logout } from "@/app/lib/firebase";
 
 export default function SignUp() {
   const router = useRouter();
@@ -14,11 +14,13 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -34,7 +36,12 @@ export default function SignUp() {
 
     try {
       await signUpWithEmail(email, password);
-      router.push("/dashboard");
+      // Sign out immediately so they have to log in manually
+      await logout();
+      setSuccess("Account created successfully! Redirecting to login...");
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
         setError("Email is already registered");
@@ -84,6 +91,12 @@ export default function SignUp() {
             </div>
           )}
 
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-xl mb-5 text-sm">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSignUp}>
             {/* Name Field */}
             <div className="mb-5">
@@ -119,6 +132,7 @@ export default function SignUp() {
                 placeholder="Password (min 8 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 className="form-input w-full px-4 py-3 rounded-xl text-base"
                 required
               />
@@ -132,6 +146,7 @@ export default function SignUp() {
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 className="form-input w-full px-4 py-3 rounded-xl text-base"
                 required
               />
@@ -171,8 +186,8 @@ export default function SignUp() {
           </p>
         </AuthCard>
 
-        {/* Astronaut Section */}
-        <div className="astronaut-frame rounded-3xl p-6 hidden lg:block">
+        {/* Astronaut Section - No container, bigger and closer */}
+        <div className="hidden lg:block relative -ml-8">
           <Astronaut />
         </div>
       </div>
