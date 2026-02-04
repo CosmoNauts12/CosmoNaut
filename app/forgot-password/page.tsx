@@ -45,7 +45,7 @@ export default function ForgotPassword() {
       </div>
 
       {/* Main Content */}
-      <div className="min-h-screen flex items-center justify-center gap-16 px-8 relative z-10">
+      <div className="min-h-screen flex items-center justify-center gap-4 px-8 relative z-10">
         <AuthCard>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Reset password</h1>
           <p className="text-slate-500 mb-8">Enter your email to receive a reset link</p>
@@ -104,8 +104,8 @@ export default function ForgotPassword() {
           )}
         </AuthCard>
 
-        {/* Astronaut Section */}
-        <div className="astronaut-frame rounded-3xl p-6 hidden lg:block">
+        {/* Astronaut Section - No container, bigger and closer */}
+        <div className="hidden lg:block relative -ml-8">
           <Astronaut />
         </div>
       </div>
