@@ -91,6 +91,7 @@ export default function SignIn() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="off"
                 className="glass-input w-full px-4 py-3.5 rounded-xl text-base"
                 required
               />

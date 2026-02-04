@@ -119,6 +119,7 @@ export default function SignUp() {
                 placeholder="Password (min 8 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 className="form-input w-full px-4 py-3 rounded-xl text-base"
                 required
               />
@@ -132,6 +133,7 @@ export default function SignUp() {
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 className="form-input w-full px-4 py-3 rounded-xl text-base"
                 required
               />
@@ -171,8 +173,8 @@ export default function SignUp() {
           </p>
         </AuthCard>
 
-        {/* Astronaut Section */}
-        <div className="astronaut-frame rounded-3xl p-6 hidden lg:block">
+        {/* Astronaut Section - No container, bigger and closer */}
+        <div className="hidden lg:block relative -ml-8">
           <Astronaut />
         </div>
       </div>
