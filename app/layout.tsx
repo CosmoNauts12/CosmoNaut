@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Allura } from "next/font/google"; // Changed Dancing_Script to Allura
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeContext";
@@ -13,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const allura = Allura({
+  variable: "--font-cursive",
+  subsets: ["latin"],
+  weight: "400", // Allura is single weight
 });
 
 // Metadata
@@ -29,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${allura.variable} antialiased min-h-screen`}
       >
         <AuthProvider>
           <ThemeProvider>
