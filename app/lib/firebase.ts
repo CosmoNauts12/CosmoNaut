@@ -31,6 +31,9 @@ const auth = getAuth(app);
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+    prompt: 'select_account'
+});
 
 // Initialize Analytics (only in browser)
 let analytics = null;
