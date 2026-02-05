@@ -46,11 +46,8 @@ export default function ForgotPassword() {
       </div>
 
       {/* Main Content */}
-<<<<<<< HEAD
-      <div className="min-h-screen flex items-center justify-center gap-4 px-4 md:px-8 relative z-10">
-=======
+      
       <div className="min-h-screen flex items-center justify-center gap-4 px-8 relative z-10">
->>>>>>> 4fd2210 (removed the stupid container around astronaut which i forgot to remove earlier)
         <AuthCard>
           <h1 className="text-3xl font-bold text-glass-title mb-2">Reset password</h1>
           <p className="text-glass-subtitle mb-8">Enter your email to receive a reset link</p>

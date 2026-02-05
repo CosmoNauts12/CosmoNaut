@@ -12,7 +12,7 @@ Ensure **Bun** is installed on your system:
 bun --version
 ```
 
-If Bun is not installed:
+If Bun is not installed -
 
 ```bash
 curl -fsSL https://bun.sh/install | bash
