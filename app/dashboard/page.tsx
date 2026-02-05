@@ -169,7 +169,7 @@ export default function Dashboard() {
                     <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
                       Hello,
                     </span>
-                    <span className="text-3xl md:text-5xl font-light tracking-wide text-foreground">
+                    <span className="font-cursive text-4xl md:text-6xl text-foreground pb-2 sm:pl-4">
                       {user.displayName?.split(' ')[0] || "Explorer"}
                     </span>
                   </div>

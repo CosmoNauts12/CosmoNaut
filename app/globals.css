@@ -63,6 +63,11 @@
   --font-cursive: var(--font-cursive);
 }
 
+/* Force Allura Font Override */
+.font-cursive {
+  font-family: var(--font-cursive), cursive !important;
+}
+
 /* ===== GLOBAL BODY ===== */
 body {
   background: var(--background);
