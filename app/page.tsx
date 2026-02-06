@@ -16,26 +16,32 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Listen for auth state changes (robust way)
+    console.log("SignIn page mounted. isTauri:", isTauri);
+
+    // 1. Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("User detected via onAuthStateChanged:", user.email);
+        console.log("Auth State Changed: User detected!", user.email);
         router.push("/dashboard");
+      } else {
+        console.log("Auth State Changed: No user detected.");
       }
     });
 
-    // 2. Check for redirect result specifically for Google Sign-In in Tauri
+    // 2. Check for redirect result
     const checkRedirect = async () => {
-      if (!isTauri) return;
       try {
+        console.log("Checking for Google redirect result...");
         const result = await getGoogleRedirectResult();
         if (result?.user) {
-          console.log("User detected via redirect result:", result.user.email);
+          console.log("Redirect Result: User detected!", result.user.email);
           router.push("/dashboard");
+        } else {
+          console.log("Redirect Result: No result found.");
         }
       } catch (err: any) {
-        console.error("Redirect check error:", err);
-        // We don't always want to show this to the user as it might just be 'no redirect found'
+        console.error("Redirect Result: Error caught:", err);
+        // Don't show error to user if it's a common ignoreable error
       }
     };
 

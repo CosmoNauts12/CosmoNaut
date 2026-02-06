@@ -10,6 +10,8 @@ import {
     signInWithRedirect,
     getRedirectResult,
     onAuthStateChanged,
+    browserLocalPersistence,
+    setPersistence,
     User
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
@@ -30,6 +32,13 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 // Initialize Auth
 const auth = getAuth(app);
+
+// Set persistence explicitly
+if (typeof window !== "undefined") {
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+        console.error("Failed to set persistence:", err);
+    });
+}
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();

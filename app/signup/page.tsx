@@ -19,25 +19,31 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Listen for auth state changes (robust way)
+    console.log("SignUp page mounted. isTauri:", isTauri);
+
+    // 1. Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("User detected via onAuthStateChanged (signup):", user.email);
+        console.log("Auth State Changed (signup): User detected!", user.email);
         router.push("/dashboard");
+      } else {
+        console.log("Auth State Changed (signup): No user detected.");
       }
     });
 
-    // 2. Check for redirect result specifically for Google Sign-In in Tauri
+    // 2. Check for redirect result
     const checkRedirect = async () => {
-      if (!isTauri) return;
       try {
+        console.log("Checking for Google redirect result (signup)...");
         const result = await getGoogleRedirectResult();
         if (result?.user) {
-          console.log("User detected via redirect result (signup):", result.user.email);
+          console.log("Redirect Result (signup): User detected!", result.user.email);
           router.push("/dashboard");
+        } else {
+          console.log("Redirect Result (signup): No result found.");
         }
       } catch (err: any) {
-        console.error("Redirect check error (signup):", err);
+        console.error("Redirect Result (signup): Error caught:", err);
       }
     };
 
