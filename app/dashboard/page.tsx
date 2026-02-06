@@ -231,7 +231,7 @@ export default function Dashboard() {
                       Hello,
                     </span>
                     <span className="font-cursive text-4xl md:text-6xl text-foreground pb-2 sm:pl-4">
-                      {user.displayName?.split(' ')[0] || "Explorer"}
+                      {user.displayName || "Explorer"}
                     </span>
                   </div>
 

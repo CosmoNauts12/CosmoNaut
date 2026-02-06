@@ -8,6 +8,7 @@ import {
     onAuthStateChanged,
     browserLocalPersistence,
     setPersistence,
+    updateProfile,
     User
 } from "firebase/auth";
 
@@ -44,5 +45,5 @@ export const logout = async () => signOut(auth);
 export const resetPassword = async (email: string) =>
     sendPasswordResetEmail(auth, email);
 
-export { app, auth, onAuthStateChanged };
+export { app, auth, onAuthStateChanged, updateProfile };
 export type { User };

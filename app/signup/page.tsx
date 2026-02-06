@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Astronaut from "../components/Astronaut";
 import AuthCard from "../components/AuthCard";
 import ThemeToggle from "../components/ThemeToggle";
-import { signUpWithEmail, logout } from "@/app/lib/firebase";
+import { signUpWithEmail, logout, updateProfile } from "@/app/lib/firebase";
 
 export default function SignUp() {
   const router = useRouter();
@@ -38,7 +38,16 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      await signUpWithEmail(email, password);
+      const userCredential = await signUpWithEmail(email, password);
+      
+      // Save the user's name to their Firebase profile
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: name
+        });
+        console.log("SignUp: User profile updated with name:", name);
+      }
+
       // No longer logging out. Take new users straight to onboarding.
       setSuccess("Account created successfully! Preparing your journey...");
       setTimeout(() => {
