@@ -1,22 +1,16 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
     getAuth,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
     sendPasswordResetEmail,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     onAuthStateChanged,
     browserLocalPersistence,
     setPersistence,
     User
 } from "firebase/auth";
-import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDfRbTA2Qi3RYmXcJKZkpspOUqypcA5wgs",
     authDomain: "software-project-45fdc.firebaseapp.com",
@@ -27,69 +21,28 @@ const firebaseConfig = {
     measurementId: "G-6Z4N9QP5RL"
 };
 
-// Initialize Firebase (prevent re-initialization)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-// Initialize Auth
+// Initialize Firebase
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
-// Set persistence explicitly
+// Configure persistence explicitly
 if (typeof window !== "undefined") {
     setPersistence(auth, browserLocalPersistence).catch((err) => {
-        console.error("Failed to set persistence:", err);
+        console.error("Firebase persistence error:", err);
     });
 }
 
-// Google Auth Provider
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-    prompt: 'select_account'
-});
+// Auth helper functions (Email/Password only)
+export const loginWithEmail = async (email: string, password: string) =>
+    signInWithEmailAndPassword(auth, email, password);
 
-// Environment detection
-const isTauri = typeof window !== 'undefined' && (
-    (window as any).__TAURI_INTERNALS__ !== undefined ||
-    (window as any).__TAURI__ !== undefined ||
-    navigator.userAgent.includes('Tauri')
-);
+export const signUpWithEmail = async (email: string, password: string) =>
+    createUserWithEmailAndPassword(auth, email, password);
 
-// Initialize Analytics (only in browser)
-let analytics = null;
-if (typeof window !== "undefined") {
-    isSupported().then((supported) => {
-        if (supported) {
-            analytics = getAnalytics(app);
-        }
-    });
-}
+export const logout = async () => signOut(auth);
 
-// Auth helper functions
-export const loginWithEmail = async (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
-};
+export const resetPassword = async (email: string) =>
+    sendPasswordResetEmail(auth, email);
 
-export const signUpWithEmail = async (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
-};
-
-export const loginWithGoogle = async () => {
-    if (isTauri) {
-        return signInWithRedirect(auth, googleProvider);
-    }
-    return signInWithPopup(auth, googleProvider);
-};
-
-export const getGoogleRedirectResult = async () => {
-    return getRedirectResult(auth);
-};
-
-export const logout = async () => {
-    return signOut(auth);
-};
-
-export const resetPassword = async (email: string) => {
-    return sendPasswordResetEmail(auth, email);
-};
-
-export { app, auth, analytics, onAuthStateChanged, isTauri };
+export { app, auth, onAuthStateChanged };
 export type { User };
