@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Astronaut from "./components/Astronaut";
 import AuthCard from "./components/AuthCard";
-import { loginWithEmail, loginWithGoogle } from "@/app/lib/firebase";
+import { loginWithEmail, loginWithGoogle, getGoogleRedirectResult, isTauri, auth, onAuthStateChanged } from "@/app/lib/firebase";
 import ThemeToggle from "./components/ThemeToggle";
 
 export default function SignIn() {
@@ -14,6 +14,34 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 1. Listen for auth state changes (robust way)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User detected via onAuthStateChanged:", user.email);
+        router.push("/dashboard");
+      }
+    });
+
+    // 2. Check for redirect result specifically for Google Sign-In in Tauri
+    const checkRedirect = async () => {
+      if (!isTauri) return;
+      try {
+        const result = await getGoogleRedirectResult();
+        if (result?.user) {
+          console.log("User detected via redirect result:", result.user.email);
+          router.push("/dashboard");
+        }
+      } catch (err: any) {
+        console.error("Redirect check error:", err);
+        // We don't always want to show this to the user as it might just be 'no redirect found'
+      }
+    };
+
+    checkRedirect();
+    return () => unsubscribe();
+  }, [router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

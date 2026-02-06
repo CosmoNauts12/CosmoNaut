@@ -7,6 +7,8 @@ import {
     sendPasswordResetEmail,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     onAuthStateChanged,
     User
 } from "firebase/auth";
@@ -35,6 +37,13 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+// Environment detection
+const isTauri = typeof window !== 'undefined' && (
+    (window as any).__TAURI_INTERNALS__ !== undefined ||
+    (window as any).__TAURI__ !== undefined ||
+    navigator.userAgent.includes('Tauri')
+);
+
 // Initialize Analytics (only in browser)
 let analytics = null;
 if (typeof window !== "undefined") {
@@ -55,7 +64,14 @@ export const signUpWithEmail = async (email: string, password: string) => {
 };
 
 export const loginWithGoogle = async () => {
+    if (isTauri) {
+        return signInWithRedirect(auth, googleProvider);
+    }
     return signInWithPopup(auth, googleProvider);
+};
+
+export const getGoogleRedirectResult = async () => {
+    return getRedirectResult(auth);
 };
 
 export const logout = async () => {
@@ -66,5 +82,5 @@ export const resetPassword = async (email: string) => {
     return sendPasswordResetEmail(auth, email);
 };
 
-export { app, auth, analytics, onAuthStateChanged };
+export { app, auth, analytics, onAuthStateChanged, isTauri };
 export type { User };

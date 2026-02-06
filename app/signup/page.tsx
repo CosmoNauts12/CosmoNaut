@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Astronaut from "../components/Astronaut";
 import AuthCard from "../components/AuthCard";
 import ThemeToggle from "../components/ThemeToggle";
-import { signUpWithEmail, loginWithGoogle, logout } from "@/app/lib/firebase";
+import { signUpWithEmail, loginWithGoogle, logout, getGoogleRedirectResult, isTauri, auth, onAuthStateChanged } from "@/app/lib/firebase";
 
 export default function SignUp() {
   const router = useRouter();
@@ -17,6 +17,33 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 1. Listen for auth state changes (robust way)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User detected via onAuthStateChanged (signup):", user.email);
+        router.push("/dashboard");
+      }
+    });
+
+    // 2. Check for redirect result specifically for Google Sign-In in Tauri
+    const checkRedirect = async () => {
+      if (!isTauri) return;
+      try {
+        const result = await getGoogleRedirectResult();
+        if (result?.user) {
+          console.log("User detected via redirect result (signup):", result.user.email);
+          router.push("/dashboard");
+        }
+      } catch (err: any) {
+        console.error("Redirect check error (signup):", err);
+      }
+    };
+
+    checkRedirect();
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
