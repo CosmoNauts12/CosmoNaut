@@ -123,16 +123,20 @@ export default function Dashboard() {
           </div>
 
           {/* Navigation - No Icons, Text Only */}
-          <nav className="space-y-1">
             {[
-              { id: 'home', label: 'Home' },
-              { id: 'workspace', label: 'Workspace' },
-              { id: 'reports', label: 'Reports' },
-              { id: 'settings', label: 'Settings' }
+              { id: 'home', label: 'Home', path: '/dashboard' },
+              { id: 'workspace', label: 'Workspace', path: '/workspace' },
+              { id: 'reports', label: 'Reports', path: '#' },
+              { id: 'settings', label: 'Settings', path: '#' }
             ].map(item => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  if (item.path !== '#') {
+                    router.push(item.path);
+                  }
+                  setActiveTab(item.id);
+                }}
                 className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id
                   ? 'bg-primary/10 text-primary border-l-2 border-primary'
                   : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
@@ -141,7 +145,6 @@ export default function Dashboard() {
                 {item.label}
               </button>
             ))}
-          </nav>
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">

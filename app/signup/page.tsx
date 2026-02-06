@@ -36,8 +36,10 @@ export default function SignUp() {
     }
 
     setLoading(true);
-
     try {
+      // Set a flag to prevent AuthProvider from auto-redirecting to dashboard before logout
+      localStorage.setItem("is_signing_up", "true");
+
       const userCredential = await signUpWithEmail(email, password);
       
       // Save the user's name to their Firebase profile
@@ -48,12 +50,16 @@ export default function SignUp() {
         console.log("SignUp: User profile updated with name:", name);
       }
 
-      // No longer logging out. Take new users straight to onboarding.
-      setSuccess("Account created successfully! Preparing your journey...");
+      // Logout immediately to follow NIST standards
+      await logout();
+      localStorage.removeItem("is_signing_up");
+
+      setSuccess("Account created successfully! Please sign in to continue.");
       setTimeout(() => {
-        router.push("/onboarding/loading");
-      }, 1500);
+        router.push("/");
+      }, 2000);
     } catch (err: any) {
+      localStorage.removeItem("is_signing_up");
       if (err.code === "auth/email-already-in-use") {
         setError("Email is already registered");
       } else if (err.code === "auth/weak-password") {

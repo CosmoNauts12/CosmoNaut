@@ -24,8 +24,7 @@ export default function SignIn() {
 
     try {
       await loginWithEmail(email, password);
-      console.log("SignIn: Successful login, routing to dashboard");
-      router.push("/dashboard");
+      console.log("SignIn: Successful login, AuthProvider will handle routing");
     } catch (err: any) {
       setError(err.message || "Failed to sign in");
     } finally {

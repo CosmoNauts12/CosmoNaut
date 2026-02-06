@@ -9,7 +9,8 @@ export default function LoadingPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push("/onboarding/role");
+      localStorage.setItem("onboarding_complete", "true");
+      router.push("/dashboard");
     }, 3000);
 
     return () => clearTimeout(timer);

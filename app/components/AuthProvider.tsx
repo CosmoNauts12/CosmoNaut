@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, onAuthStateChanged, logout as firebaseLogout, User } from "@/app/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import LoadingSplash from "./LoadingSplash";
 
 interface AuthContextType {
   user: User | null;
@@ -24,25 +25,45 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Listen for the pathname change to clear loading state after redirect
+  useEffect(() => {
+    if (loading && user && pathname !== "/" && pathname !== "/signup") {
+      console.log("AuthProvider: Path changed, clearing loading state");
+      setLoading(false);
+    }
+  }, [pathname, user, loading]);
 
   useEffect(() => {
     console.log("AuthProvider: Initializing...");
 
-    // Simplified: Just listen for auth state changes for email/password sessions.
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       console.log("AuthProvider: Session state recovered:", u?.email || "none");
       setUser(u);
-      setLoading(false);
 
-      // Auto-redirect to dashboard if user is logged in and on the landing page or signup page
-      if (u && (window.location.pathname === "/" || window.location.pathname === "/signup")) {
-        console.log("AuthProvider: Active session found on landing/signup, routing to dashboard");
-        router.push("/dashboard");
+      const isSigningUp = localStorage.getItem("is_signing_up") === "true";
+      if (isSigningUp) {
+        console.log("AuthProvider: User is in signup process, skipping auto-redirect");
+        setLoading(false);
+        return;
+      }
+
+      const path = window.location.pathname;
+      // If we found a user and they are on the login or signup page, redirect
+      if (u && (path === "/" || path === "/signup")) {
+        const hasCompletedOnboarding = localStorage.getItem("onboarding_complete") === "true";
+        const target = hasCompletedOnboarding ? "/dashboard" : "/onboarding/loading";
+        
+        console.log(`AuthProvider: Active session found. Routing to ${target}`);
+        router.push(target);
+      } else {
+        setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   const logout = async () => {
     await firebaseLogout();
@@ -52,7 +73,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, logout }}>
-      {children}
+      {loading ? <LoadingSplash /> : children}
     </AuthContext.Provider>
   );
 }
