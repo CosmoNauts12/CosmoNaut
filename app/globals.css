@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@variant dark (&:where(.dark, .dark *));
+
 /* ===== CSS Variables ===== */
 :root {
   /* Light Mode Palette - Aurora Blue-Mint (Derived) */

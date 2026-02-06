@@ -9,6 +9,7 @@ export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -46,19 +47,79 @@ export default function Dashboard() {
       {/* Sidebar */}
       <aside className="w-64 hidden md:flex flex-col border-r border-card-border bg-card-bg/50 backdrop-blur-md z-20">
         <div className="p-6">
-          {/* User Profile in Sidebar - Minimal */}
-          <div className="flex items-center gap-3 mb-10 px-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-sm">
-              {user.displayName?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm truncate" title={user.displayName || "User"}>
-                {user.displayName || "User"}
-              </h3>
-              <p className="text-xs text-muted truncate" title={user.email || ""}>
-                {user.email?.split('@')[0]}
-              </p>
-            </div>
+          {/* User Profile in Sidebar - Dropdown */}
+          <div className="relative mb-6">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                {user.displayName?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm truncate" title={user.displayName || "User"}>
+                  {user.displayName || "User"}
+                </h3>
+                <p className="text-xs text-muted truncate" title={user.email || ""}>
+                  {user.email?.split('@')[0]}
+                </p>
+              </div>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`text-muted transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-[#14283C] border border-gray-100 dark:border-none rounded-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 shadow-lg dark:shadow-none">
+                {/* Header */}
+                <div className="p-4">
+                  <p className="text-xs text-muted">Signed in as</p>
+                  <p className="font-semibold text-sm text-foreground truncate">{user.displayName || "User"}</p>
+                  <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs text-muted hover:text-primary hover:border-primary cursor-pointer transition-colors">
+                    <span role="img" aria-label="smiley">☺</span> Set status
+                  </div>
+                </div>
+
+                {/* Section 1 */}
+                <div className="py-2">
+                  {['Your Profile', 'Billing', 'Settings', 'Keyboard shortcuts'].map((item) => (
+                    <a
+                      key={item}
+                      href="#"
+                      className="block px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      {item}
+                    </a>
+                  ))}
+                </div>
+
+                {/* Sign Out */}
+                <div className="py-2">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-red-500/10 hover:text-red-500 flex items-center gap-2 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation - No Icons, Text Only */}
@@ -84,7 +145,7 @@ export default function Dashboard() {
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">
-            <button className="w-full py-2 px-3 bg-white dark:bg-slate-800 border border-card-border text-foreground text-xs font-semibold rounded-lg shadow-sm hover:border-primary transition-colors">
+            <button className="w-full py-2 px-3 bg-white dark:bg-[#14283C] border border-gray-200 dark:border-none text-foreground text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">
               + Invite Member
             </button>
           </div>
