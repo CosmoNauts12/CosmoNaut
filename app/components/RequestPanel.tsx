@@ -10,6 +10,19 @@ export interface ActiveRequest {
   method: string;
 }
 
+export interface KVItem {
+  key: string;
+  value: string;
+  enabled: boolean;
+}
+
+export interface AuthState {
+  type: 'none' | 'bearer' | 'basic';
+  bearerToken?: string;
+  username?: string;
+  password?: string;
+}
+
 export default function RequestPanel({ 
   activeRequest,
   onResponse, 
@@ -23,6 +36,12 @@ export default function RequestPanel({
   const [method, setMethod] = useState(activeRequest.method);
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
   const [activeTab, setActiveTab] = useState("params");
+
+  // Unified Request State
+  const [params, setParams] = useState<KVItem[]>([{ key: '', value: '', enabled: true }]);
+  const [auth, setAuth] = useState<AuthState>({ type: 'none' });
+  const [headers, setHeaders] = useState<KVItem[]>([{ key: '', value: '', enabled: true }]);
+  const [body, setBody] = useState("");
 
   useEffect(() => {
     setMethod(activeRequest.method);
@@ -53,15 +72,59 @@ export default function RequestPanel({
 
   const handleSend = async () => {
     onExecuting(true);
-    const targetUrl = cleanUrl(url);
+    let targetUrl = cleanUrl(url);
+
+    // 1. Normalize Params
+    const activeParams = params.filter(p => p.enabled && p.key.trim());
+    if (activeParams.length > 0) {
+      const urlObj = new URL(targetUrl);
+      activeParams.forEach(p => urlObj.searchParams.append(p.key, p.value));
+      targetUrl = urlObj.toString();
+    }
+
+    // 2. Normalize Headers & Auth
+    const finalHeaders: Record<string, string> = {};
+    
+    // User headers
+    headers.filter(h => h.enabled && h.key.trim()).forEach(h => {
+      finalHeaders[h.key] = h.value;
+    });
+
+    // Auth headers
+    if (auth.type === 'bearer' && auth.bearerToken) {
+      finalHeaders['Authorization'] = `Bearer ${auth.bearerToken}`;
+    } else if (auth.type === 'basic' && auth.username) {
+      const credentials = btoa(`${auth.username}:${auth.password || ''}`);
+      finalHeaders['Authorization'] = `Basic ${credentials}`;
+    }
+
+    // Auto headers
+    if (method !== 'GET' && body.trim()) {
+      finalHeaders['Content-Type'] = 'application/json';
+    }
+
+    // 3. Normalize Body
+    let finalBody: string | undefined = undefined;
+    if (method !== 'GET' && body.trim()) {
+      try {
+        JSON.parse(body); // Validation
+        finalBody = body;
+      } catch (e) {
+        alert("Invalid JSON body payload.");
+        onExecuting(false);
+        return;
+      }
+    }
+
     try {
       const response = await executeRequest({
         method,
         url: targetUrl,
-        // Optional extensions like headers/body could be added here later
+        headers: finalHeaders,
+        body: finalBody,
       });
       onResponse(response);
-    } catch (error) {
+    } catch (error: any) {
       alert(`Request Failed: ${error}`);
     } finally {
       onExecuting(false);
@@ -125,11 +188,14 @@ export default function RequestPanel({
         </div>
       </div>
 
-      {/* Tab Content Stubs */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-center opacity-50">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Request {activeTab} Configuration</p>
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+          {activeTab === 'params' && <ParamsTab params={params} setParams={setParams} />}
+          {activeTab === 'auth' && <AuthTab auth={auth} setAuth={setAuth} />}
+          {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} />}
+          {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} />}
       </div>
     </div>
   );
 }
+import { ParamsTab, AuthTab, HeadersTab, BodyTab } from "./RequestBuilderTabs";
