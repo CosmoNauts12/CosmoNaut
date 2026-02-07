@@ -14,8 +14,34 @@ const activities = [
   )},
 ];
 
-export default function WorkspaceSidebar() {
+const mockCollections = [
+  {
+    id: 'c1',
+    name: 'User Management API',
+    requests: [
+      { id: 'r1', name: 'Get All Users', method: 'GET' },
+      { id: 'r2', name: 'Create User', method: 'POST' },
+    ]
+  },
+  {
+    id: 'c2',
+    name: 'Authentication',
+    requests: [
+      { id: 'r3', name: 'Login', method: 'POST' },
+      { id: 'r4', name: 'Refresh Token', method: 'POST' },
+    ]
+  }
+];
+
+export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (id: string, name: string, method: string) => void }) {
   const [activeActivity, setActiveActivity] = useState('collections');
+  const [expandedCollections, setExpandedCollections] = useState<string[]>(['c1']);
+
+  const toggleCollection = (id: string) => {
+    setExpandedCollections(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
 
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
@@ -41,46 +67,75 @@ export default function WorkspaceSidebar() {
       </div>
 
       {/* Sidebar Content (Contextual) */}
-      <div id="tour-sidebar-content" className="w-64 flex flex-col p-4 bg-transparent">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xs font-bold text-foreground uppercase tracking-wider opacity-80">
+      <div id="tour-sidebar-content" className="w-64 flex flex-col p-4 bg-transparent overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] opacity-50">
             {activeActivity}
           </h2>
-          <div className="flex gap-2">
-            <button className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <div className="flex gap-1">
+            <button className="p-1 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-xs font-medium">
+            <button className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[10px] font-bold uppercase tracking-wider">
               Import
             </button>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative mb-6">
+        <div className="relative mb-4">
           <input
             type="text"
             placeholder={`Search ${activeActivity}...`}
-            className="w-full bg-foreground/5 border border-card-border/50 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 transition-all"
+            className="w-full bg-foreground/5 border border-card-border/50 rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all focus:ring-1 focus:ring-primary/20"
           />
         </div>
 
-        {/* Content Stubs */}
-        <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-          {activeActivity === 'collections' && (
-            <div className="p-8 text-center bg-foreground/5 rounded-2xl border border-dashed border-card-border">
-              <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center mx-auto mb-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/50"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              </div>
-              <h3 className="text-sm font-semibold text-foreground mb-1">Create a collection</h3>
-              <p className="text-xs text-muted mb-4">Group related requests and set common variables.</p>
-              <button className="text-xs font-bold text-primary hover:underline">Create Collection</button>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 scrollbar-hide">
+          {activeActivity === 'collections' && mockCollections.map(collection => (
+            <div key={collection.id} className="space-y-1">
+              <button 
+                onClick={() => toggleCollection(collection.id)}
+                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-foreground/5 text-xs font-semibold text-foreground/80 group transition-colors"
+              >
+                <svg 
+                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                  className={`transition-transform duration-200 ${expandedCollections.includes(collection.id) ? 'rotate-90' : ''} text-muted/50`}
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500/80"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span className="truncate">{collection.name}</span>
+              </button>
+
+              {expandedCollections.includes(collection.id) && (
+                <div className="ml-4 pl-2 border-l border-card-border/50 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
+                  {collection.requests.map(request => (
+                    <button 
+                      key={request.id}
+                      onClick={() => onSelectRequest?.(request.id, request.name, request.method)}
+                      className="w-full flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group"
+                    >
+                      <span className={`w-10 font-black text-right ${
+                        request.method === 'GET' ? 'text-emerald-500' : 
+                        request.method === 'POST' ? 'text-amber-500' :
+                        request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                      }`}>
+                        {request.method}
+                      </span>
+                      <span className="truncate text-muted group-hover:text-foreground transition-colors">{request.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          {activeActivity !== 'collections' && (
-            <div className="text-center py-10">
-              <p className="text-xs text-muted italic">No {activeActivity} found</p>
-            </div>
+          ))}
+
+          {activeActivity === 'history' && (
+             <div className="p-4 text-center bg-foreground/5 rounded-xl border border-dashed border-card-border/50">
+                <p className="text-[10px] text-muted font-bold uppercase tracking-widest">No History</p>
+             </div>
           )}
         </div>
       </div>
