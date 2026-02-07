@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { useSettings } from "./SettingsProvider";
+import { useAuth } from "./AuthProvider";
 
 export default function WorkspaceHeader() {
   const { setSettingsOpen } = useSettings();
+  const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
@@ -36,9 +40,62 @@ export default function WorkspaceHeader() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Team/Invite */}
-        <div className="flex items-center -space-x-2 mr-2">
-          <div className="w-6 h-6 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[10px] font-bold text-white shadow-sm ring-2 ring-primary/20">A</div>
+        {/* User Dropdown */}
+        <div className="relative flex items-center h-full">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-white shadow-sm ring-2 ring-primary/20 hover:scale-110 transition-transform active:scale-95"
+          >
+            {user?.displayName?.charAt(0).toUpperCase() || "U"}
+          </button>
+
+          {/* Dropdown Menu */}
+          {dropdownOpen && (
+            <>
+              {/* Invisible Backdrop to close on click outside */}
+              <div 
+                className="fixed inset-0 z-40 bg-transparent" 
+                onClick={() => setDropdownOpen(false)}
+              />
+              <div className="absolute right-0 top-12 w-64 liquid-glass rounded-2xl border border-card-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50" />
+                <div className="relative z-10 p-5">
+                  <div className="mb-4">
+                    <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Signed in as</p>
+                    <p className="font-bold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
+                    <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] text-muted hover:text-primary hover:border-primary/50 cursor-pointer transition-all hover:bg-white/10 group">
+                      <span className="group-hover:scale-110 transition-transform">✨</span> Set status
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-card-border/50 my-2" />
+
+                  <div className="space-y-1">
+                    <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                      Profile Settings
+                    </button>
+                    <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                      Resource Center
+                    </button>
+                  </div>
+
+                  <div className="h-px bg-card-border/50 my-2" />
+
+                  <button
+                    onClick={() => logout()}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-all group"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
         
         <button id="tour-invite-btn" className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
