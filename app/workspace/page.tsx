@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import WorkspaceSidebar from "../components/WorkspaceSidebar";
 import WorkspaceHeader from "../components/WorkspaceHeader";
+import DemoTour from "../components/DemoTour";
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
@@ -40,7 +41,7 @@ export default function WorkspacePage() {
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
           {/* Tabs Bar */}
-          <div className="h-10 border-b border-card-border flex items-center px-2 gap-1 overflow-x-auto scrollbar-hide bg-black/5 dark:bg-white/5">
+          <div id="tour-tabs-bar" className="h-10 border-b border-card-border flex items-center px-2 gap-1 overflow-x-auto scrollbar-hide bg-black/5 dark:bg-white/5">
             <div className="px-4 h-full flex items-center gap-2 border-r border-card-border bg-foreground/5 text-xs text-foreground font-medium min-w-[120px] max-w-[200px] group cursor-pointer relative">
               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               <span className="truncate">My first request</span>
@@ -56,7 +57,7 @@ export default function WorkspacePage() {
           </div>
 
           {/* Activity Content (Overview Stub) */}
-          <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
+          <div id="tour-main-content" className="flex-1 overflow-y-auto p-12 scrollbar-hide">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-primary/10">
@@ -115,7 +116,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Footer Bar */}
-      <footer className="h-7 border-t border-card-border bg-card-bg/50 backdrop-blur-md flex items-center justify-between px-3 text-[10px] text-muted font-medium z-40 transition-colors duration-500">
+      <footer id="tour-footer-actions" className="h-7 border-t border-card-border bg-card-bg/50 backdrop-blur-md flex items-center justify-between px-3 text-[10px] text-muted font-medium z-40 transition-colors duration-500">
         <div className="flex items-center gap-4">
           <button className="hover:text-foreground flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" /> Cloud View</button>
           <button className="hover:text-foreground">Find and replace</button>
@@ -126,6 +127,8 @@ export default function WorkspacePage() {
           <button className="hover:text-foreground">Trash</button>
         </div>
       </footer>
+
+      <DemoTour />
     </div>
   );
 }

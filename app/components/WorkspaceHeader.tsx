@@ -8,7 +8,7 @@ export default function WorkspaceHeader() {
     <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
       <div className="flex items-center gap-6">
         {/* Breadcrumbs/Nav */}
-        <div className="flex items-center gap-2 text-xs">
+        <div id="tour-header-breadcrumbs" className="flex items-center gap-2 text-xs">
           <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             Home
@@ -32,7 +32,7 @@ export default function WorkspaceHeader() {
           <div className="w-6 h-6 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[10px] font-bold text-white shadow-sm ring-2 ring-primary/20">A</div>
         </div>
         
-        <button className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+        <button id="tour-invite-btn" className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
           Invite
         </button>
 

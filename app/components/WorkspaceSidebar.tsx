@@ -20,7 +20,7 @@ export default function WorkspaceSidebar() {
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
       {/* Activity Bar (Narrow Left) */}
-      <div className="w-14 flex flex-col items-center py-4 border-r border-card-border/50 gap-2">
+      <div id="tour-activity-bar" className="w-14 flex flex-col items-center py-4 border-r border-card-border/50 gap-2">
         {activities.map((activity) => (
           <button
             key={activity.id}
@@ -41,7 +41,7 @@ export default function WorkspaceSidebar() {
       </div>
 
       {/* Sidebar Content (Contextual) */}
-      <div className="w-64 flex flex-col p-4 bg-transparent">
+      <div id="tour-sidebar-content" className="w-64 flex flex-col p-4 bg-transparent">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xs font-bold text-foreground uppercase tracking-wider opacity-80">
             {activeActivity}
