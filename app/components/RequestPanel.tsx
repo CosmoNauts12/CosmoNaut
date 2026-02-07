@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 
+import { useSettings } from "./SettingsProvider";
+
 const methods = ["GET", "POST", "PUT", "DELETE"];
 
 export default function RequestPanel() {
-  const [method, setMethod] = useState("GET");
+  const { settings } = useSettings();
+  const [method, setMethod] = useState(settings.defaultMethod);
   const [url, setUrl] = useState("https://api.cosmonaut.io/v1/user");
   const [activeTab, setActiveTab] = useState("params");
 
@@ -17,7 +20,7 @@ export default function RequestPanel() {
           <div className="relative group">
             <select 
               value={method}
-              onChange={(e) => setMethod(e.target.value)}
+              onChange={(e) => setMethod(e.target.value as any)}
               className={`h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg font-black text-xs appearance-none cursor-pointer focus:outline-none focus:border-primary/50 transition-all ${
                 method === 'GET' ? 'text-emerald-500' : 
                 method === 'POST' ? 'text-amber-500' :

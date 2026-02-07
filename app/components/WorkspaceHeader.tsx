@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
+import { useSettings } from "./SettingsProvider";
 
 export default function WorkspaceHeader() {
+  const { setSettingsOpen } = useSettings();
+
   return (
     <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
       <div className="flex items-center gap-6">
@@ -22,7 +25,13 @@ export default function WorkspaceHeader() {
         <nav className="hidden md:flex items-center gap-4 text-xs font-medium border-l border-card-border pl-6">
           <button className="text-primary bg-primary/10 px-2.5 py-1 rounded-md">Overview</button>
           <button className="text-muted hover:text-foreground px-2.5 py-1 transition-colors">Updates</button>
-          <button className="text-muted hover:text-foreground px-2.5 py-1 transition-colors">Settings</button>
+          <button 
+            id="settings-btn"
+            onClick={() => setSettingsOpen(true)}
+            className="text-muted hover:text-foreground px-2.5 py-1 transition-colors"
+          >
+            Settings
+          </button>
         </nav>
       </div>
 

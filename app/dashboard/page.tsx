@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import ThemeToggle from "../components/ThemeToggle";
+import { useSettings } from "../components/SettingsProvider";
 
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
+  const { settings, setSettingsOpen } = useSettings();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -14,8 +16,17 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
+    } else if (!loading && user) {
+      if (settings.openLastWorkspace && settings.lastWorkspaceId) {
+        router.push("/workspace");
+      } else if (!settings.openLastWorkspace && settings.defaultWorkspace) {
+        // Option to auto-open default workspace if last workspace is disabled
+        // For now let's just stick to the specific requirement: "open this on launch when 'Open last workspace' is disabled"
+        // This implies if they hit dashboard (launch), we should go to that workspace.
+        router.push("/workspace");
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, settings.openLastWorkspace, settings.lastWorkspaceId, settings.defaultWorkspace]);
 
   const handleLogout = async () => {
     await logout();
@@ -132,7 +143,9 @@ export default function Dashboard() {
               <button
                 key={item.id}
                 onClick={() => {
-                  if (item.path !== '#') {
+                  if (item.id === 'settings') {
+                     setSettingsOpen(true);
+                  } else if (item.path !== '#') {
                     router.push(item.path);
                   }
                   setActiveTab(item.id);

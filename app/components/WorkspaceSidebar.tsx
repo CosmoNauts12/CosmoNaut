@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSettings } from "./SettingsProvider";
 
 const activities = [
   { id: 'collections', name: 'Collections', icon: (
@@ -34,6 +35,7 @@ const mockCollections = [
 ];
 
 export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (id: string, name: string, method: string) => void }) {
+  const { settings } = useSettings();
   const [activeActivity, setActiveActivity] = useState('collections');
   const [expandedCollections, setExpandedCollections] = useState<string[]>(['c1']);
 
@@ -41,6 +43,15 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     setExpandedCollections(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    if (settings.confirmDelete) {
+      if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+        return;
+      }
+    }
+    alert(`${name} deleted (mock)`);
   };
 
   return (
@@ -112,20 +123,28 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               {expandedCollections.includes(collection.id) && (
                 <div className="ml-4 pl-2 border-l border-card-border/50 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                   {collection.requests.map(request => (
-                    <button 
-                      key={request.id}
-                      onClick={() => onSelectRequest?.(request.id, request.name, request.method)}
-                      className="w-full flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group"
-                    >
-                      <span className={`w-10 font-black text-right ${
-                        request.method === 'GET' ? 'text-emerald-500' : 
-                        request.method === 'POST' ? 'text-amber-500' :
-                        request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-                      }`}>
-                        {request.method}
-                      </span>
-                      <span className="truncate text-muted group-hover:text-foreground transition-colors">{request.name}</span>
-                    </button>
+                    <div key={request.id} className="group relative flex items-center">
+                      <button 
+                        onClick={() => onSelectRequest?.(request.id, request.name, request.method)}
+                        className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group/item"
+                      >
+                        <span className={`w-10 font-black text-right ${
+                          request.method === 'GET' ? 'text-emerald-500' : 
+                          request.method === 'POST' ? 'text-amber-500' :
+                          request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                        }`}>
+                          {request.method}
+                        </span>
+                        <span className="truncate text-muted group-hover/item:text-foreground transition-colors">{request.name}</span>
+                      </button>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(request.id, request.name); }}
+                        className="absolute right-1 opacity-0 group-hover:opacity-100 p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
+                      >
+                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}

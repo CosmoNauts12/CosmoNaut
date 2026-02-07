@@ -9,9 +9,11 @@ import DemoTour from "../components/DemoTour";
 
 import RequestPanel from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
+import { useSettings } from "../components/SettingsProvider";
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
+  const { settings, updateSettings } = useSettings();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("request");
   const [activeRequest, setActiveRequest] = useState({ id: 'r1', name: 'Get All Users', method: 'GET' });
@@ -19,12 +21,24 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
+    } else if (user && settings.lastWorkspaceId !== "default") {
+      // Save this as the last active workspace
+      updateSettings({ lastWorkspaceId: "default" }); 
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, updateSettings, settings.lastWorkspaceId]);
 
   const handleSelectRequest = (id: string, name: string, method: string) => {
     setActiveRequest({ id, name, method });
     setActiveTab("request");
+  };
+
+  const handleCloseTab = (id: string) => {
+    if (settings.confirmCloseTab) {
+      if (!window.confirm("Are you sure you want to close this tab? Any unsaved changes may be lost.")) {
+        return;
+      }
+    }
+    setActiveTab("overview");
   };
 
   if (loading || !user) {
@@ -74,6 +88,12 @@ export default function WorkspacePage() {
                 'bg-blue-500'
               }`} />
               <span className="truncate">{activeRequest.name}</span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleCloseTab(activeRequest.id); }}
+                className="ml-auto opacity-0 group-hover:opacity-100 hover:bg-foreground/10 rounded p-0.5 transition-all"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
               {activeTab === 'request' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
             </div>
             

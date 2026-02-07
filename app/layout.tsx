@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Allura } from "next/font/google"; // Changed Dancing
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeContext";
+import { SettingsProvider } from "./components/SettingsProvider";
+import SettingsModal from "./components/SettingsModal";
 
 // Fonts
 const geistSans = Geist({
@@ -37,11 +39,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${allura.variable} antialiased min-h-screen`}
       >
-        <AuthProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </AuthProvider>
+        <SettingsProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              {children}
+              <SettingsModal />
+            </ThemeProvider>
+          </AuthProvider>
+        </SettingsProvider>
       </body>
     </html>
   );
