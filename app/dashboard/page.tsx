@@ -17,13 +17,16 @@ export default function Dashboard() {
     if (!loading && !user) {
       router.push("/");
     } else if (!loading && user) {
-      if (settings.openLastWorkspace && settings.lastWorkspaceId) {
-        router.push("/workspace");
-      } else if (!settings.openLastWorkspace && settings.defaultWorkspace) {
-        // Option to auto-open default workspace if last workspace is disabled
-        // For now let's just stick to the specific requirement: "open this on launch when 'Open last workspace' is disabled"
-        // This implies if they hit dashboard (launch), we should go to that workspace.
-        router.push("/workspace");
+      const hasRedirected = sessionStorage.getItem("cosmonaut_redirected");
+      
+      if (!hasRedirected) {
+        if (settings.openLastWorkspace && settings.lastWorkspaceId) {
+          sessionStorage.setItem("cosmonaut_redirected", "true");
+          router.push("/workspace");
+        } else if (!settings.openLastWorkspace && settings.defaultWorkspace) {
+          sessionStorage.setItem("cosmonaut_redirected", "true");
+          router.push("/workspace");
+        }
       }
     }
   }, [user, loading, router, settings.openLastWorkspace, settings.lastWorkspaceId, settings.defaultWorkspace]);
