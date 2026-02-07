@@ -1,16 +1,72 @@
-"use client";
-
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import { useSettings } from "./SettingsProvider";
+import { executeRequest, CosmoResponse } from "./RequestEngine";
 
 const methods = ["GET", "POST", "PUT", "DELETE"];
 
-export default function RequestPanel() {
+export interface ActiveRequest {
+  id: string;
+  name: string;
+  method: string;
+}
+
+export default function RequestPanel({ 
+  activeRequest,
+  onResponse, 
+  onExecuting 
+}: { 
+  activeRequest: ActiveRequest;
+  onResponse: (res: CosmoResponse | null) => void;
+  onExecuting: (executing: boolean) => void;
+}) {
   const { settings } = useSettings();
-  const [method, setMethod] = useState(settings.defaultMethod);
-  const [url, setUrl] = useState("https://api.cosmonaut.io/v1/user");
+  const [method, setMethod] = useState(activeRequest.method);
+  const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
   const [activeTab, setActiveTab] = useState("params");
+
+  useEffect(() => {
+    setMethod(activeRequest.method);
+    // Only update URL if it's one of the mock ones or empty
+    if (activeRequest.name === 'Get All Users') {
+       setUrl("https://jsonplaceholder.typicode.com/posts/1");
+    }
+  }, [activeRequest]);
+
+  const cleanUrl = (input: string) => {
+    let cleaned = input.trim();
+    
+    // Strip leading method names if user pasted them (e.g. "GET https://...")
+    for (const m of methods) {
+      if (cleaned.toUpperCase().startsWith(`${m} `)) {
+        cleaned = cleaned.substring(m.length + 1).trim();
+        break;
+      }
+    }
+
+    // Ensure protocol
+    if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+      cleaned = `https://${cleaned}`;
+    }
+
+    return cleaned;
+  };
+
+  const handleSend = async () => {
+    onExecuting(true);
+    const targetUrl = cleanUrl(url);
+    try {
+      const response = await executeRequest({
+        method,
+        url: targetUrl,
+        // Optional extensions like headers/body could be added here later
+      });
+      onResponse(response);
+    } catch (error) {
+      alert(`Request Failed: ${error}`);
+    } finally {
+      onExecuting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-sm">
@@ -42,7 +98,10 @@ export default function RequestPanel() {
             className="flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
           />
 
-          <button className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">
+          <button 
+            onClick={handleSend}
+            className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+          >
             Send
           </button>
         </div>

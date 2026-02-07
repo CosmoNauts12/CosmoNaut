@@ -1,26 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { CosmoResponse } from "./RequestEngine";
 
-export default function ResponsePanel() {
+export default function ResponsePanel({ 
+  response, 
+  isExecuting 
+}: { 
+  response: CosmoResponse | null;
+  isExecuting: boolean;
+}) {
   const [activeTab, setActiveTab] = useState("pretty");
   const [visualMode, setVisualMode] = useState("graph");
 
-  const mockData = {
-    status: 200,
-    time: "124 ms",
-    size: "1.2 KB",
-    body: {
-      id: 1,
-      name: "Adith",
-      role: "Commander",
-      missions: [
-        { id: "M1", target: "Moon", status: "Active", progress: 85 },
-        { id: "M2", target: "Mars", status: "Planning", progress: 30 },
-        { id: "M3", target: "Venus", status: "Standby", progress: 0 }
-      ]
+  const formattedBody = useMemo(() => {
+    if (!response) return null;
+    try {
+      return JSON.stringify(JSON.parse(response.body), null, 2);
+    } catch (e) {
+      return response.body;
     }
-  };
+  }, [response]);
+
+  if (isExecuting) {
+    return (
+      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Executing Mission...</p>
+      </div>
+    );
+  }
+
+  if (!response) {
+    return (
+      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border items-center justify-center opacity-30">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Awaiting Data Pipeline</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border overflow-hidden">
@@ -42,90 +60,27 @@ export default function ResponsePanel() {
         </div>
 
         <div className="flex gap-4 text-[10px] font-bold">
-          <span className="text-emerald-500">Status: <span className="text-foreground">{mockData.status} OK</span></span>
-          <span className="text-muted">Time: <span className="text-foreground">{mockData.time}</span></span>
-          <span className="text-muted">Size: <span className="text-foreground">{mockData.size}</span></span>
+          <span className={`${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            Status: <span className="text-foreground">{response.status}</span>
+          </span>
+          <span className="text-muted">Time: <span className="text-foreground">{response.duration_ms} ms</span></span>
+          <span className="text-muted">Size: <span className="text-foreground">{(response.body.length / 1024).toFixed(2)} KB</span></span>
         </div>
       </div>
 
       {/* Body Content */}
       <div className="flex-1 overflow-y-auto p-4 font-mono text-xs">
         {activeTab === 'pretty' && (
-          <div className="liquid-glass p-6 rounded-2xl border-card-border/50 shadow-inner overflow-x-auto">
-            <pre className="text-primary/90">
-              {JSON.stringify(mockData.body, null, 2)}
+          <div className="liquid-glass p-6 rounded-2xl border-card-border/50 shadow-inner overflow-x-auto min-h-full">
+            <pre className="text-primary/90 whitespace-pre-wrap">
+              {formattedBody}
             </pre>
           </div>
         )}
 
         {activeTab === 'visualize' && (
-          <div className="h-full flex flex-col gap-6">
-            <div className="flex gap-2">
-              {['Graph', 'Table'].map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => setVisualMode(mode.toLowerCase())}
-                  className={`px-3 py-1 rounded-full text-[9px] font-black border uppercase tracking-tighter transition-all ${
-                    visualMode === mode.toLowerCase() 
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
-                      : 'border-card-border text-muted hover:border-muted'
-                  }`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-
-            {visualMode === 'graph' && (
-              <div className="flex-1 flex items-end gap-6 px-4 pt-4 pb-8 min-h-[200px]">
-                {mockData.body.missions.map(m => (
-                  <div key={m.id} className="flex-1 flex flex-col items-center gap-3">
-                    <div 
-                      className="w-full bg-gradient-to-t from-primary/20 to-primary rounded-t-lg shadow-lg relative group transition-all duration-500 hover:brightness-125" 
-                      style={{ height: `${m.progress}%` }}
-                    >
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                        {m.progress}%
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-muted uppercase tracking-tighter truncate w-full text-center">{m.target}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {visualMode === 'table' && (
-              <div className="overflow-x-auto rounded-xl border border-card-border">
-                <table className="w-full text-left">
-                  <thead className="bg-foreground/5 text-[10px] uppercase font-black tracking-widest text-muted">
-                    <tr>
-                      <th className="p-3">ID</th>
-                      <th className="p-3">Target</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Progress</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-card-border">
-                    {mockData.body.missions.map(m => (
-                      <tr key={m.id} className="text-[10px] font-bold hover:bg-foreground/5 transition-colors">
-                        <td className="p-3 text-muted">{m.id}</td>
-                        <td className="p-3 text-foreground">{m.target}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded-full ring-1 ring-inset ${
-                            m.status === 'Active' ? 'text-emerald-500 ring-emerald-500/20 bg-emerald-500/10' :
-                            m.status === 'Planning' ? 'text-amber-500 ring-amber-500/20 bg-amber-500/10' :
-                            'text-muted ring-muted/20 bg-foreground/5'
-                          }`}>
-                            {m.status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-foreground">{m.progress}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <div className="h-full flex flex-col items-center justify-center opacity-50">
+             <p className="text-[10px] font-black uppercase tracking-widest text-muted">Visualization requires specific data mission protocols</p>
           </div>
         )}
       </div>

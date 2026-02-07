@@ -10,6 +10,7 @@ import DemoTour from "../components/DemoTour";
 import RequestPanel from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
 import { useSettings } from "../components/SettingsProvider";
+import { CosmoResponse } from "../components/RequestEngine";
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
@@ -17,6 +18,8 @@ export default function WorkspacePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("request");
   const [activeRequest, setActiveRequest] = useState({ id: 'r1', name: 'Get All Users', method: 'GET' });
+  const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -149,10 +152,14 @@ export default function WorkspacePage() {
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                  <RequestPanel />
+                  <RequestPanel 
+                    activeRequest={activeRequest}
+                    onResponse={setLastResponse} 
+                    onExecuting={setIsExecuting} 
+                  />
                 </div>
                 <div className="h-[40%] min-h-[200px]">
-                  <ResponsePanel />
+                  <ResponsePanel response={lastResponse} isExecuting={isExecuting} />
                 </div>
               </div>
             )}
