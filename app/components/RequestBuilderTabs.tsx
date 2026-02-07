@@ -1,9 +1,5 @@
 import React from 'react';
-import { KVItem, AuthState } from './RequestPanel';
-
-interface TabProps {
-  onChange: (updates: any) => void;
-}
+import { KVItem, AuthState } from '@/app/lib/collections';
 
 // Helper to handle KV changes
 const updateKV = (list: KVItem[], index: number, updates: Partial<KVItem>) => {

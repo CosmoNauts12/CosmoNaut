@@ -16,20 +16,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
-    } else if (!loading && user) {
-      const hasRedirected = sessionStorage.getItem("cosmonaut_redirected");
-      
-      if (!hasRedirected) {
-        if (settings.openLastWorkspace && settings.lastWorkspaceId) {
-          sessionStorage.setItem("cosmonaut_redirected", "true");
-          router.push("/workspace");
-        } else if (!settings.openLastWorkspace && settings.defaultWorkspace) {
-          sessionStorage.setItem("cosmonaut_redirected", "true");
-          router.push("/workspace");
-        }
-      }
     }
-  }, [user, loading, router, settings.openLastWorkspace, settings.lastWorkspaceId, settings.defaultWorkspace]);
+  }, [user, loading, router]);
 
   const handleLogout = async () => {
     await logout();

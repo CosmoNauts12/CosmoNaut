@@ -1,3 +1,4 @@
+use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Instant;
@@ -69,11 +70,38 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, S
     })
 }
 
+#[tauri::command]
+async fn save_collections(app_handle: tauri::AppHandle, workspace_id: String, collections: String) -> Result<(), String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    
+    let file_path = app_dir.join(format!("collections_{}.json", workspace_id));
+    std::fs::write(file_path, collections).map_err(|e| e.to_string())?;
+    
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_collections(app_handle: tauri::AppHandle, workspace_id: String) -> Result<String, String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    let file_path = app_dir.join(format!("collections_{}.json", workspace_id));
+    
+    if !file_path.exists() {
+        return Ok("[]".to_string());
+    }
+    
+    std::fs::read_to_string(file_path).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
-    .invoke_handler(tauri::generate_handler![execute_cosmo_request])
+    .invoke_handler(tauri::generate_handler![
+        execute_cosmo_request,
+        save_collections,
+        load_collections
+    ])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(

@@ -7,17 +7,22 @@ import WorkspaceSidebar from "../components/WorkspaceSidebar";
 import WorkspaceHeader from "../components/WorkspaceHeader";
 import DemoTour from "../components/DemoTour";
 
-import RequestPanel from "../components/RequestPanel";
+import RequestPanel, { ActiveRequest } from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
 import { useSettings } from "../components/SettingsProvider";
 import { CosmoResponse } from "../components/RequestEngine";
+import { SavedRequest } from "../lib/collections";
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings, updateSettings } = useSettings();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("request");
-  const [activeRequest, setActiveRequest] = useState({ id: 'r1', name: 'Get All Users', method: 'GET' });
+  const [activeRequest, setActiveRequest] = useState<ActiveRequest>({ 
+    id: 'r1', 
+    name: 'Get All Users', 
+    method: 'GET' 
+  });
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
@@ -30,8 +35,8 @@ export default function WorkspacePage() {
     }
   }, [user, loading, router, updateSettings, settings.lastWorkspaceId]);
 
-  const handleSelectRequest = (id: string, name: string, method: string) => {
-    setActiveRequest({ id, name, method });
+  const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
+    setActiveRequest(request);
     setActiveTab("request");
   };
 

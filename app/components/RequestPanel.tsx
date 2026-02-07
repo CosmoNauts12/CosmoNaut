@@ -1,27 +1,19 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useSettings } from "./SettingsProvider";
 import { executeRequest, CosmoResponse } from "./RequestEngine";
+import { useCollections } from "./CollectionsProvider";
+import { SavedRequest, KVItem, AuthState } from "@/app/lib/collections";
+import { ParamsTab, AuthTab, HeadersTab, BodyTab } from "./RequestBuilderTabs";
 
 const methods = ["GET", "POST", "PUT", "DELETE"];
 
-export interface ActiveRequest {
+export type ActiveRequest = (SavedRequest & { collectionId: string }) | {
   id: string;
   name: string;
   method: string;
-}
-
-export interface KVItem {
-  key: string;
-  value: string;
-  enabled: boolean;
-}
-
-export interface AuthState {
-  type: 'none' | 'bearer' | 'basic';
-  bearerToken?: string;
-  username?: string;
-  password?: string;
-}
+};
 
 export default function RequestPanel({ 
   activeRequest,
@@ -33,6 +25,7 @@ export default function RequestPanel({
   onExecuting: (executing: boolean) => void;
 }) {
   const { settings } = useSettings();
+  const { collections, saveRequest, updateRequest, createCollection } = useCollections();
   const [method, setMethod] = useState(activeRequest.method);
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
   const [activeTab, setActiveTab] = useState("params");
@@ -43,11 +36,27 @@ export default function RequestPanel({
   const [headers, setHeaders] = useState<KVItem[]>([{ key: '', value: '', enabled: true }]);
   const [body, setBody] = useState("");
 
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveName, setSaveName] = useState(activeRequest.name);
+  const [targetCollectionId, setTargetCollectionId] = useState("");
+
   useEffect(() => {
-    setMethod(activeRequest.method);
-    // Only update URL if it's one of the mock ones or empty
-    if (activeRequest.name === 'Get All Users') {
-       setUrl("https://jsonplaceholder.typicode.com/posts/1");
+    if ('url' in activeRequest) {
+      // Rehydrate from SavedRequest
+      setMethod(activeRequest.method);
+      setUrl(activeRequest.url);
+      setParams(activeRequest.params);
+      setAuth(activeRequest.auth);
+      setHeaders(activeRequest.headers);
+      setBody(activeRequest.body);
+      setSaveName(activeRequest.name);
+    } else {
+      // Default / Metadata
+      setMethod(activeRequest.method);
+      if (activeRequest.name === 'Get All Users') {
+         setUrl("https://jsonplaceholder.typicode.com/posts/1");
+      }
+      setSaveName(activeRequest.name);
     }
   }, [activeRequest]);
 
@@ -75,10 +84,10 @@ export default function RequestPanel({
     let targetUrl = cleanUrl(url);
 
     // 1. Normalize Params
-    const activeParams = params.filter(p => p.enabled && p.key.trim());
+    const activeParams = params.filter((p: KVItem) => p.enabled && p.key.trim());
     if (activeParams.length > 0) {
       const urlObj = new URL(targetUrl);
-      activeParams.forEach(p => urlObj.searchParams.append(p.key, p.value));
+      activeParams.forEach((p: KVItem) => urlObj.searchParams.append(p.key, p.value));
       targetUrl = urlObj.toString();
     }
 
@@ -86,7 +95,7 @@ export default function RequestPanel({
     const finalHeaders: Record<string, string> = {};
     
     // User headers
-    headers.filter(h => h.enabled && h.key.trim()).forEach(h => {
+    headers.filter((h: KVItem) => h.enabled && h.key.trim()).forEach((h: KVItem) => {
       finalHeaders[h.key] = h.value;
     });
 
@@ -131,6 +140,47 @@ export default function RequestPanel({
     }
   };
 
+  const handleSave = async () => {
+    if (!saveName.trim()) return alert("Please enter a name");
+    
+    if (!showSaveModal && 'url' in activeRequest) {
+      // Direct update
+      await updateRequest({
+        id: activeRequest.id,
+        name: saveName,
+        method,
+        url,
+        params,
+        auth,
+        headers,
+        body
+      }, activeRequest.collectionId);
+      return;
+    }
+
+    // Save as new or show modal logic
+    let collectionId = targetCollectionId;
+    if (!collectionId && collections.length > 0) {
+      collectionId = collections[0].id;
+    }
+    
+    if (!collectionId) {
+      collectionId = await createCollection("My Requests");
+    }
+
+    await saveRequest({
+      name: saveName,
+      method,
+      url,
+      params,
+      auth,
+      headers,
+      body
+    }, collectionId);
+    
+    setShowSaveModal(false);
+  };
+
   return (
     <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-sm">
       {/* Search/URL Bar */}
@@ -161,6 +211,31 @@ export default function RequestPanel({
             className="flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
           />
 
+          {'url' in activeRequest ? (
+            <button 
+              onClick={handleSave}
+              className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all"
+            >
+              Update
+            </button>
+          ) : (
+            <button 
+              onClick={() => setShowSaveModal(true)}
+              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all"
+            >
+              Save
+            </button>
+          )}
+
+          {'url' in activeRequest && (
+            <button 
+              onClick={() => setShowSaveModal(true)}
+              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
+            >
+              Save As
+            </button>
+          )}
+
           <button 
             onClick={handleSend}
             className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
@@ -168,6 +243,57 @@ export default function RequestPanel({
             Send
           </button>
         </div>
+
+        {/* Save Modal */}
+        {showSaveModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
+            <div className="relative w-full max-w-md liquid-glass p-8 rounded-[2.5rem] border-primary/20 animate-in zoom-in-95 duration-200">
+              <h3 className="text-xl font-bold mb-6">Save Request</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Name</label>
+                  <input 
+                    type="text" 
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Collection</label>
+                  <select 
+                    value={targetCollectionId}
+                    onChange={(e) => setTargetCollectionId(e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm focus:outline-none focus:border-primary/50"
+                  >
+                    <option value="">Select a collection</option>
+                    {collections.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-8">
+                <button 
+                  onClick={() => setShowSaveModal(false)}
+                  className="flex-1 h-11 rounded-xl border border-card-border/50 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSave}
+                  className="flex-1 h-11 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Request Tabs */}
         <div className="flex gap-4">
@@ -198,4 +324,3 @@ export default function RequestPanel({
     </div>
   );
 }
-import { ParamsTab, AuthTab, HeadersTab, BodyTab } from "./RequestBuilderTabs";

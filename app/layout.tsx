@@ -5,6 +5,7 @@ import AuthProvider from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeContext";
 import { SettingsProvider } from "./components/SettingsProvider";
 import SettingsModal from "./components/SettingsModal";
+import { CollectionsProvider } from "./components/CollectionsProvider";
 
 // Fonts
 const geistSans = Geist({
@@ -41,10 +42,12 @@ export default function RootLayout({
       >
         <SettingsProvider>
           <AuthProvider>
-            <ThemeProvider>
-              {children}
-              <SettingsModal />
-            </ThemeProvider>
+            <CollectionsProvider>
+              <ThemeProvider>
+                {children}
+                <SettingsModal />
+              </ThemeProvider>
+            </CollectionsProvider>
           </AuthProvider>
         </SettingsProvider>
       </body>
