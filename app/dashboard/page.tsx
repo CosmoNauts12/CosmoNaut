@@ -153,19 +153,30 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Postman Resources */}
+          {/* CosmoNaut Resources */}
           <div className="mt-8 px-2 space-y-2">
             {[
-              { label: 'What is Postman', href: '#' },
-              { label: 'How to Publish', href: '#' },
-              { label: 'Learning Center', href: '#' },
-              { label: 'Support Center', href: '#' },
-              { label: 'Postman Enterprise', href: '#' }
+              { label: 'What is CosmoNaut', href: '/about.html' },
+              { label: 'How to Publish', href: '/about.html' },
+              { label: 'Learning Center', href: '/about.html' },
+              { label: 'Support Center', href: '/about.html' },
+              { label: 'CosmoNaut Enterprise', href: '/about.html' }
             ].map((link, i) => (
-              <a
+              <button
                 key={i}
-                href={link.href}
-                className="flex items-center justify-between w-full text-xs font-medium text-muted hover:text-foreground transition-colors group"
+                onClick={async () => {
+                  try {
+                    const { open } = await import('@tauri-apps/plugin-shell');
+                    const url = link.href.startsWith('/') 
+                      ? window.location.origin + link.href 
+                      : link.href;
+                    await open(url);
+                  } catch (e) {
+                    console.error("Failed to open link:", e);
+                    window.open(link.href, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+                className="flex items-center justify-between w-full text-xs font-medium text-muted hover:text-foreground transition-colors group text-left"
               >
                 <span>{link.label}</span>
                 <svg
@@ -182,7 +193,7 @@ export default function Dashboard() {
                   <line x1="7" y1="17" x2="17" y2="7"></line>
                   <polyline points="7 7 17 7 17 17"></polyline>
                 </svg>
-              </a>
+              </button>
             ))}
           </div>
         </div>
