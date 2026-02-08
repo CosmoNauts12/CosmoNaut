@@ -88,22 +88,20 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
-  const handleDeleteRequest = async (requestId: string, collectionId: string, name: string) => {
+  const handleDeleteRequest = (requestId: string, collectionId: string, name: string) => {
     if (settings.confirmDelete) {
-      if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-        return;
-      }
+      setModalState({ isOpen: true, type: 'deleteRequest', data: { id: requestId, collectionId, name } });
+    } else {
+      deleteRequest(requestId, collectionId);
     }
-    await deleteRequest(requestId, collectionId);
   };
 
-  const handleDeleteCollection = async (collectionId: string, name: string) => {
+  const handleDeleteCollection = (collectionId: string, name: string) => {
     if (settings.confirmDelete) {
-      if (!window.confirm(`Are you sure you want to delete collection "${name}" and all its requests?`)) {
-        return;
-      }
+      setModalState({ isOpen: true, type: 'deleteCollection', data: { id: collectionId, name } });
+    } else {
+      deleteCollection(collectionId);
     }
-    await deleteCollection(collectionId);
   };
 
   return (
@@ -349,6 +347,10 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             await createWorkspace(value);
           } else if (modalState.type === 'renameWorkspace' && value && activeWorkspace) {
             await renameWorkspace(activeWorkspace.id, value);
+          } else if (modalState.type === 'deleteCollection' && modalState.data) {
+            await deleteCollection(modalState.data.id);
+          } else if (modalState.type === 'deleteRequest' && modalState.data) {
+            await deleteRequest(modalState.data.id, modalState.data.collectionId);
           }
         }}
       />
