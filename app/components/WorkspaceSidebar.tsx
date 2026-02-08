@@ -67,25 +67,16 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     setModalState({ isOpen: true, type: 'renameWorkspace' });
   };
 
-  const handleCreateCollection = async () => {
-    const name = window.prompt("Collection Name:");
-    if (name) {
-      await createCollection(name);
-    }
+  const handleCreateCollection = () => {
+    setModalState({ isOpen: true, type: 'createCollection' });
   };
 
-  const handleRenameCollection = async (id: string, currentName: string) => {
-    const name = window.prompt("Rename Collection:", currentName);
-    if (name) {
-      await renameCollection(id, name);
-    }
+  const handleRenameCollection = (id: string, currentName: string) => {
+    setModalState({ isOpen: true, type: 'renameCollection', data: { id, name: currentName } });
   };
 
-  const handleRenameRequest = async (id: string, collectionId: string, currentName: string) => {
-    const name = window.prompt("Rename Request:", currentName);
-    if (name) {
-      await renameRequest(id, collectionId, name);
-    }
+  const handleRenameRequest = (id: string, collectionId: string, currentName: string) => {
+    setModalState({ isOpen: true, type: 'renameRequest', data: { id, collectionId, name: currentName } });
   };
 
   const handleDeleteRequest = (requestId: string, collectionId: string, name: string) => {
@@ -324,17 +315,25 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         title={
           modalState.type === 'createWorkspace' ? 'Create New Workspace' :
             modalState.type === 'renameWorkspace' ? 'Rename Workspace' :
-              'Confirm Action'
+              modalState.type === 'createCollection' ? 'New Collection' :
+                modalState.type === 'renameCollection' ? 'Rename Collection' :
+                  modalState.type === 'renameRequest' ? 'Rename Request' :
+                    'Confirm Action'
         }
         type={modalState.type?.includes('delete') ? 'confirm' : 'input'}
         defaultValue={
           modalState.type === 'renameWorkspace' ? activeWorkspace?.name :
-            ''
+            modalState.type === 'renameCollection' ? modalState.data?.name :
+              modalState.type === 'renameRequest' ? modalState.data?.name :
+                ''
         }
         placeholder={
           modalState.type === 'createWorkspace' ? 'Enter workspace name...' :
             modalState.type === 'renameWorkspace' ? 'Enter new workspace name...' :
-              ''
+              modalState.type === 'createCollection' ? 'Enter collection name...' :
+                modalState.type === 'renameCollection' ? 'Enter new collection name...' :
+                  modalState.type === 'renameRequest' ? 'Enter new request name...' :
+                    ''
         }
         confirmText={modalState.type?.includes('delete') ? 'Delete' : 'Save'}
         message={
@@ -347,6 +346,12 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             await createWorkspace(value);
           } else if (modalState.type === 'renameWorkspace' && value && activeWorkspace) {
             await renameWorkspace(activeWorkspace.id, value);
+          } else if (modalState.type === 'createCollection' && value) {
+            await createCollection(value);
+          } else if (modalState.type === 'renameCollection' && value && modalState.data) {
+            await renameCollection(modalState.data.id, value);
+          } else if (modalState.type === 'renameRequest' && value && modalState.data) {
+            await renameRequest(modalState.data.id, modalState.data.collectionId, value);
           } else if (modalState.type === 'deleteCollection' && modalState.data) {
             await deleteCollection(modalState.data.id);
           } else if (modalState.type === 'deleteRequest' && modalState.data) {
