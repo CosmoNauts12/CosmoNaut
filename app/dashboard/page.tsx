@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
+import { useCollections } from "../components/CollectionsProvider";
 
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen } = useSettings();
+  const { createWorkspace } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -22,6 +24,15 @@ export default function Dashboard() {
   const handleLogout = async () => {
     await logout();
     router.push("/");
+  };
+
+  const handleNewProject = async () => {
+    try {
+      await createWorkspace("New Project");
+      router.push("/workspace");
+    } catch (error) {
+      console.error("Dashboard: Failed to create new project", error);
+    }
   };
 
   if (loading) {
@@ -258,7 +269,10 @@ export default function Dashboard() {
                   </p>
 
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <button className="glass-btn-primary px-6 py-2.5 rounded-xl text-sm shadow-lg">
+                    <button 
+                      onClick={handleNewProject}
+                      className="glass-btn-primary px-6 py-2.5 rounded-xl text-sm shadow-lg"
+                    >
                       Create Project
                     </button>
                     <button className="px-6 py-2.5 bg-card-bg border border-input-border text-foreground hover:bg-card-border transition-colors text-sm font-medium rounded-xl">
@@ -282,11 +296,15 @@ export default function Dashboard() {
             <h2 className="text-lg font-bold mb-6 text-foreground">Quick Access</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
-                { title: 'New Project', desc: 'Start a new initiative' },
-                { title: 'Team', desc: 'Manage members' },
-                { title: 'Analytics', desc: 'View performance' }
+                { title: 'New Project', desc: 'Start a new initiative', action: handleNewProject },
+                { title: 'Team', desc: 'Manage members', action: () => {} },
+                { title: 'Analytics', desc: 'View performance', action: () => {} }
               ].map((item, i) => (
-                <div key={i} className="group p-5 rounded-xl border border-card-border hover:border-primary/50 bg-card-bg hover:bg-card-bg/80 transition-all cursor-pointer shadow-sm hover:shadow-md">
+                <div 
+                  key={i} 
+                  onClick={item.action}
+                  className="group p-5 rounded-xl border border-card-border hover:border-primary/50 bg-card-bg hover:bg-card-bg/80 transition-all cursor-pointer shadow-sm hover:shadow-md"
+                >
                   <h3 className="text-base font-semibold mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
                   <p className="text-xs text-muted">{item.desc}</p>
                   <div className="mt-4 h-0.5 w-8 bg-card-border group-hover:w-full group-hover:bg-primary/20 transition-all duration-300"></div>
