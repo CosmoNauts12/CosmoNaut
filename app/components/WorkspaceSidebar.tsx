@@ -6,6 +6,7 @@ import { useCollections } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
 import Modal from "./Modal";
 import Dropdown, { DropdownItem, DropdownSeparator } from "./Dropdown";
+import Popover from "./Popover";
 
 const activities = [
   {
@@ -48,7 +49,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
   const [expandedCollections, setExpandedCollections] = useState<string[]>([]);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
-    type: 'createWorkspace' | 'renameWorkspace' | 'createCollection' | 'renameCollection' | 'renameRequest' | 'deleteRequest' | 'deleteCollection' | null;
+    type: 'createWorkspace' | 'renameWorkspace' | 'createCollection' | 'renameCollection' | 'renameRequest' | 'deleteRequest' | 'deleteCollection' | 'createWorkspace-popover' | 'renameWorkspace-popover' | null;
     data?: any;
   }>({ isOpen: false, type: null });
 
@@ -125,20 +126,85 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
           <div className="flex items-center justify-between mb-2">
             <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
             <div className="flex gap-1">
-              <button
-                onClick={handleCreateWorkspace}
-                className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                title="New Workspace"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </button>
-              <button
-                onClick={handleRenameWorkspace}
-                className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                title="Rename Workspace"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-              </button>
+              <Popover
+                isOpen={modalState.type === 'createWorkspace-popover'}
+                onOpenChange={(open) => setModalState(prev => ({ ...prev, isOpen: open, type: open ? 'createWorkspace-popover' : null }))}
+                trigger={
+                  <button
+                    className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
+                    title="New Workspace"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                }
+                content={
+                  <div className="p-1">
+                    <div className="mb-2 text-[10px] font-black text-muted uppercase tracking-widest">New Workspace</div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const name = formData.get('name') as string;
+                        if (name) {
+                          createWorkspace(name);
+                          setModalState({ isOpen: false, type: null });
+                        }
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        name="name"
+                        autoFocus
+                        placeholder="Name"
+                        className="flex-1 min-w-[120px] bg-foreground/5 border border-card-border/50 rounded-md px-2 py-1 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50"
+                      />
+                      <button type="submit" className="px-2 py-1 bg-primary text-white text-xs font-bold rounded-md hover:bg-primary/90">
+                        Add
+                      </button>
+                    </form>
+                  </div>
+                }
+              />
+              <Popover
+                isOpen={modalState.type === 'renameWorkspace-popover'}
+                onOpenChange={(open) => setModalState(prev => ({ ...prev, isOpen: open, type: open ? 'renameWorkspace-popover' : null }))}
+                trigger={
+                  <button
+                    className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
+                    title="Rename Workspace"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                  </button>
+                }
+                content={
+                  <div className="p-1">
+                    <div className="mb-2 text-[10px] font-black text-muted uppercase tracking-widest">Rename Workspace</div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const name = formData.get('name') as string;
+                        if (name && activeWorkspace) {
+                          renameWorkspace(activeWorkspace.id, name);
+                          setModalState({ isOpen: false, type: null });
+                        }
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        name="name"
+                        autoFocus
+                        defaultValue={activeWorkspace?.name}
+                        placeholder="Name"
+                        className="flex-1 min-w-[120px] bg-foreground/5 border border-card-border/50 rounded-md px-2 py-1 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50"
+                      />
+                      <button type="submit" className="px-2 py-1 bg-primary text-white text-xs font-bold rounded-md hover:bg-primary/90">
+                        Save
+                      </button>
+                    </form>
+                  </div>
+                }
+              />
             </div>
           </div>
           <Dropdown
