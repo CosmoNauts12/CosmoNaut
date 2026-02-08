@@ -212,34 +212,43 @@ export default function RequestPanel({
           />
 
           {'url' in activeRequest ? (
-            <button 
-              onClick={handleSave}
-              className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all"
-            >
-              Update
-            </button>
+            <>
+              <button 
+                onClick={handleSave}
+                className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Update
+              </button>
+              <button 
+                onClick={() => {
+                  setTargetCollectionId(activeRequest.collectionId);
+                  setSaveName(`${activeRequest.name} (Copy)`);
+                  setShowSaveModal(true);
+                }}
+                className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
+              >
+                Save As
+              </button>
+            </>
           ) : (
             <button 
-              onClick={() => setShowSaveModal(true)}
-              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all"
+              onClick={() => {
+                if (collections.length > 0) setTargetCollectionId(collections[0].id);
+                setShowSaveModal(true);
+              }}
+              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all flex items-center gap-2"
             >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
               Save
-            </button>
-          )}
-
-          {'url' in activeRequest && (
-            <button 
-              onClick={() => setShowSaveModal(true)}
-              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
-            >
-              Save As
             </button>
           )}
 
           <button 
             onClick={handleSend}
-            className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+            className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             Send
           </button>
         </div>

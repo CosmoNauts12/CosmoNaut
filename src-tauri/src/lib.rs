@@ -21,7 +21,11 @@ pub struct CosmoResponse {
 
 #[tauri::command]
 async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, String> {
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .user_agent("Cosmonaut/1.0 (Desktop API Client)")
+        .build()
+        .map_err(|e| format!("Failed to initialize HTTP client: {}", e))?;
+        
     let start = Instant::now();
 
     let method = match request.method.to_uppercase().as_str() {
@@ -29,6 +33,7 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, S
         "POST" => reqwest::Method::POST,
         "PUT" => reqwest::Method::PUT,
         "DELETE" => reqwest::Method::DELETE,
+        "PATCH" => reqwest::Method::PATCH,
         _ => return Err(format!("Unsupported method: {}", request.method)),
     };
 
@@ -48,7 +53,15 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, S
         rb = rb.body(body);
     }
 
-    let response = rb.send().await.map_err(|e| e.to_string())?;
+    let response = rb.send().await.map_err(|e| {
+        if e.is_timeout() {
+            "Request timed out. Check your internet connection or the server status.".to_string()
+        } else if e.is_connect() {
+            format!("Connection failed: The server at '{}' could not be reached. It might be down or your internet is disconnected.", request.url)
+        } else {
+            format!("Request failed: {}", e)
+        }
+    })?;
     let duration = start.elapsed().as_millis();
 
     let status = response.status().as_u16();
@@ -71,20 +84,61 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, S
 }
 
 #[tauri::command]
-async fn save_collections(app_handle: tauri::AppHandle, workspace_id: String, collections: String) -> Result<(), String> {
+async fn save_collections(
+    app_handle: tauri::AppHandle, 
+    user_id: String, 
+    workspace_id: String, 
+    collections: String
+) -> Result<(), String> {
     let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
-    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    let user_workspace_dir = app_dir.join("users").join(&user_id).join("workspaces").join(&workspace_id);
+    std::fs::create_dir_all(&user_workspace_dir).map_err(|e| e.to_string())?;
     
-    let file_path = app_dir.join(format!("collections_{}.json", workspace_id));
+    let file_path = user_workspace_dir.join("collections.json");
     std::fs::write(file_path, collections).map_err(|e| e.to_string())?;
     
     Ok(())
 }
 
 #[tauri::command]
-async fn load_collections(app_handle: tauri::AppHandle, workspace_id: String) -> Result<String, String> {
+async fn load_collections(
+    app_handle: tauri::AppHandle, 
+    user_id: String, 
+    workspace_id: String
+) -> Result<String, String> {
     let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
-    let file_path = app_dir.join(format!("collections_{}.json", workspace_id));
+    let file_path = app_dir.join("users").join(&user_id).join("workspaces").join(&workspace_id).join("collections.json");
+    
+    if !file_path.exists() {
+        return Ok("[]".to_string());
+    }
+    
+    std::fs::read_to_string(file_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn save_workspaces(
+    app_handle: tauri::AppHandle, 
+    user_id: String, 
+    workspaces: String
+) -> Result<(), String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    let user_dir = app_dir.join("users").join(&user_id);
+    std::fs::create_dir_all(&user_dir).map_err(|e| e.to_string())?;
+    
+    let file_path = user_dir.join("workspaces.json");
+    std::fs::write(file_path, workspaces).map_err(|e| e.to_string())?;
+    
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_workspaces(
+    app_handle: tauri::AppHandle, 
+    user_id: String
+) -> Result<String, String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    let file_path = app_dir.join("users").join(&user_id).join("workspaces.json");
     
     if !file_path.exists() {
         return Ok("[]".to_string());
@@ -100,7 +154,9 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
         execute_cosmo_request,
         save_collections,
-        load_collections
+        load_collections,
+        save_workspaces,
+        load_workspaces
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

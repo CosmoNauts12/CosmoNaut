@@ -30,9 +30,10 @@ export interface Collection {
     requests: SavedRequest[];
 }
 
-export async function saveCollectionsToDisk(workspaceId: string, collections: Collection[]): Promise<void> {
+export async function saveCollectionsToDisk(userId: string, workspaceId: string, collections: Collection[]): Promise<void> {
     try {
         await invoke("save_collections", {
+            userId,
             workspaceId,
             collections: JSON.stringify(collections)
         });
@@ -42,9 +43,9 @@ export async function saveCollectionsToDisk(workspaceId: string, collections: Co
     }
 }
 
-export async function loadCollectionsFromDisk(workspaceId: string): Promise<Collection[]> {
+export async function loadCollectionsFromDisk(userId: string, workspaceId: string): Promise<Collection[]> {
     try {
-        const collections = await invoke<string>("load_collections", { workspaceId });
+        const collections = await invoke<string>("load_collections", { userId, workspaceId });
         return JSON.parse(collections);
     } catch (error) {
         console.error("Failed to load collections:", error);

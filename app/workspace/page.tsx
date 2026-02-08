@@ -10,17 +10,19 @@ import DemoTour from "../components/DemoTour";
 import RequestPanel, { ActiveRequest } from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
 import { useSettings } from "../components/SettingsProvider";
+import { useCollections } from "../components/CollectionsProvider";
 import { CosmoResponse } from "../components/RequestEngine";
 import { SavedRequest } from "../lib/collections";
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
+  const { activeWorkspaceId } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("request");
   const [activeRequest, setActiveRequest] = useState<ActiveRequest>({ 
-    id: 'r1', 
-    name: 'Get All Users', 
+    id: 'new', 
+    name: 'New Request', 
     method: 'GET' 
   });
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
@@ -29,11 +31,8 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
-    } else if (user && settings.lastWorkspaceId !== "default") {
-      // Save this as the last active workspace
-      updateSettings({ lastWorkspaceId: "default" }); 
     }
-  }, [user, loading, router, updateSettings, settings.lastWorkspaceId]);
+  }, [user, loading, router]);
 
   const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
     setActiveRequest(request);

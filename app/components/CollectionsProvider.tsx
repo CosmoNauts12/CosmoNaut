@@ -2,11 +2,16 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Collection, SavedRequest, saveCollectionsToDisk, loadCollectionsFromDisk } from "@/app/lib/collections";
+import { Workspace, loadWorkspacesFromDisk, saveWorkspacesToDisk } from "@/app/lib/workspaces";
 import { useAuth } from "./AuthProvider";
+import { useSettings } from "./SettingsProvider";
 
 interface CollectionsContextType {
   collections: Collection[];
+  workspaces: Workspace[];
+  activeWorkspaceId: string;
   loading: boolean;
+  setActiveWorkspaceId: (id: string) => void;
   saveRequest: (request: Omit<SavedRequest, 'id'>, collectionId: string) => Promise<void>;
   updateRequest: (request: SavedRequest, collectionId: string) => Promise<void>;
   deleteRequest: (requestId: string, collectionId: string) => Promise<void>;
@@ -14,48 +19,122 @@ interface CollectionsContextType {
   createCollection: (name: string) => Promise<string>;
   deleteCollection: (collectionId: string) => Promise<void>;
   renameCollection: (collectionId: string, newName: string) => Promise<void>;
+  createWorkspace: (name: string) => Promise<string>;
+  deleteWorkspace: (id: string) => Promise<void>;
+  renameWorkspace: (id: string, name: string) => Promise<void>;
 }
 
 const CollectionsContext = createContext<CollectionsContextType | undefined>(undefined);
 
 export function CollectionsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { settings, updateSettings } = useSettings();
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>("default");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [workspaceId, setWorkspaceId] = useState("default");
 
+  // Load Workspaces on Login
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setWorkspaces([]);
+      setActiveWorkspaceId("default");
+      return;
+    }
     
-    const loadData = async () => {
+    const loadWorkspaces = async () => {
       setLoading(true);
       try {
-        const data = await loadCollectionsFromDisk(workspaceId);
+        const data = await loadWorkspacesFromDisk(user.uid);
+        setWorkspaces(data);
+        
+        // Restore last active workspace if it exists in the new list
+        const lastId = settings.lastWorkspaceId || "default";
+        if (data.some(w => w.id === lastId)) {
+          setActiveWorkspaceId(lastId);
+        } else if (data.length > 0) {
+          setActiveWorkspaceId(data[0].id);
+        }
+      } catch (error) {
+        console.error("CollectionsProvider: Load workspaces error", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadWorkspaces();
+  }, [user, settings.lastWorkspaceId]);
+
+  // Load Collections when Workspace changes
+  useEffect(() => {
+    if (!user || !activeWorkspaceId) return;
+    
+    const loadCollections = async () => {
+      setLoading(true);
+      try {
+        const data = await loadCollectionsFromDisk(user.uid, activeWorkspaceId);
         setCollections(data);
       } catch (error) {
-        console.error("CollectionsProvider: Load error", error);
+        console.error("CollectionsProvider: Load collections error", error);
         setCollections([]);
       } finally {
         setLoading(false);
       }
     };
     
-    loadData();
-  }, [user, workspaceId]);
-
-  const persist = useCallback(async (newCollections: Collection[]) => {
-    setCollections(newCollections);
-    try {
-      await saveCollectionsToDisk(workspaceId, newCollections);
-    } catch (error) {
-      console.error("CollectionsProvider: Persist error", error);
+    loadCollections();
+    
+    // Persist last active workspace across reloads
+    if (settings.lastWorkspaceId !== activeWorkspaceId) {
+        updateSettings({ lastWorkspaceId: activeWorkspaceId });
     }
-  }, [workspaceId]);
+  }, [user, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
+
+  const persistCollections = useCallback(async (newCollections: Collection[]) => {
+    setCollections(newCollections);
+    if (!user || !activeWorkspaceId) return;
+    try {
+      await saveCollectionsToDisk(user.uid, activeWorkspaceId, newCollections);
+    } catch (error) {
+      console.error("CollectionsProvider: Persist collections error", error);
+    }
+  }, [user, activeWorkspaceId]);
+
+  const persistWorkspaces = useCallback(async (newWorkspaces: Workspace[]) => {
+    setWorkspaces(newWorkspaces);
+    if (!user) return;
+    try {
+      await saveWorkspacesToDisk(user.uid, newWorkspaces);
+    } catch (error) {
+      console.error("CollectionsProvider: Persist workspaces error", error);
+    }
+  }, [user]);
+
+  const createWorkspace = async (name: string) => {
+    const id = `w_${Date.now()}`;
+    const newWorkspaces = [...workspaces, { id, name }];
+    await persistWorkspaces(newWorkspaces);
+    setActiveWorkspaceId(id);
+    return id;
+  };
+
+  const deleteWorkspace = async (id: string) => {
+    const newWorkspaces = workspaces.filter(w => w.id !== id);
+    await persistWorkspaces(newWorkspaces);
+    if (activeWorkspaceId === id) {
+      setActiveWorkspaceId(newWorkspaces[0]?.id || "default");
+    }
+  };
+
+  const renameWorkspace = async (id: string, name: string) => {
+    const newWorkspaces = workspaces.map(w => w.id === id ? { ...w, name } : w);
+    await persistWorkspaces(newWorkspaces);
+  };
 
   const createCollection = async (name: string) => {
     const id = `c_${Date.now()}`;
     const newCollections = [...collections, { id, name, requests: [] }];
-    await persist(newCollections);
+    await persistCollections(newCollections);
     return id;
   };
 
@@ -70,7 +149,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       return c;
     });
     
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   const updateRequest = async (request: SavedRequest, collectionId: string) => {
@@ -83,7 +162,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       }
       return c;
     });
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   const deleteRequest = async (requestId: string, collectionId: string) => {
@@ -93,7 +172,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       }
       return c;
     });
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   const renameRequest = async (requestId: string, collectionId: string, newName: string) => {
@@ -106,32 +185,38 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       }
       return c;
     });
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   const deleteCollection = async (collectionId: string) => {
     const newCollections = collections.filter(c => c.id !== collectionId);
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   const renameCollection = async (collectionId: string, newName: string) => {
     const newCollections = collections.map(c => 
       c.id === collectionId ? { ...c, name: newName } : c
     );
-    await persist(newCollections);
+    await persistCollections(newCollections);
   };
 
   return (
     <CollectionsContext.Provider value={{
       collections,
+      workspaces,
+      activeWorkspaceId,
       loading,
+      setActiveWorkspaceId,
       saveRequest,
       updateRequest,
       deleteRequest,
       renameRequest,
       createCollection,
       deleteCollection,
-      renameCollection
+      renameCollection,
+      createWorkspace,
+      deleteWorkspace,
+      renameWorkspace
     }}>
       {children}
     </CollectionsContext.Provider>
