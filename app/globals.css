@@ -45,8 +45,8 @@
   /* Mint Teal */
   --muted: #94A3B8;
   /* Slate 400 */
-  --input-bg: rgba(255, 255, 255, 0.06);
-  --input-border: rgba(255, 255, 255, 0.12);
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --input-border: rgba(255, 255, 255, 0.15);
   --input-text: #E5F6FF;
 
   --title-color: #ffffff;
@@ -228,6 +228,42 @@ body {
     0 0 0 4px var(--primary-glow),
     0 0 20px var(--primary-glow);
   outline: none;
+}
+
+.glass-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--input-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding-right: 2.5rem;
+}
+
+.glass-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-glow);
+  outline: none;
+}
+
+/* Fix for dark mode option backgrounds which often default to white */
+.dark select option,
+.dark .glass-select option {
+  background-color: #0f172a;
+  color: #e5f6ff;
+}
+
+:root:not(.dark) select option,
+:root:not(.dark) .glass-select option {
+  background-color: #ffffff;
+  color: #0f172a;
 }
 
 .glass-input::placeholder {

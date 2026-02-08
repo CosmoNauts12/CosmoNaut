@@ -137,7 +137,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
            <select 
               value={activeWorkspaceId}
               onChange={(e) => setActiveWorkspaceId(e.target.value)}
-              className="w-full bg-foreground/5 border border-card-border/50 rounded-lg px-2 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:border-primary/50"
+              className="glass-select w-full rounded-lg px-2 py-1.5 text-xs font-bold focus:border-primary/50"
            >
               {workspaces.map(w => (
                 <option key={w.id} value={w.id} className="bg-background">{w.name}</option>

@@ -47,7 +47,7 @@ export default function SettingsModal() {
                 <select 
                   value={settings.defaultWorkspace}
                   onChange={(e) => updateSettings({ defaultWorkspace: e.target.value })}
-                  className="bg-card-bg/50 border border-card-border rounded-xl px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:border-primary/50"
+                  className="glass-select rounded-xl px-3 py-1.5 text-xs font-bold focus:border-primary/50"
                 >
                   <option value="My Workspace">My Workspace</option>
                   <option value="Personal">Personal</option>

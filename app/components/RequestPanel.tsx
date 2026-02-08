@@ -203,7 +203,7 @@ export default function RequestPanel({
             <select 
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
-              className={`h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg font-black text-xs appearance-none cursor-pointer focus:outline-none focus:border-primary/50 transition-all ${
+              className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${
                 method === 'GET' ? 'text-emerald-500' : 
                 method === 'POST' ? 'text-amber-500' :
                 method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
@@ -289,7 +289,7 @@ export default function RequestPanel({
                   <select 
                     value={targetCollectionId}
                     onChange={(e) => setTargetCollectionId(e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm focus:outline-none focus:border-primary/50"
+                    className="glass-select w-full h-11 px-4 rounded-xl text-sm focus:border-primary/50"
                   >
                     <option value="">Select a collection</option>
                     {collections.map(c => (
