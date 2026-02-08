@@ -40,12 +40,13 @@ export default function Dropdown({
                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                         {React.Children.map(children, (child) => {
                             if (React.isValidElement(child)) {
-                                return React.cloneElement(child, {
+                                return React.cloneElement(child as React.ReactElement<any>, {
                                     onClick: (e: any) => {
-                                        if (child.props.onClick) child.props.onClick(e);
+                                        const props = (child as React.ReactElement<any>).props;
+                                        if (props.onClick) props.onClick(e);
                                         setIsOpen(false);
                                     }
-                                } as any);
+                                });
                             }
                             return child;
                         })}
