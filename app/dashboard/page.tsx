@@ -136,30 +136,30 @@ export default function Dashboard() {
           </div>
 
           {/* Navigation - No Icons, Text Only */}
-            {[
-              { id: 'home', label: 'Home', path: '/dashboard' },
-              { id: 'workspace', label: 'Workspace', path: '/workspace' },
-              { id: 'reports', label: 'Reports', path: '#' },
-              { id: 'settings', label: 'Settings', path: '#' }
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'settings') {
-                     setSettingsOpen(true);
-                  } else if (item.path !== '#') {
-                    router.push(item.path);
-                  }
-                  setActiveTab(item.id);
-                }}
-                className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id
-                  ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                  : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
-                  }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          {[
+            { id: 'home', label: 'Home', path: '/dashboard' },
+            { id: 'workspace', label: 'Workspace', path: '/workspace' },
+            { id: 'reports', label: 'Reports', path: '#' },
+            { id: 'settings', label: 'Settings', path: '#' }
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.id === 'settings') {
+                  setSettingsOpen(true);
+                } else if (item.path !== '#') {
+                  router.push(item.path);
+                }
+                setActiveTab(item.id);
+              }}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id
+                ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">
@@ -182,8 +182,8 @@ export default function Dashboard() {
                 onClick={async () => {
                   try {
                     const { open } = await import('@tauri-apps/plugin-shell');
-                    const url = link.href.startsWith('/') 
-                      ? window.location.origin + link.href 
+                    const url = link.href.startsWith('/')
+                      ? window.location.origin + link.href
                       : link.href;
                     await open(url);
                   } catch (e) {
@@ -259,7 +259,7 @@ export default function Dashboard() {
                     <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
                       Hello,
                     </span>
-                    <span className="font-cursive text-4xl md:text-6xl text-foreground pb-2 sm:pl-4">
+                    <span className="font-sans text-2xl md:text-4xl text-foreground pb-2 sm:pl-4">
                       {user.displayName || "Explorer"}
                     </span>
                   </div>
@@ -269,7 +269,7 @@ export default function Dashboard() {
                   </p>
 
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <button 
+                    <button
                       onClick={handleNewProject}
                       className="glass-btn-primary px-6 py-2.5 rounded-xl text-sm shadow-lg"
                     >
@@ -297,11 +297,11 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
                 { title: 'New Project', desc: 'Start a new initiative', action: handleNewProject },
-                { title: 'Team', desc: 'Manage members', action: () => {} },
-                { title: 'Analytics', desc: 'View performance', action: () => {} }
+                { title: 'Team', desc: 'Manage members', action: () => { } },
+                { title: 'Analytics', desc: 'View performance', action: () => { } }
               ].map((item, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   onClick={item.action}
                   className="group p-5 rounded-xl border border-card-border hover:border-primary/50 bg-card-bg hover:bg-card-bg/80 transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >
