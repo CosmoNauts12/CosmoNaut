@@ -34,7 +34,7 @@ export default function Dropdown({
 
             {isOpen && (
                 <div
-                    className={`absolute z-50 mt-2 w-full min-w-[200px] origin-top-right rounded-xl bg-[#0f172a] border border-[#1e293b] shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in-95 duration-100 ${align === 'right' ? 'right-0' : 'left-0'
+                    className={`absolute z-50 mt-2 w-full min-w-[200px] origin-top-right rounded-xl bg-card-bg border border-card-border shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in-95 duration-100 ${align === 'right' ? 'right-0' : 'left-0'
                         }`}
                 >
                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
@@ -68,15 +68,15 @@ export function DropdownItem({ onClick, children, className = "", icon }: Dropdo
     return (
         <button
             onClick={onClick}
-            className={`w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-[#1e293b] hover:text-white transition-colors flex items-center gap-3 ${className}`}
+            className={`w-full text-left px-4 py-2 text-xs text-muted hover:text-foreground hover:bg-foreground/5 transition-colors flex items-center gap-3 ${className}`}
             role="menuitem"
         >
-            {icon && <span className="text-slate-400">{icon}</span>}
+            {icon && <span className="text-muted/50 group-hover:text-foreground/50 transition-colors">{icon}</span>}
             {children}
         </button>
     );
 }
 
 export function DropdownSeparator() {
-    return <div className="h-px bg-[#1e293b] my-1" />;
+    return <div className="h-px bg-card-border/50 my-1" />;
 }
