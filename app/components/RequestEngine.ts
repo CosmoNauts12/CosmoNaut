@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 
+/**
+ * Normalized request structure for the UI.
+ */
 export interface CosmoRequest {
     method: string;
     url: string;
@@ -7,11 +10,17 @@ export interface CosmoRequest {
     body?: string;
 }
 
+/**
+ * Structured error response for the UI.
+ */
 export interface CosmoError {
     error_type: 'NetworkError' | 'TimeoutError' | 'DnsError' | 'SslError' | 'InvalidUrl' | 'UnknownError';
     message: string;
 }
 
+/**
+ * Normalized response structure for the UI.
+ */
 export interface CosmoResponse {
     status: number;
     body: string;
@@ -20,6 +29,11 @@ export interface CosmoResponse {
     error?: CosmoError;
 }
 
+/**
+ * Bridges the UI with the Tauri Rust backend to execute an HTTP request.
+ * @param request Normalized request object.
+ * @returns A promise resolving to a CosmoResponse.
+ */
 export async function executeRequest(request: CosmoRequest): Promise<CosmoResponse> {
     try {
         const response = await invoke<CosmoResponse>("execute_cosmo_request", { request });

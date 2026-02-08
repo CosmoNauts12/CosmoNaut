@@ -8,6 +8,10 @@ import AuthCard from "./components/AuthCard";
 import { loginWithEmail } from "@/app/lib/firebase";
 import ThemeToggle from "./components/ThemeToggle";
 
+/**
+ * The main landing and authentication page for CosmoNaut.
+ * Provides a glassmorphic interface for user sign-in.
+ */
 export default function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -17,6 +21,12 @@ export default function SignIn() {
 
   // No local redirect logic needed here as AuthProvider handles it globally
 
+  /**
+   * Handles the email and password login flow.
+   * On success, the AuthProvider global state will update and trigger navigation.
+   * 
+   * @param e Form event
+   */
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

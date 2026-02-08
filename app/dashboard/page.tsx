@@ -7,6 +7,10 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 
+/**
+ * The main entry page for authenticated users.
+ * Displays a welcome message, quick actions, and sidebar navigation.
+ */
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen } = useSettings();
@@ -15,17 +19,26 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  /**
+   * Effect to safeguard the dashboard. Redirects to login if user session is lost.
+   */
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
 
+  /**
+   * Handles user logout and redirects to the landing page.
+   */
   const handleLogout = async () => {
     await logout();
     router.push("/");
   };
 
+  /**
+   * Logic to initialize a new project workspace and navigate to it.
+   */
   const handleNewProject = async () => {
     try {
       await createWorkspace("New Project");
@@ -136,30 +149,30 @@ export default function Dashboard() {
           </div>
 
           {/* Navigation - No Icons, Text Only */}
-            {[
-              { id: 'home', label: 'Home', path: '/dashboard' },
-              { id: 'workspace', label: 'Workspace', path: '/workspace' },
-              { id: 'reports', label: 'Reports', path: '#' },
-              { id: 'settings', label: 'Settings', path: '#' }
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'settings') {
-                     setSettingsOpen(true);
-                  } else if (item.path !== '#') {
-                    router.push(item.path);
-                  }
-                  setActiveTab(item.id);
-                }}
-                className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id
-                  ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                  : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
-                  }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          {[
+            { id: 'home', label: 'Home', path: '/dashboard' },
+            { id: 'workspace', label: 'Workspace', path: '/workspace' },
+            { id: 'reports', label: 'Reports', path: '#' },
+            { id: 'settings', label: 'Settings', path: '#' }
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.id === 'settings') {
+                  setSettingsOpen(true);
+                } else if (item.path !== '#') {
+                  router.push(item.path);
+                }
+                setActiveTab(item.id);
+              }}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id
+                ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">
@@ -182,8 +195,8 @@ export default function Dashboard() {
                 onClick={async () => {
                   try {
                     const { open } = await import('@tauri-apps/plugin-shell');
-                    const url = link.href.startsWith('/') 
-                      ? window.location.origin + link.href 
+                    const url = link.href.startsWith('/')
+                      ? window.location.origin + link.href
                       : link.href;
                     await open(url);
                   } catch (e) {
@@ -269,7 +282,7 @@ export default function Dashboard() {
                   </p>
 
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <button 
+                    <button
                       onClick={handleNewProject}
                       className="glass-btn-primary px-6 py-2.5 rounded-xl text-sm shadow-lg"
                     >
@@ -297,11 +310,11 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
                 { title: 'New Project', desc: 'Start a new initiative', action: handleNewProject },
-                { title: 'Team', desc: 'Manage members', action: () => {} },
-                { title: 'Analytics', desc: 'View performance', action: () => {} }
+                { title: 'Team', desc: 'Manage members', action: () => { } },
+                { title: 'Analytics', desc: 'View performance', action: () => { } }
               ].map((item, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   onClick={item.action}
                   className="group p-5 rounded-xl border border-card-border hover:border-primary/50 bg-card-bg hover:bg-card-bg/80 transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >

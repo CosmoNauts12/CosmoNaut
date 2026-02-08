@@ -2,6 +2,11 @@
 
 import { useTheme } from "./ThemeContext";
 
+/**
+ * Component for switching between light and dark themes.
+ * Uses the ThemeContext for state and persistence.
+ * Features a smooth transition animation between SVG icons.
+ */
 export default function ThemeToggle() {
     const { theme, toggleTheme } = useTheme();
 

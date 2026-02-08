@@ -11,6 +11,10 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+/**
+ * Provides theme state (light/dark) and persistence logic.
+ * Synchronizes the theme state with the document root class and local storage.
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("dark");
     const [mounted, setMounted] = useState(false);
@@ -31,6 +35,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setMounted(true);
     }, []);
 
+    /**
+     * Toggles between 'light' and 'dark' themes.
+     * Updates local storage and the document root class name.
+     */
     const toggleTheme = () => {
         const newTheme = theme === "dark" ? "light" : "dark";
         setTheme(newTheme);
@@ -47,6 +55,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
+/**
+ * Hook to access the current theme and the toggle function.
+ * @throws Error if used outside of ThemeProvider.
+ */
 export function useTheme() {
     const context = useContext(ThemeContext);
     if (context === undefined) {

@@ -6,47 +6,65 @@ import { useCollections } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
 
 const activities = [
-  { id: 'collections', name: 'Collections', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-  )},
-  { id: 'history', name: 'History', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-  )},
-  { id: 'flows', name: 'Flows', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-  )},
+  {
+    id: 'collections', name: 'Collections', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+    )
+  },
+  {
+    id: 'history', name: 'History', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    )
+  },
+  {
+    id: 'flows', name: 'Flows', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+    )
+  },
 ];
 
+/**
+ * Sidebar component for workspace navigation.
+ * Provides access to collections, request history, and workspace management.
+ * 
+ * @param onSelectRequest Callback when a request is clicked from the sidebar.
+ */
 export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void }) {
   const { settings } = useSettings();
-  const { 
-    collections, 
-    workspaces, 
+  const {
+    collections,
+    workspaces,
     history: requestHistory,
-    activeWorkspaceId, 
+    activeWorkspaceId,
     setActiveWorkspaceId,
-    createCollection, 
-    deleteCollection, 
+    createCollection,
+    deleteCollection,
     renameCollection,
-    deleteRequest, 
+    deleteRequest,
     renameRequest,
     createWorkspace,
     deleteWorkspace,
     renameWorkspace,
     clearHistory
   } = useCollections();
-  
+
   const [activeActivity, setActiveActivity] = useState('collections');
   const [expandedCollections, setExpandedCollections] = useState<string[]>([]);
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
+  /**
+   * Toggles the visibility of a collection's requests in the sidebar.
+   */
   const toggleCollection = (id: string) => {
-    setExpandedCollections(prev => 
+    setExpandedCollections(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
+  /**
+   * Prompts user and creates a new workspace.
+   */
   const handleCreateWorkspace = async () => {
     const name = window.prompt("Workspace Name:");
     if (name) {
@@ -54,6 +72,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames the active workspace.
+   */
   const handleRenameWorkspace = async () => {
     const name = window.prompt("New Workspace Name:", activeWorkspace?.name);
     if (name && activeWorkspace) {
@@ -61,6 +82,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and creates a new collection in the active workspace.
+   */
   const handleCreateCollection = async () => {
     const name = window.prompt("Collection Name:");
     if (name) {
@@ -68,6 +92,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames a specific collection.
+   */
   const handleRenameCollection = async (id: string, currentName: string) => {
     const name = window.prompt("Rename Collection:", currentName);
     if (name) {
@@ -75,6 +102,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames a specific request.
+   */
   const handleRenameRequest = async (id: string, collectionId: string, currentName: string) => {
     const name = window.prompt("Rename Request:", currentName);
     if (name) {
@@ -82,6 +112,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Deletes a request from a collection, optionally asking for confirmation.
+   */
   const handleDeleteRequest = async (requestId: string, collectionId: string, name: string) => {
     if (settings.confirmDelete) {
       if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
@@ -91,6 +124,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     await deleteRequest(requestId, collectionId);
   };
 
+  /**
+   * Deletes a collection and all its children, optionally asking for confirmation.
+   */
   const handleDeleteCollection = async (collectionId: string, name: string) => {
     if (settings.confirmDelete) {
       if (!window.confirm(`Are you sure you want to delete collection "${name}" and all its requests?`)) {
@@ -109,11 +145,10 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             key={activity.id}
             onClick={() => setActiveActivity(activity.id)}
             title={activity.name}
-            className={`p-3 rounded-xl transition-all duration-200 group relative ${
-              activeActivity === activity.id 
-                ? 'text-primary bg-primary/10' 
+            className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
+                ? 'text-primary bg-primary/10'
                 : 'text-muted hover:text-foreground hover:bg-foreground/5'
-            }`}
+              }`}
           >
             {activity.icon}
             {activeActivity === activity.id && (
@@ -127,22 +162,22 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
       <div id="tour-sidebar-content" className="w-64 flex flex-col bg-transparent overflow-hidden">
         {/* Workspace Switcher */}
         <div className="p-4 border-b border-card-border/50 bg-black/5 dark:bg-white/5">
-           <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
-              <div className="flex gap-1">
-                <button onClick={handleCreateWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                <button onClick={handleRenameWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
-              </div>
-           </div>
-           <select 
-              value={activeWorkspaceId}
-              onChange={(e) => setActiveWorkspaceId(e.target.value)}
-              className="glass-select w-full rounded-lg px-2 py-1.5 text-xs font-bold focus:border-primary/50"
-           >
-              {workspaces.map(w => (
-                <option key={w.id} value={w.id} className="bg-background">{w.name}</option>
-              ))}
-           </select>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
+            <div className="flex gap-1">
+              <button onClick={handleCreateWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+              <button onClick={handleRenameWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+            </div>
+          </div>
+          <select
+            value={activeWorkspaceId}
+            onChange={(e) => setActiveWorkspaceId(e.target.value)}
+            className="glass-select w-full rounded-lg px-2 py-1.5 text-xs font-bold focus:border-primary/50"
+          >
+            {workspaces.map(w => (
+              <option key={w.id} value={w.id} className="bg-background">{w.name}</option>
+            ))}
+          </select>
         </div>
 
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
@@ -151,7 +186,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               {activeActivity}
             </h2>
             <div className="flex gap-1">
-              <button 
+              <button
                 onClick={handleCreateCollection}
                 className="p-1 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
                 title="New Collection"
@@ -178,11 +213,11 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             {activeActivity === 'collections' && collections.map(collection => (
               <div key={collection.id} className="space-y-1">
                 <div className="group relative flex items-center">
-                  <button 
+                  <button
                     onClick={() => toggleCollection(collection.id)}
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-foreground/5 text-xs font-semibold text-foreground/80 group transition-colors"
                   >
-                    <svg 
+                    <svg
                       width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                       className={`transition-transform duration-200 ${expandedCollections.includes(collection.id) ? 'rotate-90' : ''} text-muted/50`}
                     >
@@ -192,14 +227,14 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                     <span className="truncate">{collection.name}</span>
                   </button>
                   <div className="absolute right-1 hidden group-hover:flex gap-1">
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleRenameCollection(collection.id, collection.name); }}
                       className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
                       title="Rename"
                     >
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteCollection(collection.id, collection.name); }}
                       className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
                       title="Delete"
@@ -213,34 +248,33 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                   <div className="ml-4 pl-2 border-l border-card-border/50 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                     {collection.requests.map(request => (
                       <div key={request.id} className="group relative flex items-center">
-                        <button 
+                        <button
                           onClick={() => onSelectRequest?.({ ...request, collectionId: collection.id })}
                           className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group/item"
                         >
-                          <span className={`w-10 font-black text-right ${
-                            request.method === 'GET' ? 'text-emerald-500' : 
-                            request.method === 'POST' ? 'text-amber-500' :
-                            request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-                          }`}>
+                          <span className={`w-10 font-black text-right ${request.method === 'GET' ? 'text-emerald-500' :
+                              request.method === 'POST' ? 'text-amber-500' :
+                                request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                            }`}>
                             {request.method}
                           </span>
                           <span className="truncate text-muted group-hover/item:text-foreground transition-colors">{request.name}</span>
                         </button>
-                        
+
                         <div className="absolute right-1 hidden group-hover:flex gap-1">
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); handleRenameRequest(request.id, collection.id, request.name); }}
                             className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
                             title="Rename"
                           >
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); handleDeleteRequest(request.id, collection.id, request.name); }}
                             className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
                             title="Delete"
                           >
-                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                           </button>
                         </div>
                       </div>
@@ -257,7 +291,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               <div className="space-y-1">
                 <div className="flex justify-between items-center mb-2 px-2">
                   <span className="text-[9px] font-black text-muted uppercase tracking-widest">Recent Activity</span>
-                  <button 
+                  <button
                     onClick={clearHistory}
                     className="text-[9px] font-black text-muted hover:text-rose-500 uppercase tracking-widest transition-colors"
                   >
@@ -285,11 +319,10 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       })}
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
                     >
-                      <span className={`w-8 text-[9px] font-black text-right ${
-                        item.method === 'GET' ? 'text-emerald-500' : 
-                        item.method === 'POST' ? 'text-amber-500' :
-                        item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-                      }`}>
+                      <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
+                          item.method === 'POST' ? 'text-amber-500' :
+                            item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                        }`}>
                         {item.method}
                       </span>
                       <div className="flex-1 min-w-0">

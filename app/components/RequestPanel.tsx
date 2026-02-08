@@ -15,11 +15,19 @@ export type ActiveRequest = (SavedRequest & { collectionId: string }) | {
   method: string;
 };
 
-export default function RequestPanel({ 
+/**
+ * The main panel for building and sending HTTP requests.
+ * Manages URL normalization, header/auth injection, and execution lifecycle.
+ * 
+ * @param activeRequest The currently focused request (metadata or saved).
+ * @param onResponse Callback triggered when a response is received.
+ * @param onExecuting Callback triggered when the request starts/ends execution.
+ */
+export default function RequestPanel({
   activeRequest,
-  onResponse, 
-  onExecuting 
-}: { 
+  onResponse,
+  onExecuting
+}: {
   activeRequest: ActiveRequest;
   onResponse: (res: CosmoResponse | null) => void;
   onExecuting: (executing: boolean) => void;
@@ -54,15 +62,19 @@ export default function RequestPanel({
       // Default / Metadata
       setMethod(activeRequest.method);
       if (activeRequest.name === 'Get All Users') {
-         setUrl("https://jsonplaceholder.typicode.com/posts/1");
+        setUrl("https://jsonplaceholder.typicode.com/posts/1");
       }
       setSaveName(activeRequest.name);
     }
   }, [activeRequest]);
 
+  /**
+   * Cleans the URL input by removing redundant method prefixes and ensuring protocol.
+   * @param input Raw URL string.
+   */
   const cleanUrl = (input: string) => {
     let cleaned = input.trim();
-    
+
     // Strip leading method names if user pasted them (e.g. "GET https://...")
     for (const m of methods) {
       if (cleaned.toUpperCase().startsWith(`${m} `)) {
@@ -79,6 +91,14 @@ export default function RequestPanel({
     return cleaned;
   };
 
+  /**
+   * Orchestrates the request execution flow:
+   * 1. Normalizes parameters into the URL.
+   * 2. Synthesizes final headers from UI state and Auth.
+   * 3. Validates JSON body.
+   * 4. Invokes the Rust engine.
+   * 5. Logs results to history.
+   */
   const handleSend = async () => {
     onExecuting(true);
     let targetUrl = cleanUrl(url);
@@ -93,7 +113,7 @@ export default function RequestPanel({
 
     // 2. Normalize Headers & Auth
     const finalHeaders: Record<string, string> = {};
-    
+
     // User headers
     headers.filter((h: KVItem) => h.enabled && h.key.trim()).forEach((h: KVItem) => {
       finalHeaders[h.key] = h.value;
@@ -133,7 +153,7 @@ export default function RequestPanel({
         body: finalBody,
       });
       onResponse(response);
-      
+
       // Persist to History
       await addToHistory({
         method,
@@ -153,9 +173,12 @@ export default function RequestPanel({
     }
   };
 
+  /**
+   * Handles saving or updating the current request to a collection.
+   */
   const handleSave = async () => {
     if (!saveName.trim()) return alert("Please enter a name");
-    
+
     if (!showSaveModal && 'url' in activeRequest) {
       // Direct update
       await updateRequest({
@@ -176,7 +199,7 @@ export default function RequestPanel({
     if (!collectionId && collections.length > 0) {
       collectionId = collections[0].id;
     }
-    
+
     if (!collectionId) {
       collectionId = await createCollection("My Requests");
     }
@@ -190,7 +213,7 @@ export default function RequestPanel({
       headers,
       body
     }, collectionId);
-    
+
     setShowSaveModal(false);
   };
 
@@ -200,14 +223,13 @@ export default function RequestPanel({
       <div className="p-4 border-b border-card-border bg-black/5 dark:bg-white/5 space-y-4">
         <div className="flex gap-2">
           <div className="relative group">
-            <select 
+            <select
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
-              className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${
-                method === 'GET' ? 'text-emerald-500' : 
-                method === 'POST' ? 'text-amber-500' :
-                method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-              }`}
+              className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
+                  method === 'POST' ? 'text-amber-500' :
+                    method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                }`}
             >
               {methods.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
@@ -216,8 +238,8 @@ export default function RequestPanel({
             </div>
           </div>
 
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter request URL"
@@ -226,14 +248,14 @@ export default function RequestPanel({
 
           {'url' in activeRequest ? (
             <>
-              <button 
+              <button
                 onClick={handleSave}
                 className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                 Update
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setTargetCollectionId(activeRequest.collectionId);
                   setSaveName(`${activeRequest.name} (Copy)`);
@@ -245,7 +267,7 @@ export default function RequestPanel({
               </button>
             </>
           ) : (
-            <button 
+            <button
               onClick={() => {
                 if (collections.length > 0) setTargetCollectionId(collections[0].id);
                 setShowSaveModal(true);
@@ -257,7 +279,7 @@ export default function RequestPanel({
             </button>
           )}
 
-          <button 
+          <button
             onClick={handleSend}
             className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
           >
@@ -272,21 +294,21 @@ export default function RequestPanel({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
             <div className="relative w-full max-w-md liquid-glass p-8 rounded-[2.5rem] border-primary/20 animate-in zoom-in-95 duration-200">
               <h3 className="text-xl font-bold mb-6">Save Request</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={saveName}
                     onChange={(e) => setSaveName(e.target.value)}
                     className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Collection</label>
-                  <select 
+                  <select
                     value={targetCollectionId}
                     onChange={(e) => setTargetCollectionId(e.target.value)}
                     className="glass-select w-full h-11 px-4 rounded-xl text-sm focus:border-primary/50"
@@ -298,15 +320,15 @@ export default function RequestPanel({
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex gap-3 mt-8">
-                <button 
+                <button
                   onClick={() => setShowSaveModal(false)}
                   className="flex-1 h-11 rounded-xl border border-card-border/50 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleSave}
                   className="flex-1 h-11 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
                 >
@@ -323,9 +345,8 @@ export default function RequestPanel({
             <button
               key={tab}
               onClick={() => setActiveTab(tab.toLowerCase())}
-              className={`text-[10px] font-black uppercase tracking-widest pb-1 transition-all relative ${
-                activeTab === tab.toLowerCase() ? 'text-primary' : 'text-muted hover:text-foreground'
-              }`}
+              className={`text-[10px] font-black uppercase tracking-widest pb-1 transition-all relative ${activeTab === tab.toLowerCase() ? 'text-primary' : 'text-muted hover:text-foreground'
+                }`}
             >
               {tab}
               {activeTab === tab.toLowerCase() && (
@@ -338,10 +359,10 @@ export default function RequestPanel({
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
-          {activeTab === 'params' && <ParamsTab params={params} setParams={setParams} />}
-          {activeTab === 'auth' && <AuthTab auth={auth} setAuth={setAuth} />}
-          {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} />}
-          {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} />}
+        {activeTab === 'params' && <ParamsTab params={params} setParams={setParams} />}
+        {activeTab === 'auth' && <AuthTab auth={auth} setAuth={setAuth} />}
+        {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} />}
+        {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} />}
       </div>
     </div>
   );

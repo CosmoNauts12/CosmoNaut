@@ -1,5 +1,10 @@
 import Image from "next/image";
 
+/**
+ * Component for displaying an animated, floating astronaut image.
+ * Includes a background glow effect and decorative drop shadows.
+ * Primarily used on the sign-in page for thematic appeal.
+ */
 export default function Astronaut() {
   return (
     <div className="astronaut-float relative z-10">

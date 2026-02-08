@@ -1,7 +1,13 @@
 import React from 'react';
 import { KVItem, AuthState } from '@/app/lib/collections';
 
-// Helper to handle KV changes
+/**
+ * Helper to update a Key-Value list by index.
+ * Automatically appends a new empty row when the last entry is edited.
+ * @param list - The current Key-Value pair array.
+ * @param index - Index of the item being modified.
+ * @param updates - Partial object containing field updates.
+ */
 const updateKV = (list: KVItem[], index: number, updates: Partial<KVItem>) => {
   const newList = [...list];
   newList[index] = { ...newList[index], ...updates };
@@ -12,11 +18,21 @@ const updateKV = (list: KVItem[], index: number, updates: Partial<KVItem>) => {
   return newList;
 };
 
+/**
+ * Helper to delete a Key-Value item from a list.
+ * Ensures at least one empty entry always remains.
+ * @param list - The current Key-Value pair array.
+ * @param index - Index of the item to remove.
+ */
 const deleteKV = (list: KVItem[], index: number) => {
   if (list.length <= 1) return [{ key: '', value: '', enabled: true }];
   return list.filter((_, i) => i !== index);
 };
 
+/**
+ * Component for managing URL query parameters.
+ * Provides a dynamic grid for editing key-value pairs.
+ */
 export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: (p: KVItem[]) => void }) {
   return (
     <div className="w-full space-y-2 p-2">
@@ -28,25 +44,25 @@ export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: 
       </div>
       {params.map((item, idx) => (
         <div key={idx} className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 items-center group">
-          <input 
-            type="checkbox" 
-            checked={item.enabled} 
+          <input
+            type="checkbox"
+            checked={item.enabled}
             onChange={(e) => setParams(updateKV(params, idx, { enabled: e.target.checked }))}
             className="w-3 h-3 rounded bg-card-bg border-card-border accent-primary"
           />
-          <input 
-            placeholder="Key" 
-            value={item.key} 
+          <input
+            placeholder="Key"
+            value={item.key}
             onChange={(e) => setParams(updateKV(params, idx, { key: e.target.value }))}
             className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
           />
-          <input 
-            placeholder="Value" 
-            value={item.value} 
+          <input
+            placeholder="Value"
+            value={item.value}
             onChange={(e) => setParams(updateKV(params, idx, { value: e.target.value }))}
             className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
           />
-          <button 
+          <button
             onClick={() => setParams(deleteKV(params, idx))}
             className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
           >
@@ -58,12 +74,16 @@ export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: 
   );
 }
 
+/**
+ * Component for configuring request authentication.
+ * Supports Bearer Token and Basic Auth modes.
+ */
 export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthState) => void }) {
   return (
     <div className="w-full max-w-md mx-auto space-y-6 p-4">
       <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-muted">Auth Type</label>
-        <select 
+        <select
           value={auth.type}
           onChange={(e) => setAuth({ ...auth, type: e.target.value as any })}
           className="w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs font-bold focus:border-primary/50 outline-none"
@@ -77,7 +97,7 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
       {auth.type === 'bearer' && (
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-muted">Token</label>
-          <input 
+          <input
             type="password"
             placeholder="Enter Bearer Token"
             value={auth.bearerToken || ''}
@@ -91,7 +111,7 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted">Username</label>
-            <input 
+            <input
               placeholder="Username"
               value={auth.username || ''}
               onChange={(e) => setAuth({ ...auth, username: e.target.value })}
@@ -100,7 +120,7 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted">Password</label>
-            <input 
+            <input
               type="password"
               placeholder="Password"
               value={auth.password || ''}
@@ -116,6 +136,10 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
   );
 }
 
+/**
+ * Component for defining custom HTTP headers.
+ * Displays auto-generated Auth headers as read-only cues.
+ */
 export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], setHeaders: (h: KVItem[]) => void, auth: AuthState }) {
   return (
     <div className="w-full space-y-2 p-2">
@@ -125,7 +149,7 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
         <span>Value</span>
         <span></span>
       </div>
-      
+
       {/* Auth Generated Headers (Read-only) */}
       {auth.type !== 'none' && (
         <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 items-center opacity-50 italic">
@@ -140,25 +164,25 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
 
       {headers.map((item, idx) => (
         <div key={idx} className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 items-center group">
-          <input 
-            type="checkbox" 
-            checked={item.enabled} 
+          <input
+            type="checkbox"
+            checked={item.enabled}
             onChange={(e) => setHeaders(updateKV(headers, idx, { enabled: e.target.checked }))}
             className="w-3 h-3 rounded bg-card-bg border-card-border accent-primary"
           />
-          <input 
-            placeholder="Key" 
-            value={item.key} 
+          <input
+            placeholder="Key"
+            value={item.key}
             onChange={(e) => setHeaders(updateKV(headers, idx, { key: e.target.value }))}
             className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
           />
-          <input 
-            placeholder="Value" 
-            value={item.value} 
+          <input
+            placeholder="Value"
+            value={item.value}
             onChange={(e) => setHeaders(updateKV(headers, idx, { value: e.target.value }))}
             className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
           />
-          <button 
+          <button
             onClick={() => setHeaders(deleteKV(headers, idx))}
             className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
           >
@@ -170,6 +194,10 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
   );
 }
 
+/**
+ * Component for editing the JSON request body.
+ * Features automatic beautification and method-based validation.
+ */
 export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: string) => void, method: string }) {
   if (method === 'GET') {
     return (
@@ -180,6 +208,10 @@ export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: 
     );
   }
 
+  /**
+   * Attempts to parse and re-stringify the body to format it.
+   * Prompts the user on error.
+   */
   const handleBeautify = () => {
     try {
       setBody(JSON.stringify(JSON.parse(body), null, 2));
@@ -192,7 +224,7 @@ export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: 
     <div className="h-full flex flex-col p-2">
       <div className="flex justify-between items-center px-2 mb-2">
         <span className="text-[9px] font-black uppercase tracking-widest text-muted">JSON (raw)</span>
-        <button 
+        <button
           onClick={handleBeautify}
           className="text-[9px] font-black uppercase tracking-widest text-primary hover:brightness-110 transition-all"
         >

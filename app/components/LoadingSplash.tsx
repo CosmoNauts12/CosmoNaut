@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Global loading screen component with a themed "space" aesthetic.
+ * Features nested animated rings, a pulsing core, and a radial gradient background.
+ * Used during authentication state resolution and app initialization.
+ */
 export default function LoadingSplash() {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 text-center overflow-hidden">

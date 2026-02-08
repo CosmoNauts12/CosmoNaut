@@ -14,25 +14,38 @@ import { useCollections } from "../components/CollectionsProvider";
 import { CosmoResponse } from "../components/RequestEngine";
 import { SavedRequest } from "../lib/collections";
 
+/**
+ * The main workspace interface of CosmoNaut.
+ * Manages the tabbed request system, sidebar navigation, and dashboard overview.
+ */
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings } = useSettings();
   const { activeWorkspaceId, collections, history } = useCollections();
   const router = useRouter();
-  
+
   // Tab Management State
+  /** List of currently open request tabs. */
   const [tabs, setTabs] = useState<ActiveRequest[]>([]);
+  /** ID of the tab currently being viewed. Defaults to 'overview'. */
   const [activeTabId, setActiveTabId] = useState<string>("overview");
-  
+
+  /** The most recent HTTP response received. */
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
+  /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
 
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
 
+  /**
+   * Switches to an existing tab or opens a new one for the selected request.
+   * @param request - The request object to open, containing its parent collection ID.
+   */
   const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
     // Check if tab already exists
     const exists = tabs.find(t => t.id === request.id);
@@ -42,16 +55,21 @@ export default function WorkspacePage() {
     setActiveTabId(request.id);
   };
 
+  /**
+   * Closes a specific tab and manages focus transition.
+   * Prompts for confirmation if the relevant setting is enabled.
+   * @param tabId - Unique identifier of the tab to close.
+   */
   const handleCloseTab = (tabId: string) => {
     if (settings.confirmCloseTab) {
       if (!window.confirm("Are you sure you want to close this tab? Any unsaved changes may be lost.")) {
         return;
       }
     }
-    
+
     setTabs(prev => {
       const newTabs = prev.filter(t => t.id !== tabId);
-      
+
       // Handle focus switching if we just closed the active tab
       if (activeTabId === tabId) {
         if (newTabs.length > 0) {
@@ -63,37 +81,41 @@ export default function WorkspacePage() {
           setActiveTabId("overview");
         }
       }
-      
+
       return newTabs;
     });
   };
 
   const activeRequest = tabs.find(t => t.id === activeTabId);
 
-  // Sync Tabs with Collections (Handle Delete/Rename)
+  /**
+   * Synchronization Effect.
+   * Keeps open tabs in sync with the global collections state.
+   * Handles renames and removes tabs if their source request is deleted.
+   */
   useEffect(() => {
     setTabs(prev => {
       let changed = false;
       const newTabs = prev.filter(t => {
         if (!('collectionId' in t)) return true; // Metadata tab (New Request)
-        
+
         const collection = collections.find(c => c.id === t.collectionId);
         const request = collection?.requests.find(r => r.id === t.id);
-        
+
         if (!request) {
           changed = true;
           return false; // Request was deleted
         }
-        
+
         if (request.name !== t.name || request.method !== t.method) {
           t.name = request.name;
           t.method = request.method;
           changed = true;
         }
-        
+
         return true;
       });
-      
+
       return changed ? [...newTabs] : prev;
     });
   }, [collections]);
@@ -123,31 +145,28 @@ export default function WorkspacePage() {
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
           {/* Tabs Bar */}
           <div id="tour-tabs-bar" className="h-10 border-b border-card-border flex items-center px-2 gap-1 overflow-x-auto scrollbar-hide bg-black/5 dark:bg-white/5">
-            <div 
+            <div
               onClick={() => setActiveTabId("overview")}
-              className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative transition-all ${
-                activeTabId === 'overview' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
-              }`}
+              className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative transition-all ${activeTabId === 'overview' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                }`}
             >
               Overview
               {activeTabId === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
             </div>
 
             {tabs.map((tab) => (
-              <div 
+              <div
                 key={tab.id}
                 onClick={() => setActiveTabId(tab.id)}
-                className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${
-                  activeTabId === tab.id ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
-                }`}
+                className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${activeTabId === tab.id ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                  }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  tab.method === 'GET' ? 'bg-emerald-500' :
+                <span className={`w-1.5 h-1.5 rounded-full ${tab.method === 'GET' ? 'bg-emerald-500' :
                   tab.method === 'POST' ? 'bg-amber-500' :
-                  'bg-blue-500'
-                }`} />
+                    'bg-blue-500'
+                  }`} />
                 <span className="truncate">{tab.name}</span>
-                <button 
+                <button
                   onClick={(e) => { e.stopPropagation(); handleCloseTab(tab.id); }}
                   className="ml-auto opacity-0 group-hover:opacity-100 hover:bg-foreground/10 rounded p-0.5 transition-all"
                 >
@@ -156,8 +175,8 @@ export default function WorkspacePage() {
                 {activeTabId === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
               </div>
             ))}
-            
-            <button 
+
+            <button
               onClick={() => {
                 const id = `new_${Date.now()}`;
                 const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
@@ -185,7 +204,7 @@ export default function WorkspacePage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div 
+                    <div
                       onClick={() => {
                         const id = `new_${Date.now()}`;
                         const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
@@ -204,7 +223,7 @@ export default function WorkspacePage() {
                         Protocol Setup
                       </button>
                     </div>
-                    
+
                     <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all flex flex-col">
                       <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
                         <span className="text-secondary italic">⟲</span> Recent Missions
@@ -212,7 +231,7 @@ export default function WorkspacePage() {
                       <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-hide max-h-[200px]">
                         {history.length > 0 ? (
                           history.slice(0, 5).map((item) => (
-                            <div 
+                            <div
                               key={item.id}
                               onClick={() => handleSelectRequest({
                                 id: item.id,
@@ -227,11 +246,10 @@ export default function WorkspacePage() {
                               })}
                               className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/5 border border-card-border/30 hover:border-primary/30 transition-all cursor-pointer group"
                             >
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black shadow-sm ${
-                                item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' :
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black shadow-sm ${item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' :
                                 item.method === 'POST' ? 'bg-amber-500/10 text-amber-500' :
-                                'bg-blue-500/10 text-blue-500'
-                              }`}>
+                                  'bg-blue-500/10 text-blue-500'
+                                }`}>
                                 {item.method}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -248,8 +266,8 @@ export default function WorkspacePage() {
                           ))
                         ) : (
                           <div className="flex-1 flex flex-col items-center justify-center py-8 text-center opacity-40">
-                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                             <p className="text-[9px] font-black uppercase tracking-widest">No missions logged</p>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                            <p className="text-[9px] font-black uppercase tracking-widest">No missions logged</p>
                           </div>
                         )}
                       </div>
@@ -260,10 +278,10 @@ export default function WorkspacePage() {
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                  <RequestPanel 
+                  <RequestPanel
                     activeRequest={activeRequest}
-                    onResponse={setLastResponse} 
-                    onExecuting={setIsExecuting} 
+                    onResponse={setLastResponse}
+                    onExecuting={setIsExecuting}
                   />
                 </div>
                 <div className="h-[40%] min-h-[200px]">

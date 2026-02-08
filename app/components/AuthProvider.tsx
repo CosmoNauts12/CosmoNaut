@@ -5,14 +5,24 @@ import { auth, onAuthStateChanged, logout as firebaseLogout, User } from "@/app/
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSplash from "./LoadingSplash";
 
+/**
+ * Structure of the authentication context provided to the application.
+ */
 interface AuthContextType {
+  /** The currently authenticated user object, or null if signed out. */
   user: User | null;
+  /** Boolean indicating if the initial session check is in progress. */
   loading: boolean;
+  /** Function to sign out the current user and redirect to landing. */
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Hook to consume the AuthContext.
+ * @throws Error if used outside of AuthProvider.
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -21,13 +31,20 @@ export function useAuth() {
   return context;
 }
 
+/**
+ * Global authentication provider.
+ * Manages Firebase session state, auto-redirects for authenticated users,
+ * and displays a global loading splash during transitions.
+ */
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Listen for the pathname change to clear loading state after redirect
+  /**
+   * Effect to handle loading state resolution after navigation.
+   */
   useEffect(() => {
     if (loading && user && pathname !== "/" && pathname !== "/signup") {
       console.log("AuthProvider: Path changed, clearing loading state");
@@ -35,6 +52,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname, user, loading]);
 
+  /**
+   * Effect to initialize Firebase auth listener and handle session-based redirection.
+   */
   useEffect(() => {
     console.log("AuthProvider: Initializing...");
 
@@ -54,7 +74,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       if (u && (path === "/" || path === "/signup")) {
         const hasCompletedOnboarding = localStorage.getItem("onboarding_complete") === "true";
         const target = hasCompletedOnboarding ? "/dashboard" : "/onboarding/loading";
-        
+
         console.log(`AuthProvider: Active session found. Routing to ${target}`);
         router.push(target);
       } else {
@@ -65,6 +85,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, [router]);
 
+  /**
+   * Signs out the user via Firebase and redirects to the landing page.
+   */
   const logout = async () => {
     await firebaseLogout();
     setUser(null);
