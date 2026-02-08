@@ -19,12 +19,11 @@ export default function WorkspacePage() {
   const { settings } = useSettings();
   const { activeWorkspaceId } = useCollections();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("request");
-  const [activeRequest, setActiveRequest] = useState<ActiveRequest>({ 
-    id: 'new', 
-    name: 'New Request', 
-    method: 'GET' 
-  });
+  
+  // Tab Management State
+  const [tabs, setTabs] = useState<ActiveRequest[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string>("overview");
+  
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
@@ -35,18 +34,69 @@ export default function WorkspacePage() {
   }, [user, loading, router]);
 
   const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
-    setActiveRequest(request);
-    setActiveTab("request");
+    // Check if tab already exists
+    const exists = tabs.find(t => t.id === request.id);
+    if (!exists) {
+      setTabs(prev => [...prev, request]);
+    }
+    setActiveTabId(request.id);
   };
 
-  const handleCloseTab = (id: string) => {
+  const handleCloseTab = (tabId: string) => {
     if (settings.confirmCloseTab) {
       if (!window.confirm("Are you sure you want to close this tab? Any unsaved changes may be lost.")) {
         return;
       }
     }
-    setActiveTab("overview");
+    
+    setTabs(prev => {
+      const newTabs = prev.filter(t => t.id !== tabId);
+      
+      // Handle focus switching if we just closed the active tab
+      if (activeTabId === tabId) {
+        if (newTabs.length > 0) {
+          // Switch to the previous tab in the list
+          const closedIndex = prev.findIndex(t => t.id === tabId);
+          const nextIndex = Math.max(0, closedIndex - 1);
+          setActiveTabId(newTabs[nextIndex].id);
+        } else {
+          setActiveTabId("overview");
+        }
+      }
+      
+      return newTabs;
+    });
   };
+
+  const activeRequest = tabs.find(t => t.id === activeTabId);
+
+  // Sync Tabs with Collections (Handle Delete/Rename)
+  useEffect(() => {
+    setTabs(prev => {
+      let changed = false;
+      const newTabs = prev.filter(t => {
+        if (!('collectionId' in t)) return true; // Metadata tab (New Request)
+        
+        const collection = collections.find(c => c.id === t.collectionId);
+        const request = collection?.requests.find(r => r.id === t.id);
+        
+        if (!request) {
+          changed = true;
+          return false; // Request was deleted
+        }
+        
+        if (request.name !== t.name || request.method !== t.method) {
+          t.name = request.name;
+          t.method = request.method;
+          changed = true;
+        }
+        
+        return true;
+      });
+      
+      return changed ? [...newTabs] : prev;
+    });
+  }, [collections]);
 
   if (loading || !user) {
     return (
@@ -74,43 +124,54 @@ export default function WorkspacePage() {
           {/* Tabs Bar */}
           <div id="tour-tabs-bar" className="h-10 border-b border-card-border flex items-center px-2 gap-1 overflow-x-auto scrollbar-hide bg-black/5 dark:bg-white/5">
             <div 
-              onClick={() => setActiveTab("overview")}
+              onClick={() => setActiveTabId("overview")}
               className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative transition-all ${
-                activeTab === 'overview' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                activeTabId === 'overview' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
               }`}
             >
               Overview
-              {activeTab === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+              {activeTabId === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
             </div>
 
-            <div 
-              onClick={() => setActiveTab("request")}
-              className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${
-                activeTab === 'request' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                activeRequest.method === 'GET' ? 'bg-emerald-500' :
-                activeRequest.method === 'POST' ? 'bg-amber-500' :
-                'bg-blue-500'
-              }`} />
-              <span className="truncate">{activeRequest.name}</span>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleCloseTab(activeRequest.id); }}
-                className="ml-auto opacity-0 group-hover:opacity-100 hover:bg-foreground/10 rounded p-0.5 transition-all"
+            {tabs.map((tab) => (
+              <div 
+                key={tab.id}
+                onClick={() => setActiveTabId(tab.id)}
+                className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${
+                  activeTabId === tab.id ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                }`}
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-              {activeTab === 'request' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-            </div>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  tab.method === 'GET' ? 'bg-emerald-500' :
+                  tab.method === 'POST' ? 'bg-amber-500' :
+                  'bg-blue-500'
+                }`} />
+                <span className="truncate">{tab.name}</span>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleCloseTab(tab.id); }}
+                  className="ml-auto opacity-0 group-hover:opacity-100 hover:bg-foreground/10 rounded p-0.5 transition-all"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                {activeTabId === tab.id && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+              </div>
+            ))}
             
-            <button className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors ml-1">
+            <button 
+              onClick={() => {
+                const id = `new_${Date.now()}`;
+                const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
+                setTabs(prev => [...prev, newReq]);
+                setActiveTabId(id);
+              }}
+              className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors ml-1"
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
           </div>
 
           <div id="tour-main-content" className="flex-1 overflow-hidden flex flex-col">
-            {activeTab === "overview" ? (
+            {activeTabId === "overview" || !activeRequest ? (
               <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-4 mb-8 text-center md:text-left">
@@ -124,7 +185,15 @@ export default function WorkspacePage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all group cursor-pointer">
+                    <div 
+                      onClick={() => {
+                        const id = `new_${Date.now()}`;
+                        const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
+                        setTabs(prev => [...prev, newReq]);
+                        setActiveTabId(id);
+                      }}
+                      className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all group cursor-pointer"
+                    >
                       <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
                         <span className="text-primary italic">⚡</span> New Mission
                       </h3>

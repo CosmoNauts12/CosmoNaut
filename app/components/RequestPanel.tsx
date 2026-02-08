@@ -25,7 +25,7 @@ export default function RequestPanel({
   onExecuting: (executing: boolean) => void;
 }) {
   const { settings } = useSettings();
-  const { collections, saveRequest, updateRequest, createCollection } = useCollections();
+  const { collections, saveRequest, updateRequest, createCollection, addToHistory } = useCollections();
   const [method, setMethod] = useState(activeRequest.method);
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
   const [activeTab, setActiveTab] = useState("params");
@@ -133,8 +133,21 @@ export default function RequestPanel({
         body: finalBody,
       });
       onResponse(response);
+      
+      // Persist to History
+      await addToHistory({
+        method,
+        url: targetUrl,
+        params,
+        headers,
+        auth,
+        body,
+        status: response.status,
+        duration_ms: response.duration_ms,
+        error: response.error
+      });
     } catch (error: any) {
-      alert(`Request Failed: ${error}`);
+      console.error("Critical Execution Error:", error);
     } finally {
       onExecuting(false);
     }

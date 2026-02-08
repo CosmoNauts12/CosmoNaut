@@ -7,19 +7,47 @@ export interface CosmoRequest {
     body?: string;
 }
 
+export interface CosmoError {
+    error_type: 'NetworkError' | 'TimeoutError' | 'DnsError' | 'SslError' | 'InvalidUrl' | 'UnknownError';
+    message: string;
+}
+
 export interface CosmoResponse {
     status: number;
     body: string;
     headers: Record<string, string>;
     duration_ms: number;
+    error?: CosmoError;
 }
 
 export async function executeRequest(request: CosmoRequest): Promise<CosmoResponse> {
     try {
         const response = await invoke<CosmoResponse>("execute_cosmo_request", { request });
         return response;
-    } catch (error) {
-        console.error("Request failed:", error);
-        throw error;
+    } catch (error: any) {
+        console.error("Execution failed:", error);
+
+        // If it's already a structured error from Tauri
+        if (error && typeof error === 'object' && 'error_type' in error) {
+            return {
+                status: 0,
+                body: "",
+                headers: {},
+                duration_ms: 0,
+                error: error as CosmoError
+            };
+        }
+
+        // Fallback for unexpected failures
+        return {
+            status: 0,
+            body: "",
+            headers: {},
+            duration_ms: 0,
+            error: {
+                error_type: 'UnknownError',
+                message: error?.toString() || "An unhandled execution error occurred"
+            }
+        };
     }
 }

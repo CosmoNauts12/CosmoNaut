@@ -5,10 +5,13 @@ import { Collection, SavedRequest, saveCollectionsToDisk, loadCollectionsFromDis
 import { Workspace, loadWorkspacesFromDisk, saveWorkspacesToDisk } from "@/app/lib/workspaces";
 import { useAuth } from "./AuthProvider";
 import { useSettings } from "./SettingsProvider";
+import { CosmoError } from "./RequestEngine";
+import { invoke } from "@tauri-apps/api/core";
 
 interface CollectionsContextType {
   collections: Collection[];
   workspaces: Workspace[];
+  history: HistoryItem[];
   activeWorkspaceId: string;
   loading: boolean;
   setActiveWorkspaceId: (id: string) => void;
@@ -22,6 +25,22 @@ interface CollectionsContextType {
   createWorkspace: (name: string) => Promise<string>;
   deleteWorkspace: (id: string) => Promise<void>;
   renameWorkspace: (id: string, name: string) => Promise<void>;
+  addToHistory: (item: Omit<HistoryItem, 'id' | 'timestamp'>) => Promise<void>;
+  clearHistory: () => Promise<void>;
+}
+
+export interface HistoryItem {
+  id: string;
+  method: string;
+  url: string;
+  params: any[];
+  headers: any[];
+  auth: any;
+  body: string;
+  timestamp: number;
+  status: number;
+  duration_ms: number;
+  error?: CosmoError;
 }
 
 const CollectionsContext = createContext<CollectionsContextType | undefined>(undefined);
@@ -32,6 +51,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>("default");
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load Workspaces on Login
@@ -83,6 +103,19 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     };
     
     loadCollections();
+    
+    // Load History
+    const loadHistory = async () => {
+        if (!user || !activeWorkspaceId) return;
+        try {
+            const data = await invoke<string>("load_history", { userId: user.uid, workspaceId: activeWorkspaceId });
+            setHistory(JSON.parse(data));
+        } catch (error) {
+            console.error("CollectionsProvider: Load history error", error);
+            setHistory([]);
+        }
+    };
+    loadHistory();
     
     // Persist last active workspace across reloads
     if (settings.lastWorkspaceId !== activeWorkspaceId) {
@@ -200,6 +233,43 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     await persistCollections(newCollections);
   };
 
+  const addToHistory = async (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
+    const newItem: HistoryItem = {
+      ...item,
+      id: `h_${Date.now()}`,
+      timestamp: Date.now()
+    };
+    const newHistory = [newItem, ...history].slice(0, 50); // Keep last 50
+    setHistory(newHistory);
+    
+    if (user && activeWorkspaceId) {
+      try {
+        await invoke("save_history", { 
+            userId: user.uid, 
+            workspaceId: activeWorkspaceId, 
+            history: JSON.stringify(newHistory) 
+        });
+      } catch (error) {
+        console.error("CollectionsProvider: Save history error", error);
+      }
+    }
+  };
+
+  const clearHistory = async () => {
+    setHistory([]);
+    if (user && activeWorkspaceId) {
+      try {
+        await invoke("save_history", { 
+            userId: user.uid, 
+            workspaceId: activeWorkspaceId, 
+            history: "[]" 
+        });
+      } catch (error) {
+        console.error("CollectionsProvider: Clear history error", error);
+      }
+    }
+  };
+
   return (
     <CollectionsContext.Provider value={{
       collections,
@@ -216,7 +286,10 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       renameCollection,
       createWorkspace,
       deleteWorkspace,
-      renameWorkspace
+      renameWorkspace,
+      history,
+      addToHistory,
+      clearHistory
     }}>
       {children}
     </CollectionsContext.Provider>

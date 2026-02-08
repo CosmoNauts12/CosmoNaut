@@ -22,6 +22,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
   const { 
     collections, 
     workspaces, 
+    history: requestHistory,
     activeWorkspaceId, 
     setActiveWorkspaceId,
     createCollection, 
@@ -31,7 +32,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     renameRequest,
     createWorkspace,
     deleteWorkspace,
-    renameWorkspace
+    renameWorkspace,
+    clearHistory
   } = useCollections();
   
   const [activeActivity, setActiveActivity] = useState('collections');
@@ -252,9 +254,63 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             ))}
 
             {activeActivity === 'history' && (
-               <div className="p-4 text-center bg-foreground/5 rounded-xl border border-dashed border-card-border/50">
-                  <p className="text-[10px] text-muted font-bold uppercase tracking-widest">No History</p>
-               </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center mb-2 px-2">
+                  <span className="text-[9px] font-black text-muted uppercase tracking-widest">Recent Activity</span>
+                  <button 
+                    onClick={clearHistory}
+                    className="text-[9px] font-black text-muted hover:text-rose-500 uppercase tracking-widest transition-colors"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                {requestHistory.length === 0 ? (
+                  <div className="p-8 text-center bg-foreground/5 rounded-xl border border-dashed border-card-border/50">
+                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest">No History Yet</p>
+                  </div>
+                ) : (
+                  requestHistory.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => onSelectRequest?.({
+                        id: item.id,
+                        name: item.url.split('/').pop() || item.url,
+                        method: item.method,
+                        url: item.url,
+                        params: item.params,
+                        headers: item.headers,
+                        auth: item.auth,
+                        body: item.body,
+                        collectionId: 'history'
+                      })}
+                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
+                    >
+                      <span className={`w-8 text-[9px] font-black text-right ${
+                        item.method === 'GET' ? 'text-emerald-500' : 
+                        item.method === 'POST' ? 'text-amber-500' :
+                        item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                      }`}>
+                        {item.method}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold text-foreground/80 truncate">{item.url}</p>
+                        <p className="text-[9px] text-muted font-medium">
+                          {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {item.error ? (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        ) : (
+                          <span className={`text-[9px] font-black ${item.status < 400 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {item.status}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
             )}
           </div>
         </div>
