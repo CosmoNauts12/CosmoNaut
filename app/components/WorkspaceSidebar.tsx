@@ -5,6 +5,7 @@ import { useSettings } from "./SettingsProvider";
 import { useCollections } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
 import Modal from "./Modal";
+import Dropdown, { DropdownItem, DropdownSeparator } from "./Dropdown";
 
 const activities = [
   {
@@ -121,39 +122,39 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
       <div id="tour-sidebar-content" className="w-64 flex flex-col bg-transparent overflow-hidden">
         {/* Workspace Switcher */}
         <div className="p-4 border-b border-card-border/50 bg-black/5 dark:bg-white/5">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
-            <div className="flex gap-1">
-              <button
-                onClick={handleCreateWorkspace}
-                className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                title="New Workspace"
+          <Dropdown
+            trigger={
+              <div className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-background/50 border border-card-border/50 hover:border-primary/50 hover:bg-background/80 transition-all group">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                    {activeWorkspace?.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-bold text-foreground truncate">{activeWorkspace?.name}</span>
+                </div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            }
+          >
+            <div className="px-2 py-1.5 text-[10px] font-black text-muted uppercase tracking-widest">Switch Workspace</div>
+            {workspaces.map(w => (
+              <DropdownItem
+                key={w.id}
+                onClick={() => setActiveWorkspaceId(w.id)}
+                className={w.id === activeWorkspaceId ? "bg-primary/10 text-primary" : ""}
+                icon={w.id === activeWorkspaceId ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <div className="w-3" />}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </button>
-              <button
-                onClick={handleRenameWorkspace}
-                className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                title="Rename Workspace"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-              </button>
-            </div>
-          </div>
-          <div className="relative group">
-            <select
-              value={activeWorkspaceId}
-              onChange={(e) => setActiveWorkspaceId(e.target.value)}
-              className="glass-select w-full rounded-lg px-3 py-2 text-xs font-bold focus:border-primary/50 bg-background/50 hover:bg-background/80 transition-colors appearance-none cursor-pointer"
-            >
-              {workspaces.map(w => (
-                <option key={w.id} value={w.id} className="bg-card-bg text-foreground p-2">{w.name}</option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-          </div>
+                {w.name}
+              </DropdownItem>
+            ))}
+            <DropdownSeparator />
+            <div className="px-2 py-1.5 text-[10px] font-black text-muted uppercase tracking-widest">Actions</div>
+            <DropdownItem onClick={handleCreateWorkspace} icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>}>
+              New Workspace
+            </DropdownItem>
+            <DropdownItem onClick={handleRenameWorkspace} icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>}>
+              Rename Workspace
+            </DropdownItem>
+          </Dropdown>
         </div>
 
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
