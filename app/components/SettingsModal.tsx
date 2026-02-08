@@ -2,9 +2,11 @@
 
 import React from "react";
 import { useSettings } from "./SettingsProvider";
+import { useCollections } from "./CollectionsProvider";
 
 export default function SettingsModal() {
   const { isSettingsOpen, setSettingsOpen, settings, updateSettings } = useSettings();
+  const { workspaces } = useCollections();
 
   if (!isSettingsOpen) return null;
 
@@ -49,9 +51,10 @@ export default function SettingsModal() {
                   onChange={(e) => updateSettings({ defaultWorkspace: e.target.value })}
                   className="glass-select rounded-xl px-3 py-1.5 text-xs font-bold focus:border-primary/50"
                 >
-                  <option value="My Workspace">My Workspace</option>
-                  <option value="Personal">Personal</option>
-                  <option value="Team X">Team X</option>
+                  <option value="none">None</option>
+                  {workspaces.map(w => (
+                    <option key={w.id} value={w.id}>{w.name}</option>
+                  ))}
                 </select>
               </div>
 

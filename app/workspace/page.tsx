@@ -17,7 +17,7 @@ import { SavedRequest } from "../lib/collections";
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings } = useSettings();
-  const { activeWorkspaceId, collections } = useCollections();
+  const { activeWorkspaceId, collections, history } = useCollections();
   const router = useRouter();
   
   // Tab Management State
@@ -205,18 +205,53 @@ export default function WorkspacePage() {
                       </button>
                     </div>
                     
-                    <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all">
+                    <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all flex flex-col">
                       <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
-                        <span className="text-secondary italic">⟲</span> Log History
+                        <span className="text-secondary italic">⟲</span> Recent Missions
                       </h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-foreground/5 border border-card-border/30">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-[10px] font-black">GET</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-black truncate text-foreground/80">API.COSMONAUT.IO/V1/USER</p>
-                            <p className="text-[9px] text-muted font-bold">200 OK • 124MS</p>
+                      <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-hide max-h-[200px]">
+                        {history.length > 0 ? (
+                          history.slice(0, 5).map((item) => (
+                            <div 
+                              key={item.id}
+                              onClick={() => handleSelectRequest({
+                                id: item.id,
+                                name: item.url.split('/').pop() || item.url,
+                                method: item.method,
+                                url: item.url,
+                                params: item.params,
+                                headers: item.headers,
+                                auth: item.auth,
+                                body: item.body,
+                                collectionId: 'history'
+                              })}
+                              className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/5 border border-card-border/30 hover:border-primary/30 transition-all cursor-pointer group"
+                            >
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black shadow-sm ${
+                                item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' :
+                                item.method === 'POST' ? 'bg-amber-500/10 text-amber-500' :
+                                'bg-blue-500/10 text-blue-500'
+                              }`}>
+                                {item.method}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black truncate text-foreground/80 uppercase tracking-tight">{item.url.split('://')[1] || item.url}</p>
+                                <p className="text-[8px] text-muted font-bold uppercase tracking-widest">
+                                  {item.error ? (
+                                    <span className="text-rose-500">{item.error.error_type}</span>
+                                  ) : (
+                                    <span>{item.status} OK • {item.duration_ms}ms</span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center py-8 text-center opacity-40">
+                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                             <p className="text-[9px] font-black uppercase tracking-widest">No missions logged</p>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
