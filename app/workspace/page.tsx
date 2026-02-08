@@ -17,7 +17,7 @@ import { SavedRequest } from "../lib/collections";
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings } = useSettings();
-  const { activeWorkspaceId } = useCollections();
+  const { activeWorkspaceId, collections } = useCollections();
   const router = useRouter();
   
   // Tab Management State
