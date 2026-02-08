@@ -63,11 +63,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     setModalState({ isOpen: true, type: 'createWorkspace' });
   };
 
-  const handleRenameWorkspace = async () => {
-    const name = window.prompt("New Workspace Name:", activeWorkspace?.name);
-    if (name && activeWorkspace) {
-      await renameWorkspace(activeWorkspace.id, name);
-    }
+  const handleRenameWorkspace = () => {
+    setModalState({ isOpen: true, type: 'renameWorkspace' });
   };
 
   const handleCreateCollection = async () => {
@@ -350,6 +347,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         onConfirm={async (value) => {
           if (modalState.type === 'createWorkspace' && value) {
             await createWorkspace(value);
+          } else if (modalState.type === 'renameWorkspace' && value && activeWorkspace) {
+            await renameWorkspace(activeWorkspace.id, value);
           }
         }}
       />
