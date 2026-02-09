@@ -5,14 +5,25 @@ import { auth, onAuthStateChanged, logout as firebaseLogout, User } from "@/app/
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSplash from "./LoadingSplash";
 
+/**
+ * Auth Context Interface
+ * Defines the shape of the authentication context.
+ */
 interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  logout: () => Promise<void>;
+  user: User | null;     // The current firebase user or null
+  loading: boolean;      // Loading state (true while checking auth status)
+  logout: () => Promise<void>; // Function to sign out
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Custom hook to access the authentication context.
+ * Must be used within an AuthProvider.
+ * 
+ * @returns {AuthContextType} The auth context values
+ * @throws {Error} If used outside of an AuthProvider
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

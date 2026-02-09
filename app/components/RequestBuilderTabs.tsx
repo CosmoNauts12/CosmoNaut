@@ -58,6 +58,13 @@ export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: 
   );
 }
 
+/**
+ * AuthTab Component
+ * 
+ * Handles authentication settings for the request.
+ * - Supports 'Bearer Token' and 'Basic Auth'.
+ * - Updates the auth state which feeds into generated headers.
+ */
 export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthState) => void }) {
   return (
     <div className="w-full max-w-md mx-auto space-y-6 p-4">
@@ -116,6 +123,13 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
   );
 }
 
+/**
+ * HeadersTab Component
+ * 
+ * Renders a key-value editor for HTTP headers.
+ * - Displays auto-generated Auth headers (read-only).
+ * - Allows custom header management.
+ */
 export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], setHeaders: (h: KVItem[]) => void, auth: AuthState }) {
   return (
     <div className="w-full space-y-2 p-2">
@@ -170,6 +184,13 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
   );
 }
 
+/**
+ * BodyTab Component
+ * 
+ * Renders a JSON editor for the request body.
+ * - Only active for non-GET requests.
+ * - Includes a "Beautify" button to format JSON.
+ */
 export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: string) => void, method: string }) {
   if (method === 'GET') {
     return (

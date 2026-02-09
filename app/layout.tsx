@@ -1,3 +1,9 @@
+/**
+ * Root Layout
+ * 
+ * The main layout file for the Next.js application.
+ * Defines global styles, fonts, and providers.
+ */
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Allura } from "next/font/google"; // Changed Dancing_Script to Allura
 import "./globals.css";

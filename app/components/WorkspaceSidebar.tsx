@@ -23,6 +23,14 @@ const activities = [
   },
 ];
 
+/**
+ * WorkspaceSidebar Component
+ * 
+ * The primary navigation and management area for the workspace.
+ * Structure:
+ * - Left narrow bar: Activity switcher (Collections, History, Flows).
+ * - Right wide bar: Contextual content for the active activity.
+ */
 export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void }) {
   const { settings } = useSettings();
   const {
@@ -116,8 +124,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             onClick={() => setActiveActivity(activity.id)}
             title={activity.name}
             className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
-                ? 'text-primary bg-primary/10'
-                : 'text-muted hover:text-foreground hover:bg-foreground/5'
+              ? 'text-primary bg-primary/10'
+              : 'text-muted hover:text-foreground hover:bg-foreground/5'
               }`}
           >
             {activity.icon}
@@ -223,8 +231,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                           className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group/item"
                         >
                           <span className={`w-10 font-black text-right ${request.method === 'GET' ? 'text-emerald-500' :
-                              request.method === 'POST' ? 'text-amber-500' :
-                                request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                            request.method === 'POST' ? 'text-amber-500' :
+                              request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                             }`}>
                             {request.method}
                           </span>
@@ -290,8 +298,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
                     >
                       <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
-                          item.method === 'POST' ? 'text-amber-500' :
-                            item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                        item.method === 'POST' ? 'text-amber-500' :
+                          item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                         }`}>
                         {item.method}
                       </span>

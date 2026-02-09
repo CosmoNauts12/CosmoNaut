@@ -17,6 +17,13 @@ export default function SignIn() {
 
   // No local redirect logic needed here as AuthProvider handles it globally
 
+  /**
+   * Handles user login with email and password.
+   * Leverages Firebase Auth via the utility function.
+   * Sets loading state and handles errors.
+   * 
+   * @param e Form event
+   */
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

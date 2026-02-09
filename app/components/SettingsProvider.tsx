@@ -2,13 +2,17 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+/**
+ * Application Settings Interface
+ * persistable user preferences.
+ */
 export interface Settings {
-  defaultWorkspace: string;
-  openLastWorkspace: boolean;
-  confirmCloseTab: boolean;
-  confirmDelete: boolean;
-  defaultMethod: "GET" | "POST";
-  lastWorkspaceId?: string;
+  defaultWorkspace: string;            // Name of the default workspace
+  openLastWorkspace: boolean;          // Whether to restore only last workspace
+  confirmCloseTab: boolean;            // Prompt before closing dirty tabs
+  confirmDelete: boolean;              // Prompt before deleting resources
+  defaultMethod: "GET" | "POST";       // Default HTTP method for new requests
+  lastWorkspaceId?: string;            // ID of the last active workspace
 }
 
 interface SettingsContextType {
@@ -77,6 +81,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
+/**
+ * Custom hook to access application settings.
+ * Must be used within a SettingsProvider.
+ */
 export const useSettings = () => {
   const context = useContext(SettingsContext);
   if (context === undefined) {

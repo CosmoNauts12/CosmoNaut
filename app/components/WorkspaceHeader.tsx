@@ -6,6 +6,15 @@ import ThemeToggle from "./ThemeToggle";
 import { useSettings } from "./SettingsProvider";
 import { useAuth } from "./AuthProvider";
 
+/**
+ * WorkspaceHeader Component
+ * 
+ * Top navigation bar for the workspace view.
+ * Features:
+ * - Breadcrumbs for navigation context.
+ * - Global actions (Overview, Settings).
+ * - User profile dropdown and theme toggle.
+ */
 export default function WorkspaceHeader() {
   const { setSettingsOpen } = useSettings();
   const { user, logout } = useAuth();
@@ -29,7 +38,7 @@ export default function WorkspaceHeader() {
         <nav className="hidden md:flex items-center gap-4 text-xs font-medium border-l border-card-border pl-6">
           <button className="text-primary bg-primary/10 px-2.5 py-1 rounded-md">Overview</button>
           <button className="text-muted hover:text-foreground px-2.5 py-1 transition-colors">Updates</button>
-          <button 
+          <button
             id="settings-btn"
             onClick={() => setSettingsOpen(true)}
             className="text-muted hover:text-foreground px-2.5 py-1 transition-colors"
@@ -53,8 +62,8 @@ export default function WorkspaceHeader() {
           {dropdownOpen && (
             <>
               {/* Invisible Backdrop to close on click outside */}
-              <div 
-                className="fixed inset-0 z-40 bg-transparent" 
+              <div
+                className="fixed inset-0 z-40 bg-transparent"
                 onClick={() => setDropdownOpen(false)}
               />
               <div className="absolute right-0 top-12 w-64 liquid-glass rounded-2xl border border-card-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
@@ -97,7 +106,7 @@ export default function WorkspaceHeader() {
             </>
           )}
         </div>
-        
+
         <button id="tour-invite-btn" className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
           Invite
         </button>

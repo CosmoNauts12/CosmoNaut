@@ -13,6 +13,7 @@ export default function ResponsePanel({
   const [activeTab, setActiveTab] = useState("pretty");
   const [visualMode, setVisualMode] = useState("graph");
 
+  // Format JSON response body for display
   const formattedBody = useMemo(() => {
     if (!response) return null;
     try {
