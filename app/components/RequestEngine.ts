@@ -7,11 +7,17 @@ export interface CosmoRequest {
     body?: string;
 }
 
+/**
+ * Standardized error object from the Rust backend.
+ */
 export interface CosmoError {
     error_type: 'NetworkError' | 'TimeoutError' | 'DnsError' | 'SslError' | 'InvalidUrl' | 'UnknownError';
     message: string;
 }
 
+/**
+ * Standardized response object from the Rust backend.
+ */
 export interface CosmoResponse {
     status: number;
     body: string;

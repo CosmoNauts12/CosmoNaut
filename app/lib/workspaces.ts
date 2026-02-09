@@ -1,10 +1,17 @@
 import { invoke } from "@tauri-apps/api/core";
 
+/**
+ * Workspace Interface
+ * Represents a high-level container for collections and permissions.
+ */
 export interface Workspace {
     id: string;
     name: string;
 }
 
+/**
+ * Persists workspaces to the local filesystem via Tauri backend.
+ */
 export async function saveWorkspacesToDisk(userId: string, workspaces: Workspace[]): Promise<void> {
     try {
         await invoke("save_workspaces", {
@@ -17,6 +24,10 @@ export async function saveWorkspacesToDisk(userId: string, workspaces: Workspace
     }
 }
 
+/**
+ * Loads workspaces from the local filesystem via Tauri backend.
+ * Falls back to a default workspace if none are found.
+ */
 export async function loadWorkspacesFromDisk(userId: string): Promise<Workspace[]> {
     try {
         const workspaces = await invoke<string>("load_workspaces", { userId });

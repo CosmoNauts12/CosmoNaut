@@ -7,6 +7,16 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 
+/**
+ * Dashboard Page
+ * 
+ * The main interface for authenticated users.
+ * Features:
+ * - Sidebar navigation with user profile and quick links.
+ * - Welcome banner with dynamic greeting.
+ * - Quick access to project creation and team management.
+ * - Responsive design with collapsible sidebar on mobile (TODO).
+ */
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen } = useSettings();
@@ -15,17 +25,26 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
     }
   }, [user, loading, router]);
 
+  /**
+   * Handles user logout.
+   * Clears auth state and redirects to the landing page.
+   */
   const handleLogout = async () => {
     await logout();
     router.push("/");
   };
 
+  /**
+   * Creates a new project workspace.
+   * Calls the collection provider to create a new workspace and redirects to it.
+   */
   const handleNewProject = async () => {
     try {
       await createWorkspace("New Project");
@@ -259,7 +278,7 @@ export default function Dashboard() {
                     <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
                       Hello,
                     </span>
-                    <span className="font-sans text-2xl md:text-4xl text-foreground pb-2">
+                    <span className="font-cursive text-5xl md:text-6xl text-foreground pb-2 ml-4">
                       {user.displayName || "Explorer"}
                     </span>
                   </div>

@@ -8,23 +8,35 @@ import { useSettings } from "./SettingsProvider";
 import { CosmoError } from "./RequestEngine";
 import { invoke } from "@tauri-apps/api/core";
 
+/**
+ * Collections Context Interface
+ * Defines the available data and methods for the CollectionsProvider.
+ */
 interface CollectionsContextType {
-  collections: Collection[];
-  workspaces: Workspace[];
-  history: HistoryItem[];
-  activeWorkspaceId: string;
-  loading: boolean;
+  collections: Collection[];           // List of all collections
+  workspaces: Workspace[];             // List of available workspaces
+  history: HistoryItem[];              // Request history
+  activeWorkspaceId: string;           // Currently selected workspace ID
+  loading: boolean;                    // Loading state for data fetching
+
+  // Workspace Actions
   setActiveWorkspaceId: (id: string) => void;
+  createWorkspace: (name: string) => Promise<string>;
+  deleteWorkspace: (id: string) => Promise<void>;
+  renameWorkspace: (id: string, name: string) => Promise<void>;
+
+  // Collection Actions
+  createCollection: (name: string) => Promise<string>;
+  deleteCollection: (collectionId: string) => Promise<void>;
+  renameCollection: (collectionId: string, newName: string) => Promise<void>;
+
+  // Request Actions
   saveRequest: (request: Omit<SavedRequest, 'id'>, collectionId: string) => Promise<void>;
   updateRequest: (request: SavedRequest, collectionId: string) => Promise<void>;
   deleteRequest: (requestId: string, collectionId: string) => Promise<void>;
   renameRequest: (requestId: string, collectionId: string, newName: string) => Promise<void>;
-  createCollection: (name: string) => Promise<string>;
-  deleteCollection: (collectionId: string) => Promise<void>;
-  renameCollection: (collectionId: string, newName: string) => Promise<void>;
-  createWorkspace: (name: string) => Promise<string>;
-  deleteWorkspace: (id: string) => Promise<void>;
-  renameWorkspace: (id: string, name: string) => Promise<void>;
+
+  // History Actions
   addToHistory: (item: Omit<HistoryItem, 'id' | 'timestamp'>) => Promise<void>;
   clearHistory: () => Promise<void>;
 }
@@ -296,6 +308,13 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   );
 }
 
+/**
+ * Custom hook to access collections and workspace data.
+ * Must be used within a CollectionsProvider.
+ * 
+ * @returns {CollectionsContextType} The collections context values
+ * @throws {Error} If used outside of a CollectionsProvider
+ */
 export function useCollections() {
   const context = useContext(CollectionsContext);
   if (!context) {

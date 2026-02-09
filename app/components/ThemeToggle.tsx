@@ -2,6 +2,13 @@
 
 import { useTheme } from "./ThemeContext";
 
+/**
+ * Theme Toggle Component
+ * 
+ * A button that toggles between light and dark modes.
+ * Uses the ThemeContext to access and update the current theme.
+ * Renders an animated sun/moon icon transition.
+ */
 export default function ThemeToggle() {
     const { theme, toggleTheme } = useTheme();
 
