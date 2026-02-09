@@ -255,11 +255,11 @@ export default function Dashboard() {
               <div className="relative z-10 w-full flex flex-col md:flex-row items-center justify-between p-10 gap-8">
 
                 <div className="text-foreground max-w-lg text-center md:text-left">
-                  <div className="flex flex-wrap items-baseline gap-4 mb-4">
+                  <div className="flex flex-col items-center md:items-start gap-0 mb-4">
                     <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
                       Hello,
                     </span>
-                    <span className="font-sans text-2xl md:text-4xl text-foreground pb-2 sm:pl-4">
+                    <span className="font-sans text-2xl md:text-4xl text-foreground pb-2">
                       {user.displayName || "Explorer"}
                     </span>
                   </div>

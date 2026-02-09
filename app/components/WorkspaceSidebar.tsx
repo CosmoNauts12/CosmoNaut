@@ -4,9 +4,6 @@ import { useState } from "react";
 import { useSettings } from "./SettingsProvider";
 import { useCollections } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
-import Modal from "./Modal";
-import Dropdown, { DropdownItem, DropdownSeparator } from "./Dropdown";
-import Popover from "./Popover";
 
 const activities = [
   {
@@ -47,11 +44,6 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
 
   const [activeActivity, setActiveActivity] = useState('collections');
   const [expandedCollections, setExpandedCollections] = useState<string[]>([]);
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    type: 'createWorkspace' | 'renameWorkspace' | 'createCollection' | 'renameCollection' | 'renameRequest' | 'deleteRequest' | 'deleteCollection' | 'createWorkspace-popover' | 'renameWorkspace-popover' | null;
-    data?: any;
-  }>({ isOpen: false, type: null });
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
@@ -61,40 +53,57 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     );
   };
 
-  const handleCreateWorkspace = () => {
-    setModalState({ isOpen: true, type: 'createWorkspace' });
-  };
-
-  const handleRenameWorkspace = () => {
-    setModalState({ isOpen: true, type: 'renameWorkspace' });
-  };
-
-  const handleCreateCollection = () => {
-    setModalState({ isOpen: true, type: 'createCollection' });
-  };
-
-  const handleRenameCollection = (id: string, currentName: string) => {
-    setModalState({ isOpen: true, type: 'renameCollection', data: { id, name: currentName } });
-  };
-
-  const handleRenameRequest = (id: string, collectionId: string, currentName: string) => {
-    setModalState({ isOpen: true, type: 'renameRequest', data: { id, collectionId, name: currentName } });
-  };
-
-  const handleDeleteRequest = (requestId: string, collectionId: string, name: string) => {
-    if (settings.confirmDelete) {
-      setModalState({ isOpen: true, type: 'deleteRequest', data: { id: requestId, collectionId, name } });
-    } else {
-      deleteRequest(requestId, collectionId);
+  const handleCreateWorkspace = async () => {
+    const name = window.prompt("Workspace Name:");
+    if (name) {
+      await createWorkspace(name);
     }
   };
 
-  const handleDeleteCollection = (collectionId: string, name: string) => {
-    if (settings.confirmDelete) {
-      setModalState({ isOpen: true, type: 'deleteCollection', data: { id: collectionId, name } });
-    } else {
-      deleteCollection(collectionId);
+  const handleRenameWorkspace = async () => {
+    const name = window.prompt("New Workspace Name:", activeWorkspace?.name);
+    if (name && activeWorkspace) {
+      await renameWorkspace(activeWorkspace.id, name);
     }
+  };
+
+  const handleCreateCollection = async () => {
+    const name = window.prompt("Collection Name:");
+    if (name) {
+      await createCollection(name);
+    }
+  };
+
+  const handleRenameCollection = async (id: string, currentName: string) => {
+    const name = window.prompt("Rename Collection:", currentName);
+    if (name) {
+      await renameCollection(id, name);
+    }
+  };
+
+  const handleRenameRequest = async (id: string, collectionId: string, currentName: string) => {
+    const name = window.prompt("Rename Request:", currentName);
+    if (name) {
+      await renameRequest(id, collectionId, name);
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string, collectionId: string, name: string) => {
+    if (settings.confirmDelete) {
+      if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+        return;
+      }
+    }
+    await deleteRequest(requestId, collectionId);
+  };
+
+  const handleDeleteCollection = async (collectionId: string, name: string) => {
+    if (settings.confirmDelete) {
+      if (!window.confirm(`Are you sure you want to delete collection "${name}" and all its requests?`)) {
+        return;
+      }
+    }
+    await deleteCollection(collectionId);
   };
 
   return (
@@ -107,8 +116,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             onClick={() => setActiveActivity(activity.id)}
             title={activity.name}
             className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
-              ? 'text-primary bg-primary/10'
-              : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                ? 'text-primary bg-primary/10'
+                : 'text-muted hover:text-foreground hover:bg-foreground/5'
               }`}
           >
             {activity.icon}
@@ -126,112 +135,19 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
           <div className="flex items-center justify-between mb-2">
             <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
             <div className="flex gap-1">
-              <Popover
-                isOpen={modalState.type === 'createWorkspace-popover'}
-                onOpenChange={(open) => setModalState(prev => ({ ...prev, isOpen: open, type: open ? 'createWorkspace-popover' : null }))}
-                trigger={
-                  <button
-                    className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                    title="New Workspace"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  </button>
-                }
-                content={
-                  <div className="p-1">
-                    <div className="mb-2 text-[10px] font-black text-muted uppercase tracking-widest">New Workspace</div>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        const name = formData.get('name') as string;
-                        if (name) {
-                          createWorkspace(name);
-                          setModalState({ isOpen: false, type: null });
-                        }
-                      }}
-                      className="flex gap-2"
-                    >
-                      <input
-                        name="name"
-                        autoFocus
-                        placeholder="Name"
-                        className="flex-1 min-w-[120px] bg-foreground/5 border border-card-border/50 rounded-md px-2 py-1 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50"
-                      />
-                      <button type="submit" className="px-2 py-1 bg-primary text-white text-xs font-bold rounded-md hover:bg-primary/90">
-                        Add
-                      </button>
-                    </form>
-                  </div>
-                }
-              />
-              <Popover
-                isOpen={modalState.type === 'renameWorkspace-popover'}
-                onOpenChange={(open) => setModalState(prev => ({ ...prev, isOpen: open, type: open ? 'renameWorkspace-popover' : null }))}
-                trigger={
-                  <button
-                    className="p-1 hover:bg-primary/10 text-muted hover:text-primary rounded transition-all"
-                    title="Rename Workspace"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                  </button>
-                }
-                content={
-                  <div className="p-1">
-                    <div className="mb-2 text-[10px] font-black text-muted uppercase tracking-widest">Rename Workspace</div>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        const name = formData.get('name') as string;
-                        if (name && activeWorkspace) {
-                          renameWorkspace(activeWorkspace.id, name);
-                          setModalState({ isOpen: false, type: null });
-                        }
-                      }}
-                      className="flex gap-2"
-                    >
-                      <input
-                        name="name"
-                        autoFocus
-                        defaultValue={activeWorkspace?.name}
-                        placeholder="Name"
-                        className="flex-1 min-w-[120px] bg-foreground/5 border border-card-border/50 rounded-md px-2 py-1 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50"
-                      />
-                      <button type="submit" className="px-2 py-1 bg-primary text-white text-xs font-bold rounded-md hover:bg-primary/90">
-                        Save
-                      </button>
-                    </form>
-                  </div>
-                }
-              />
+              <button onClick={handleCreateWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+              <button onClick={handleRenameWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
             </div>
           </div>
-          <Dropdown
-            trigger={
-              <div className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-background/50 border border-card-border/50 hover:border-primary/50 hover:bg-background/80 transition-all group">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                    {activeWorkspace?.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-bold text-foreground truncate">{activeWorkspace?.name}</span>
-                </div>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </div>
-            }
+          <select
+            value={activeWorkspaceId}
+            onChange={(e) => setActiveWorkspaceId(e.target.value)}
+            className="glass-select w-full rounded-lg px-2 py-1.5 text-xs font-bold focus:border-primary/50"
           >
-            <div className="px-2 py-1.5 text-[10px] font-black text-muted uppercase tracking-widest">Switch Workspace</div>
             {workspaces.map(w => (
-              <DropdownItem
-                key={w.id}
-                onClick={() => setActiveWorkspaceId(w.id)}
-                className={w.id === activeWorkspaceId ? "bg-primary/10 text-primary" : ""}
-                icon={w.id === activeWorkspaceId ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <div className="w-3" />}
-              >
-                {w.name}
-              </DropdownItem>
+              <option key={w.id} value={w.id} className="bg-background">{w.name}</option>
             ))}
-          </Dropdown>
+          </select>
         </div>
 
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
@@ -307,8 +223,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                           className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group/item"
                         >
                           <span className={`w-10 font-black text-right ${request.method === 'GET' ? 'text-emerald-500' :
-                            request.method === 'POST' ? 'text-amber-500' :
-                              request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                              request.method === 'POST' ? 'text-amber-500' :
+                                request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                             }`}>
                             {request.method}
                           </span>
@@ -374,8 +290,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
                     >
                       <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
-                        item.method === 'POST' ? 'text-amber-500' :
-                          item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                          item.method === 'POST' ? 'text-amber-500' :
+                            item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                         }`}>
                         {item.method}
                       </span>
@@ -401,58 +317,6 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             )}
           </div>
         </div>
-
-        {/* Resource Modals */}
-        <Modal
-          isOpen={modalState.isOpen}
-          onClose={() => setModalState({ isOpen: false, type: null })}
-          title={
-            modalState.type === 'createWorkspace' ? 'Create New Workspace' :
-              modalState.type === 'renameWorkspace' ? 'Rename Workspace' :
-                modalState.type === 'createCollection' ? 'New Collection' :
-                  modalState.type === 'renameCollection' ? 'Rename Collection' :
-                    modalState.type === 'renameRequest' ? 'Rename Request' :
-                      'Confirm Action'
-          }
-          type={modalState.type?.includes('delete') ? 'confirm' : 'input'}
-          defaultValue={
-            modalState.type === 'renameWorkspace' ? activeWorkspace?.name :
-              modalState.type === 'renameCollection' ? modalState.data?.name :
-                modalState.type === 'renameRequest' ? modalState.data?.name :
-                  ''
-          }
-          placeholder={
-            modalState.type === 'createWorkspace' ? 'Enter workspace name...' :
-              modalState.type === 'renameWorkspace' ? 'Enter new workspace name...' :
-                modalState.type === 'createCollection' ? 'Enter collection name...' :
-                  modalState.type === 'renameCollection' ? 'Enter new collection name...' :
-                    modalState.type === 'renameRequest' ? 'Enter new request name...' :
-                      ''
-          }
-          confirmText={modalState.type?.includes('delete') ? 'Delete' : 'Save'}
-          message={
-            modalState.type === 'deleteCollection' ? `Are you sure you want to delete collection "${modalState.data?.name}" and all its requests?` :
-              modalState.type === 'deleteRequest' ? `Are you sure you want to delete "${modalState.data?.name}"?` :
-                undefined
-          }
-          onConfirm={async (value) => {
-            if (modalState.type === 'createWorkspace' && value) {
-              await createWorkspace(value);
-            } else if (modalState.type === 'renameWorkspace' && value && activeWorkspace) {
-              await renameWorkspace(activeWorkspace.id, value);
-            } else if (modalState.type === 'createCollection' && value) {
-              await createCollection(value);
-            } else if (modalState.type === 'renameCollection' && value && modalState.data) {
-              await renameCollection(modalState.data.id, value);
-            } else if (modalState.type === 'renameRequest' && value && modalState.data) {
-              await renameRequest(modalState.data.id, modalState.data.collectionId, value);
-            } else if (modalState.type === 'deleteCollection' && modalState.data) {
-              await deleteCollection(modalState.data.id);
-            } else if (modalState.type === 'deleteRequest' && modalState.data) {
-              await deleteRequest(modalState.data.id, modalState.data.collectionId);
-            }
-          }}
-        />
       </div>
     </div>
   );
