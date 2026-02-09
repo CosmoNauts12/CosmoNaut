@@ -243,3 +243,74 @@ pub fn run() {
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mockito::Server;
+
+    #[tokio::test]
+    async fn test_execute_get_request() {
+        let mut server = Server::new_async().await;
+        let _m = server.mock("GET", "/test")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(r#"{"message": "success"}"#)
+            .create_async().await;
+
+        let request = CosmoRequest {
+            method: "GET".to_string(),
+            url: format!("{}/test", server.url()),
+            headers: None,
+            body: None,
+        };
+
+        let result = execute_cosmo_request(request).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert_eq!(response.status, 200);
+        assert_eq!(response.body, r#"{"message": "success"}"#);
+    }
+
+    #[tokio::test]
+    async fn test_execute_post_request() {
+        let mut server = Server::new_async().await;
+        let _m = server.mock("POST", "/submit")
+            .with_status(201)
+            .with_body("created")
+            .create_async().await;
+
+        let request = CosmoRequest {
+            method: "POST".to_string(),
+            url: format!("{}/submit", server.url()),
+            headers: Some(HashMap::from([
+                ("Content-Type".to_string(), "application/json".to_string())
+            ])),
+            body: Some(r#"{"data": 123}"#.to_string()),
+        };
+
+        let result = execute_cosmo_request(request).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert_eq!(response.status, 201);
+        assert_eq!(response.body, "created");
+    }
+
+    #[tokio::test]
+    async fn test_invalid_url() {
+        let request = CosmoRequest {
+            method: "GET".to_string(),
+            url: "ht tp://invalid-url".to_string(),
+            headers: None,
+            body: None,
+        };
+
+        let result = execute_cosmo_request(request).await;
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        match error.error_type {
+             CosmoErrorType::InvalidUrl => assert!(true),
+             _ => assert!(false, "Expected InvalidUrl error type"),
+        }
+    }
+}
