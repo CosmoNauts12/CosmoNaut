@@ -1,7 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 
 /**
- * Represents a key-value pair used for parameters or headers.
+ * Key-Value Item Interface
+ * Used for params, headers, and other key-value pairs.
  */
 export interface KVItem {
     key: string;
@@ -10,7 +11,8 @@ export interface KVItem {
 }
 
 /**
- * Represents the authentication state for a request.
+ * Authentication State Interface
+ * Defines the configuration for API authentication.
  */
 export interface AuthState {
     type: 'none' | 'bearer' | 'basic';
@@ -20,7 +22,8 @@ export interface AuthState {
 }
 
 /**
- * Represents a request saved by the user.
+ * Saved Request Interface
+ * Represents a fully configured API request saved in a collection.
  */
 export interface SavedRequest {
     id: string;
@@ -34,7 +37,8 @@ export interface SavedRequest {
 }
 
 /**
- * A group of saved requests.
+ * Collection Interface
+ * A logical grouping of saved requests.
  */
 export interface Collection {
     id: string;
@@ -43,10 +47,10 @@ export interface Collection {
 }
 
 /**
- * Persists collections to the local disk via Tauri.
- * @param userId Unique user identifier.
- * @param workspaceId Unique workspace identifier.
- * @param collections Array of collections to save.
+ * Persists collections to the local filesystem via Tauri backend.
+ * @param userId - The current user's ID.
+ * @param workspaceId - The active workspace ID (scoping).
+ * @param collections - The list of collections to save.
  */
 export async function saveCollectionsToDisk(userId: string, workspaceId: string, collections: Collection[]): Promise<void> {
     try {
@@ -62,10 +66,10 @@ export async function saveCollectionsToDisk(userId: string, workspaceId: string,
 }
 
 /**
- * Loads collections from the local disk via Tauri.
- * @param userId Unique user identifier.
- * @param workspaceId Unique workspace identifier.
- * @returns A promise resolving to an array of collections.
+ * Loads collections from the local filesystem via Tauri backend.
+ * @param userId - The current user's ID.
+ * @param workspaceId - The active workspace ID.
+ * @returns A promise resolving to the list of collections.
  */
 export async function loadCollectionsFromDisk(userId: string, workspaceId: string): Promise<Collection[]> {
     try {

@@ -12,6 +12,12 @@ import {
     User
 } from "firebase/auth";
 
+/**
+ * Firebase Configuration
+ * Credential details for connecting to the Firebase project.
+ * NOTE: These are public-facing keys, safe for client-side usage.
+ */
+
 const firebaseConfig = {
     apiKey: "AIzaSyDfRbTA2Qi3RYmXcJKZkpspOUqypcA5wgs",
     authDomain: "software-project-45fdc.firebaseapp.com",
@@ -50,7 +56,7 @@ export const signUpWithEmail = async (email: string, password: string) =>
     createUserWithEmailAndPassword(auth, email, password);
 
 /**
- * Sign out the current user.
+ * Signs out the current user.
  */
 export const logout = async () => signOut(auth);
 

@@ -1,7 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 
 /**
- * Represents a workspace containing collections and missions.
+ * Workspace Interface
+ * Represents a high-level container for collections and permissions.
  */
 export interface Workspace {
     id: string;

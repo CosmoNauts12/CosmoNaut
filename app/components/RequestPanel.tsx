@@ -69,8 +69,9 @@ export default function RequestPanel({
   }, [activeRequest]);
 
   /**
-   * Cleans the URL input by removing redundant method prefixes and ensuring protocol.
-   * @param input Raw URL string.
+   * Sanitizes the input URL.
+   * - Removes accidental method prefixes (e.g. "GET http...").
+   * - Ensures protocol presence (defaults to https://).
    */
   const cleanUrl = (input: string) => {
     let cleaned = input.trim();
@@ -174,7 +175,10 @@ export default function RequestPanel({
   };
 
   /**
-   * Handles saving or updating the current request to a collection.
+   * Saves the current request configuration.
+   * - Updates existing request if editing.
+   * - Creates new request in a collection otherwise.
+   * - Prompts for name/collection if needed.
    */
   const handleSave = async () => {
     if (!saveName.trim()) return alert("Please enter a name");

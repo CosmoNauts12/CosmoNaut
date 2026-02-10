@@ -12,8 +12,12 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 /**
- * Provides theme state (light/dark) and persistence logic.
- * Synchronizes the theme state with the document root class and local storage.
+ * Theme Provider Component
+ * 
+ * Manages the application theme (light/dark mode).
+ * - Persists theme preference to localStorage.
+ * - Syncs with system preferences on first load.
+ * - Applies 'dark' class to html element.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("dark");

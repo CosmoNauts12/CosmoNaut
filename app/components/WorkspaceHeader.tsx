@@ -7,9 +7,13 @@ import { useSettings } from "./SettingsProvider";
 import { useAuth } from "./AuthProvider";
 
 /**
- * Header component for the workspace view.
- * Provides navigation breadcrumbs, settings access, and user session management.
- * Features a glassmorphic dropdown menu for user-specific actions.
+ * WorkspaceHeader Component
+ * 
+ * Top navigation bar for the workspace view.
+ * Features:
+ * - Breadcrumbs for navigation context.
+ * - Global actions (Overview, Settings).
+ * - User profile dropdown and theme toggle.
  */
 export default function WorkspaceHeader() {
   const { setSettingsOpen } = useSettings();

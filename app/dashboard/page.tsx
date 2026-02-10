@@ -8,8 +8,14 @@ import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 
 /**
- * The main entry page for authenticated users.
- * Displays a welcome message, quick actions, and sidebar navigation.
+ * Dashboard Page
+ * 
+ * The main interface for authenticated users.
+ * Features:
+ * - Sidebar navigation with user profile and quick links.
+ * - Welcome banner with dynamic greeting.
+ * - Quick access to project creation and team management.
+ * - Responsive design with collapsible sidebar on mobile (TODO).
  */
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
@@ -19,9 +25,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  /**
-   * Effect to safeguard the dashboard. Redirects to login if user session is lost.
-   */
+  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
@@ -29,7 +33,8 @@ export default function Dashboard() {
   }, [user, loading, router]);
 
   /**
-   * Handles user logout and redirects to the landing page.
+   * Handles user logout.
+   * Clears auth state and redirects to the landing page.
    */
   const handleLogout = async () => {
     await logout();
@@ -37,7 +42,8 @@ export default function Dashboard() {
   };
 
   /**
-   * Logic to initialize a new project workspace and navigate to it.
+   * Creates a new project workspace.
+   * Calls the collection provider to create a new workspace and redirects to it.
    */
   const handleNewProject = async () => {
     try {
@@ -268,11 +274,11 @@ export default function Dashboard() {
               <div className="relative z-10 w-full flex flex-col md:flex-row items-center justify-between p-10 gap-8">
 
                 <div className="text-foreground max-w-lg text-center md:text-left">
-                  <div className="flex flex-wrap items-baseline gap-4 mb-4">
+                  <div className="flex flex-col items-center md:items-start gap-0 mb-4">
                     <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
                       Hello,
                     </span>
-                    <span className="font-cursive text-4xl md:text-6xl text-foreground pb-2 sm:pl-4">
+                    <span className="font-cursive text-5xl md:text-6xl text-foreground pb-2 ml-4">
                       {user.displayName || "Explorer"}
                     </span>
                   </div>

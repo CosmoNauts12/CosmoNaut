@@ -19,7 +19,7 @@ export interface CosmoError {
 }
 
 /**
- * Normalized response structure for the UI.
+ * Standardized response object from the Rust backend.
  */
 export interface CosmoResponse {
     status: number;

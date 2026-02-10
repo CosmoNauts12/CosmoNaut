@@ -22,8 +22,9 @@ export default function SignIn() {
   // No local redirect logic needed here as AuthProvider handles it globally
 
   /**
-   * Handles the email and password login flow.
-   * On success, the AuthProvider global state will update and trigger navigation.
+   * Handles user login with email and password.
+   * Leverages Firebase Auth via the utility function.
+   * Sets loading state and handles errors.
    * 
    * @param e Form event
    */
