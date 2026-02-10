@@ -36,6 +36,14 @@ export const metadata: Metadata = {
   description: "Modern authentication system with Firebase",
 };
 
+/**
+ * The root layout component for the CosmoNaut application.
+ * Injects global fonts, design system variables, and initializes core context providers:
+ * - SettingsProvider: App preferences and configuration.
+ * - AuthProvider: Firebase session management.
+ * - CollectionsProvider: HTTP request management and disk persistence.
+ * - ThemeProvider: Light/Dark mode state.
+ */
 export default function RootLayout({
   children,
 }: {

@@ -15,6 +15,14 @@ export type ActiveRequest = (SavedRequest & { collectionId: string }) | {
   method: string;
 };
 
+/**
+ * The main panel for building and sending HTTP requests.
+ * Manages URL normalization, header/auth injection, and execution lifecycle.
+ * 
+ * @param activeRequest The currently focused request (metadata or saved).
+ * @param onResponse Callback triggered when a response is received.
+ * @param onExecuting Callback triggered when the request starts/ends execution.
+ */
 export default function RequestPanel({
   activeRequest,
   onResponse,
@@ -85,10 +93,12 @@ export default function RequestPanel({
   };
 
   /**
-   * Executes the API request.
-   * - Normalizes params, headers, and body.
-   * - Calls the backend.
-   * - Saves the result to history.
+   * Orchestrates the request execution flow:
+   * 1. Normalizes parameters into the URL.
+   * 2. Synthesizes final headers from UI state and Auth.
+   * 3. Validates JSON body.
+   * 4. Invokes the Rust engine.
+   * 5. Logs results to history.
    */
   const handleSend = async () => {
     onExecuting(true);
@@ -221,8 +231,8 @@ export default function RequestPanel({
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
               className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
-                method === 'POST' ? 'text-amber-500' :
-                  method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                  method === 'POST' ? 'text-amber-500' :
+                    method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                 }`}
             >
               {methods.map(m => <option key={m} value={m}>{m}</option>)}

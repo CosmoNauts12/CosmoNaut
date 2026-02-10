@@ -39,16 +39,18 @@ if (typeof window !== "undefined") {
     });
 }
 
-// Auth helper functions (Email/Password only)
-
 /**
- * Signs in an existing user with email and password.
+ * Log in a user with email and password.
+ * @param email - User's email.
+ * @param password - User's password.
  */
 export const loginWithEmail = async (email: string, password: string) =>
     signInWithEmailAndPassword(auth, email, password);
 
 /**
- * Creates a new user account with email and password.
+ * Register a new user with email and password.
+ * @param email - User's email.
+ * @param password - User's password.
  */
 export const signUpWithEmail = async (email: string, password: string) =>
     createUserWithEmailAndPassword(auth, email, password);
@@ -59,7 +61,8 @@ export const signUpWithEmail = async (email: string, password: string) =>
 export const logout = async () => signOut(auth);
 
 /**
- * Sends a password reset email to the provided address.
+ * Send a password reset email to the specified address.
+ * @param email - Recipient's email.
  */
 export const resetPassword = async (email: string) =>
     sendPasswordResetEmail(auth, email);

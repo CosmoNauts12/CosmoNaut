@@ -3,14 +3,26 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "./AuthProvider";
 
+/**
+ * Represents a single step in the interactive onboarding tour.
+ */
 interface TourStep {
+  /** The DOM ID of the element to highlight. */
   targetId: string;
+  /** Title displayed in the tour tooltip. */
   title: string;
+  /** Instructional text for the user. */
   description: string;
+  /** Preferred position of the tooltip relative to the target element. */
   position: "bottom" | "top" | "left" | "right";
 }
 
+/**
+ * Static configuration of the guided tour steps.
+ * Targets specific structural elements defined in the application layout.
+ */
 const TOUR_STEPS: TourStep[] = [
+  // ... (steps content remains the same)
   {
     targetId: "tour-activity-bar",
     title: "Activities",
@@ -57,6 +69,11 @@ const TOUR_STEPS: TourStep[] = [
 
 const STORAGE_PREFIX = "cosmonaut_demo_v5_";
 
+/**
+ * Interactive product tour component.
+ * Features a focused "spotlight" effect using SVG clip-paths and animated tooltips.
+ * Persists the "seen" state to localStorage to prevent re-triggering for returning users.
+ */
 export default function DemoTour() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
@@ -65,12 +82,15 @@ export default function DemoTour() {
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   const [isReady, setIsReady] = useState(false);
 
+  /**
+   * Triggers the tour visibility check on user authentication.
+   */
   useEffect(() => {
     if (!user) return;
 
     const userKey = `${STORAGE_PREFIX}${user.uid}`;
     console.log(`DemoTour: Initial check for user ${user.uid}`);
-    
+
     try {
       const hasSeenDemo = localStorage.getItem(userKey);
       if (!hasSeenDemo || hasSeenDemo === "false") {
@@ -84,11 +104,15 @@ export default function DemoTour() {
     }
   }, [user]);
 
+  /**
+   * Effect hook to calculate and track the position of highlighted elements.
+   * Implements a retry logic to account for delayed DOM rendering of tour targets.
+   */
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     let retryCount = 0;
-    const MAX_RETRIES = 40; 
-    
+    const MAX_RETRIES = 40;
+
     if (isVisible) {
       const step = TOUR_STEPS[currentStep];
       if (!step) return;
@@ -97,7 +121,7 @@ export default function DemoTour() {
         const element = document.getElementById(step.targetId);
         if (element) {
           const rect = element.getBoundingClientRect();
-          
+
           if (rect.width === 0 || rect.height === 0) {
             if (retryCount < MAX_RETRIES) {
               retryCount++;
@@ -112,7 +136,7 @@ export default function DemoTour() {
             width: rect.width,
             height: rect.height,
           };
-          
+
           setCoords(newCoords);
           element.scrollIntoView({ behavior: "smooth", block: "center" });
 
@@ -121,7 +145,7 @@ export default function DemoTour() {
           let left = 0;
           const padding = 24;
           const tooltipWidth = 320;
-          const tooltipHeight = 240; 
+          const tooltipHeight = 240;
 
           if (step.position === "bottom") {
             top = newCoords.top + newCoords.height + padding;
@@ -163,6 +187,9 @@ export default function DemoTour() {
     };
   }, [currentStep, isVisible]);
 
+  /**
+   * Advances the tour to the next step or completes it.
+   */
   const handleNext = () => {
     setIsReady(false);
     if (currentStep < TOUR_STEPS.length - 1) {
@@ -172,10 +199,16 @@ export default function DemoTour() {
     }
   };
 
+  /**
+   * Prematurely ends the tour.
+   */
   const handleSkip = () => {
     handleComplete();
   };
 
+  /**
+   * Closes the tour and marks it as seen in persistent storage.
+   */
   const handleComplete = () => {
     setIsVisible(false);
     if (user) {
@@ -196,16 +229,19 @@ export default function DemoTour() {
   const x2 = coords.width > 0 ? coords.left + coords.width + 8 : -10;
   const y2 = coords.width > 0 ? coords.top + coords.height + 8 : -10;
 
-  const holeClipPath = coords.width > 0 
+  /**
+   * SVG Clip-Path logic to create a "hole" in the dark overlay overlay.
+   */
+  const holeClipPath = coords.width > 0
     ? `polygon(0% 0%, 0% 100%, ${x1}px 100%, ${x1}px ${y1}px, ${x2}px ${y1}px, ${x2}px ${y2}px, ${x1}px ${y2}px, ${x1}px 100%, 100% 100%, 100% 0%)`
     : 'none';
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none">
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-[6px] pointer-events-auto transition-all duration-700 ease-in-out opacity-100" 
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-[6px] pointer-events-auto transition-all duration-700 ease-in-out opacity-100"
         style={{ clipPath: holeClipPath }}
-        onClick={handleSkip} 
+        onClick={handleSkip}
       />
 
       {isReady && coords.width > 0 && (
@@ -230,26 +266,26 @@ export default function DemoTour() {
         >
           <div className="liquid-glass p-10 rounded-[2.5rem] border-primary/40 w-[340px] shadow-[0_40px_80px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom-8 fade-in duration-700">
             <div className="flex justify-between items-center mb-6">
-               <span className="text-[10px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-primary/20">Step {currentStep + 1} of {TOUR_STEPS.length}</span>
-               <button onClick={handleSkip} className="text-muted hover:text-foreground text-[10px] transition-colors font-black tracking-tighter uppercase opacity-50 hover:opacity-100">Skip Tour</button>
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-widest ring-1 ring-primary/20">Step {currentStep + 1} of {TOUR_STEPS.length}</span>
+              <button onClick={handleSkip} className="text-muted hover:text-foreground text-[10px] transition-colors font-black tracking-tighter uppercase opacity-50 hover:opacity-100">Skip Tour</button>
             </div>
-            
+
             <h3 className="text-2xl font-bold text-foreground mb-4 leading-tight tracking-tight">
               {step.title}
             </h3>
-            
+
             <p className="text-sm text-muted leading-relaxed mb-10 opacity-90 font-medium">
               {step.description}
             </p>
-            
+
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={handleSkip}
                 className="flex-1 glass-btn-secondary py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
               >
                 Skip
               </button>
-              <button 
+              <button
                 onClick={handleNext}
                 className="flex-[2] glass-btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-2"
               >

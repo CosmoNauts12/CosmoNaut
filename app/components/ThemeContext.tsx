@@ -39,6 +39,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setMounted(true);
     }, []);
 
+    /**
+     * Toggles between 'light' and 'dark' themes.
+     * Updates local storage and the document root class name.
+     */
     const toggleTheme = () => {
         const newTheme = theme === "dark" ? "light" : "dark";
         setTheme(newTheme);
@@ -56,8 +60,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Custom hook to access the current theme and toggle it.
- * Must be used within a ThemeProvider.
+ * Hook to access the current theme and the toggle function.
+ * @throws Error if used outside of ThemeProvider.
  */
 export function useTheme() {
     const context = useContext(ThemeContext);

@@ -3,17 +3,27 @@
 import { useState, useMemo } from "react";
 import { CosmoResponse } from "./RequestEngine";
 
-export default function ResponsePanel({ 
-  response, 
-  isExecuting 
-}: { 
+/**
+ * Component for displaying HTTP response data.
+ * Features automatic JSON formatting, error classification, and timing metadata.
+ * 
+ * @param response The response object from the engine, or null if no request sent.
+ * @param isExecuting Boolean reflecting the current execution state.
+ */
+export default function ResponsePanel({
+  response,
+  isExecuting
+}: {
   response: CosmoResponse | null;
   isExecuting: boolean;
 }) {
   const [activeTab, setActiveTab] = useState("pretty");
   const [visualMode, setVisualMode] = useState("graph");
 
-  // Format JSON response body for display
+  /**
+   * Memoized formatted body. Attempts to parse as JSON for pretty-printing,
+   * falls back to raw text if parsing fails.
+   */
   const formattedBody = useMemo(() => {
     if (!response) return null;
     try {
@@ -43,7 +53,10 @@ export default function ResponsePanel({
 
   if (response.error) {
     const { error_type, message } = response.error;
-    
+
+    /**
+     * Map of error types to user-friendly titles, descriptions, and icons.
+     */
     const errorDetails = {
       DNS_ERROR: {
         title: "DNS Resolution Failed",
@@ -108,7 +121,7 @@ export default function ResponsePanel({
         {details.icon}
         <h3 className="text-lg font-black uppercase tracking-widest text-foreground mb-2">{details.title}</h3>
         <p className="text-xs text-muted font-bold leading-relaxed max-w-md mb-6">{details.desc}</p>
-        
+
         <div className="w-full max-w-lg liquid-glass p-4 rounded-xl border-card-border/50 text-left bg-black/10">
           <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-2">Technical Insight</p>
           <code className="text-[10px] text-rose-500/80 font-mono break-all">{message}</code>
@@ -157,7 +170,7 @@ export default function ResponsePanel({
 
         {activeTab === 'visualize' && (
           <div className="h-full flex flex-col items-center justify-center opacity-50">
-             <p className="text-[10px] font-black uppercase tracking-widest text-muted">Visualization requires specific data mission protocols</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted">Visualization requires specific data mission protocols</p>
           </div>
         )}
       </div>

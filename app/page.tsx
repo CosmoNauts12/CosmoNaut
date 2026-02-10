@@ -8,6 +8,10 @@ import AuthCard from "./components/AuthCard";
 import { loginWithEmail } from "@/app/lib/firebase";
 import ThemeToggle from "./components/ThemeToggle";
 
+/**
+ * The main landing and authentication page for CosmoNaut.
+ * Provides a glassmorphic interface for user sign-in.
+ */
 export default function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");

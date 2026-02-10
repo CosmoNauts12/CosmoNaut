@@ -55,12 +55,18 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
+  /**
+   * Toggles the visibility of a collection's requests in the sidebar.
+   */
   const toggleCollection = (id: string) => {
     setExpandedCollections(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
+  /**
+   * Prompts user and creates a new workspace.
+   */
   const handleCreateWorkspace = async () => {
     const name = window.prompt("Workspace Name:");
     if (name) {
@@ -68,6 +74,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames the active workspace.
+   */
   const handleRenameWorkspace = async () => {
     const name = window.prompt("New Workspace Name:", activeWorkspace?.name);
     if (name && activeWorkspace) {
@@ -75,6 +84,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and creates a new collection in the active workspace.
+   */
   const handleCreateCollection = async () => {
     const name = window.prompt("Collection Name:");
     if (name) {
@@ -82,6 +94,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames a specific collection.
+   */
   const handleRenameCollection = async (id: string, currentName: string) => {
     const name = window.prompt("Rename Collection:", currentName);
     if (name) {
@@ -89,6 +104,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and renames a specific request.
+   */
   const handleRenameRequest = async (id: string, collectionId: string, currentName: string) => {
     const name = window.prompt("Rename Request:", currentName);
     if (name) {
@@ -96,6 +114,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Deletes a request from a collection, optionally asking for confirmation.
+   */
   const handleDeleteRequest = async (requestId: string, collectionId: string, name: string) => {
     if (settings.confirmDelete) {
       if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
@@ -105,6 +126,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     await deleteRequest(requestId, collectionId);
   };
 
+  /**
+   * Deletes a collection and all its children, optionally asking for confirmation.
+   */
   const handleDeleteCollection = async (collectionId: string, name: string) => {
     if (settings.confirmDelete) {
       if (!window.confirm(`Are you sure you want to delete collection "${name}" and all its requests?`)) {

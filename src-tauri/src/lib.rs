@@ -3,14 +3,20 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Instant;
 
+/// Represents an HTTP request sent from the frontend.
 #[derive(Debug, Deserialize)]
 pub struct CosmoRequest {
+    /// HTTP method (GET, POST, etc.)
     method: String,
+    /// Target URL
     url: String,
+    /// Optional HTTP headers
     headers: Option<HashMap<String, String>>,
+    /// Optional request body
     body: Option<String>,
 }
 
+/// Categorizes different types of failures that can occur during request execution.
 #[derive(Debug, Serialize)]
 pub enum CosmoErrorType {
     NetworkError,
@@ -21,20 +27,28 @@ pub enum CosmoErrorType {
     UnknownError,
 }
 
+/// Structured error returned to the frontend when a request fails.
 #[derive(Debug, Serialize)]
 pub struct CosmoError {
     pub error_type: CosmoErrorType,
     pub message: String,
 }
 
+/// Successful HTTP response details.
 #[derive(Debug, Serialize)]
 pub struct CosmoResponse {
+    /// HTTP status code (e.g., 200, 404)
     pub status: u16,
+    /// Raw response body
     pub body: String,
+    /// Response headers
     pub headers: HashMap<String, String>,
+    /// Request duration in milliseconds
     pub duration_ms: u128,
 }
 
+/// Executes an HTTP request using reqwest.
+/// Handles normalization, client initialization, and execution timing.
 #[tauri::command]
 async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
     let client = reqwest::Client::builder()
@@ -120,6 +134,7 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
     })
 }
 
+/// Saves collection data to a JSON file scoped by user and workspace.
 #[tauri::command]
 async fn save_collections(
     app_handle: tauri::AppHandle, 
@@ -137,6 +152,7 @@ async fn save_collections(
     Ok(())
 }
 
+/// Loads collection data from the local filesystem.
 #[tauri::command]
 async fn load_collections(
     app_handle: tauri::AppHandle, 
@@ -153,6 +169,7 @@ async fn load_collections(
     std::fs::read_to_string(file_path).map_err(|e| e.to_string())
 }
 
+/// Persists workspace metadata to a JSON file scoped by user.
 #[tauri::command]
 async fn save_workspaces(
     app_handle: tauri::AppHandle, 
@@ -169,6 +186,7 @@ async fn save_workspaces(
     Ok(())
 }
 
+/// Loads workspace metadata from the local filesystem.
 #[tauri::command]
 async fn load_workspaces(
     app_handle: tauri::AppHandle, 
@@ -184,6 +202,7 @@ async fn load_workspaces(
     std::fs::read_to_string(file_path).map_err(|e| e.to_string())
 }
 
+/// Saves request history to a JSON file scoped by user and workspace.
 #[tauri::command]
 async fn save_history(
     app_handle: tauri::AppHandle, 
@@ -201,6 +220,7 @@ async fn save_history(
     Ok(())
 }
 
+/// Loads request history from the local filesystem.
 #[tauri::command]
 async fn load_history(
     app_handle: tauri::AppHandle, 
@@ -217,6 +237,8 @@ async fn load_history(
     std::fs::read_to_string(file_path).map_err(|e| e.to_string())
 }
 
+/// Entry point for the Tauri application.
+/// Configures handlers, plugins, and setup logic.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()

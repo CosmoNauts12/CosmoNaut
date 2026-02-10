@@ -10,7 +10,9 @@ export interface Workspace {
 }
 
 /**
- * Persists workspaces to the local filesystem via Tauri backend.
+ * Persists workspace metadata to the local disk.
+ * @param userId Unique user identifier.
+ * @param workspaces Array of workspaces to save.
  */
 export async function saveWorkspacesToDisk(userId: string, workspaces: Workspace[]): Promise<void> {
     try {
@@ -25,8 +27,9 @@ export async function saveWorkspacesToDisk(userId: string, workspaces: Workspace
 }
 
 /**
- * Loads workspaces from the local filesystem via Tauri backend.
- * Falls back to a default workspace if none are found.
+ * Loads workspaces from the local disk. Returns a default workspace if none exist.
+ * @param userId Unique user identifier.
+ * @returns A promise resolving to an array of workspaces.
  */
 export async function loadWorkspacesFromDisk(userId: string): Promise<Workspace[]> {
     try {
