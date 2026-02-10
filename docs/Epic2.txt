@@ -1,0 +1,22 @@
+EPIC 2: Managed Back-end Proxy and Execution Engine
+
+Objective
+Introduce a backend proxy layer that executes all API requests in a controlled, observable, and traceable manner.
+
+Why this Epic Exists
+Browser-only execution is limited by CORS and lacks observability. A backend execution engine enables tracing, replay, and timeout enforcement.
+
+User Story 2.1: Centralized Execution via Proxy
+BE: Design execution endpoint.
+BE: Translate request configurations into real HTTP calls.
+BE: Capture full HTTP responses.
+
+User Story 2.2: Uniform Error Handling
+Normalize HTTP and network errors.
+Return structured error responses.
+Log failures for tracing.
+
+User Story 2.3: Timeout Enforcement
+Configure timeout limits.
+Abort long-running requests.
+Return timeout-specific errors.

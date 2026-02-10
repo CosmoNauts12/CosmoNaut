@@ -38,7 +38,7 @@ export async function executeRequest(request: CosmoRequest): Promise<CosmoRespon
     try {
         const response = await invoke<CosmoResponse>("execute_cosmo_request", { request });
         return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Execution failed:", error);
 
         // If it's already a structured error from Tauri
