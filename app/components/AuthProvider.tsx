@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { auth, onAuthStateChanged, logout as firebaseLogout, User, signInWithGoogle, restoreSession, logoutTauri } from "@/app/lib/firebase";
+import { auth, onAuthStateChanged, logout as firebaseLogout, User, signInWithGoogle, restoreSession, logoutTauri, signInWithCredential, GoogleAuthProvider } from "@/app/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSplash from "./LoadingSplash";
 
@@ -105,26 +105,40 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         const { listen } = await import('@tauri-apps/api/event');
 
         // Listen for successful authentication
-        unlistenSuccess = await listen('auth-success', (event: any) => {
+        unlistenSuccess = await listen('auth-success', async (event: any) => {
           console.log('AuthProvider: Google auth success', event.payload);
           const userData = event.payload;
           
-          // Create a User-like object from the payload
-          const mockUser = {
-            uid: userData.uid,
-            email: userData.email,
-            displayName: userData.name || null,
-            photoURL: userData.picture || null,
-          } as User;
+          try {
+            if (userData.google_id_token) {
+              console.log('AuthProvider: Signing in with Google credential for persistence');
+              const credential = GoogleAuthProvider.credential(userData.google_id_token);
+              await signInWithCredential(auth, credential);
+              // onAuthStateChanged will handle the rest (setting user, loading, routing)
+            } else {
+              console.warn('AuthProvider: No Google ID token received, falling back to non-persistent session');
+              // Create a User-like object from the payload
+              const mockUser = {
+                uid: userData.uid,
+                email: userData.email,
+                displayName: userData.name || null,
+                photoURL: userData.picture || null,
+              } as User;
 
-          setUser(mockUser);
-          setAuthError(null);
-          setLoading(false);
+              setUser(mockUser);
+              setAuthError(null);
+              setLoading(false);
 
-          // Route based on onboarding status
-          const hasCompletedOnboarding = localStorage.getItem("onboarding_complete") === "true";
-          const target = hasCompletedOnboarding ? "/dashboard" : "/onboarding/loading";
-          router.push(target);
+              // Route based on onboarding status
+              const hasCompletedOnboarding = localStorage.getItem("onboarding_complete") === "true";
+              const target = hasCompletedOnboarding ? "/dashboard" : "/onboarding/loading";
+              router.push(target);
+            }
+          } catch (error: any) {
+            console.error('AuthProvider: Failed to sign in with credential', error);
+            setAuthError(error.message || 'Failed to complete authentication');
+            setLoading(false);
+          }
         });
 
         // Listen for authentication errors

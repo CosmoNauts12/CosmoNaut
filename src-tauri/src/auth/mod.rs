@@ -22,6 +22,7 @@ pub struct UserData {
     pub email: String,
     pub name: Option<String>,
     pub picture: Option<String>,
+    pub google_id_token: Option<String>,
 }
 
 /// Tokens returned from OAuth flow

@@ -9,7 +9,9 @@ import {
     browserLocalPersistence,
     setPersistence,
     updateProfile,
-    User
+    User,
+    signInWithCredential,
+    GoogleAuthProvider
 } from "firebase/auth";
 
 /**
@@ -67,7 +69,7 @@ export const logout = async () => signOut(auth);
 export const resetPassword = async (email: string) =>
     sendPasswordResetEmail(auth, email);
 
-export { app, auth, onAuthStateChanged, updateProfile };
+export { app, auth, onAuthStateChanged, updateProfile, signInWithCredential, GoogleAuthProvider };
 export type { User };
 
 /**

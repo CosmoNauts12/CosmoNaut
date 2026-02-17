@@ -30,9 +30,13 @@ pub struct FirebaseClaims {
 /// Response from Google Identity Toolkit exchange
 #[derive(Debug, Deserialize)]
 pub struct ExchangeResponse {
-    pub idToken: String,
-    pub refreshToken: String,
-    pub expiresIn: String,
+    #[serde(rename = "idToken")]
+    pub id_token: String,
+    #[serde(rename = "refreshToken")]
+    pub refresh_token: String,
+    #[serde(rename = "expiresIn")]
+    #[allow(dead_code)]
+    pub expires_in: String,
 }
 
 /// Verifies a Firebase ID token

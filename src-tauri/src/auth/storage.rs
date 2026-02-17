@@ -126,6 +126,7 @@ pub async fn restore_session(user_id: String) -> Result<Option<UserData>, String
                 email: claims.email.unwrap_or_default(),
                 name: claims.name,
                 picture: claims.picture,
+                google_id_token: None,
             }))
         }
         Err(e) => {
@@ -159,6 +160,7 @@ pub async fn restore_session(user_id: String) -> Result<Option<UserData>, String
                                         email: claims.email.unwrap_or_default(),
                                         name: claims.name,
                                         picture: claims.picture,
+                                        google_id_token: None,
                                     }));
                                 }
                                 Err(e) => {

@@ -151,7 +151,7 @@ async fn handle_process_tokens(
             log::info!("Firebase token exchange successful");
 
             // Verify the new Firebase ID token
-            match crate::auth::token::verify_firebase_token(&firebase_tokens.idToken).await {
+            match crate::auth::token::verify_firebase_token(&firebase_tokens.id_token).await {
                 Ok(claims) => {
                     log::info!("Token verified for user: {:?}", claims.email);
 
@@ -161,13 +161,14 @@ async fn handle_process_tokens(
                         email: claims.email.clone().unwrap_or_default(),
                         name: claims.name.clone(),
                         picture: claims.picture.clone(),
+                        google_id_token: Some(payload.id_token.clone()),
                     };
 
                     // Save tokens to keychain
                     let tokens = Tokens {
-                        id_token: firebase_tokens.idToken,
+                        id_token: firebase_tokens.id_token,
                         access_token: payload.access_token.clone(), // Keep original Google access token if needed, or use firebase_tokens.access_token if available/needed
-                        refresh_token: Some(firebase_tokens.refreshToken),
+                        refresh_token: Some(firebase_tokens.refresh_token),
                     };
 
                     if let Err(e) = crate::auth::storage::save_tokens(&claims.user_id, &tokens) {
