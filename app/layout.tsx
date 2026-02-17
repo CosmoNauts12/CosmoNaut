@@ -12,6 +12,9 @@ import { ThemeProvider } from "./components/ThemeContext";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { CollectionsProvider } from "./components/CollectionsProvider";
 import SettingsModal from "./components/SettingsModal";
+import ProfileModal from "./components/ProfileModal";
+import BillingModal from "./components/BillingModal";
+import ShortcutsModal from "./components/ShortcutsModal";
 
 // Fonts
 const geistSans = Geist({
@@ -60,6 +63,9 @@ export default function RootLayout({
               <ThemeProvider>
                 {children}
                 <SettingsModal />
+                <ProfileModal />
+                <BillingModal />
+                <ShortcutsModal />
               </ThemeProvider>
             </CollectionsProvider>
           </SettingsProvider>

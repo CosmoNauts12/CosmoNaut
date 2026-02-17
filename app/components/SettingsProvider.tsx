@@ -34,6 +34,20 @@ interface SettingsContextType {
   isSettingsOpen: boolean;
   /** Setter for the settings modal visibility. */
   setSettingsOpen: (open: boolean) => void;
+  /** Controls visibility of the profile modal. */
+  isProfileOpen: boolean;
+  /** Setter for the profile modal visibility. */
+  setProfileOpen: (open: boolean) => void;
+  /** Controls visibility of the billing modal. */
+  isBillingOpen: boolean;
+  /** Setter for the billing modal visibility. */
+  setBillingOpen: (open: boolean) => void;
+  /** Controls visibility of the shortcuts modal. */
+  isShortcutsOpen: boolean;
+  /** Setter for the shortcuts modal visibility. */
+  setShortcutsOpen: (open: boolean) => void;
+  /** Helper to open settings/modals directly. */
+  openSettings: (tab?: string) => void;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -58,8 +72,39 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [isProfileOpen, setProfileOpen] = useState(false);
+  const [isBillingOpen, setBillingOpen] = useState(false);
+  const [isShortcutsOpen, setShortcutsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
+
+  /**
+   * Helper to open settings modal on a specific tab.
+   * Kept for backward compatibility but routes to specific modals.
+   */
+  const openSettings = React.useCallback((tab: string = "general") => {
+    // Close all first to ensure clean state
+    setSettingsOpen(false);
+    setProfileOpen(false);
+    setBillingOpen(false);
+    setShortcutsOpen(false);
+
+    switch (tab) {
+      case "profile":
+        setProfileOpen(true);
+        break;
+      case "billing":
+        setBillingOpen(true);
+        break;
+      case "shortcuts":
+        setShortcutsOpen(true);
+        break;
+      case "general":
+      default:
+        setSettingsOpen(true);
+        break;
+    }
+  }, []);
 
   /**
    * Initial load effect. Populates state from backend or localStorage.
@@ -140,6 +185,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateSettings,
         isSettingsOpen,
         setSettingsOpen,
+        isProfileOpen,
+        setProfileOpen,
+        isBillingOpen,
+        setBillingOpen,
+        isShortcutsOpen,
+        setShortcutsOpen,
+        openSettings,
       }}
     >
       {children}

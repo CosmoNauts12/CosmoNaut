@@ -17,7 +17,7 @@ import { useAuth } from "./AuthProvider";
  * - User profile dropdown and theme toggle.
  */
 export default function WorkspaceHeader() {
-  const { settings, updateSettings, setSettingsOpen } = useSettings();
+  const { settings, updateSettings, setSettingsOpen, openSettings } = useSettings();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
@@ -41,7 +41,7 @@ export default function WorkspaceHeader() {
           <button className="text-primary bg-primary/10 px-2.5 py-1 rounded-md">Overview</button>
           <button className="text-muted hover:text-foreground px-2.5 py-1 transition-colors">Updates</button>
           <button
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => openSettings("general")}
             className="text-muted hover:text-foreground px-2.5 py-1 transition-colors"
           >
             Settings
@@ -105,7 +105,7 @@ export default function WorkspaceHeader() {
 
                   <div className="space-y-1">
                     <button 
-                      onClick={() => setSettingsOpen(true)}
+                      onClick={() => openSettings("profile")}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
                     >
                       Profile Settings

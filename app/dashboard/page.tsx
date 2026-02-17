@@ -19,11 +19,12 @@ import { useCollections } from "../components/CollectionsProvider";
  */
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
-  const { settings, setSettingsOpen } = useSettings();
+  const { settings, setSettingsOpen, updateSettings, openSettings } = useSettings();
   const { createWorkspace } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -118,22 +119,72 @@ export default function Dashboard() {
                 <div className="p-4">
                   <p className="text-xs text-muted">Signed in as</p>
                   <p className="font-semibold text-sm text-foreground truncate">{user.displayName || "User"}</p>
-                  <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs text-muted hover:text-primary hover:border-primary cursor-pointer transition-colors">
-                    <span role="img" aria-label="smiley">☺</span> Set status
+                  
+                  {/* Status Editor */}
+                  <div className="mt-2">
+                       {isEditingStatus ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            value={settings.status || ""}
+                            onChange={(e) => updateSettings({ status: e.target.value })}
+                            onBlur={() => setIsEditingStatus(false)}
+                            onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
+                            placeholder="Set status..."
+                            className="w-full bg-black/5 dark:bg-black/20 border border-gray-200 dark:border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          />
+                       ) : (
+                          <div 
+                            onClick={() => setIsEditingStatus(true)}
+                            className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-xs cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-white/10 group ${
+                               settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                            }`}
+                          >
+                            <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '☺'}</span> 
+                            <span className="truncate">{settings.status || "Set status"}</span>
+                          </div>
+                       )}
                   </div>
                 </div>
 
                 {/* Section 1 */}
                 <div className="py-2">
-                  {['Your Profile', 'Billing', 'Settings', 'Keyboard shortcuts'].map((item) => (
-                    <a
-                      key={item}
-                      href="#"
-                      className="block px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        openSettings("profile");
+                      }}
+                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
                     >
-                      {item}
-                    </a>
-                  ))}
+                      Your Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        openSettings("billing");
+                      }}
+                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      Billing
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        openSettings("general");
+                      }}
+                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      Settings
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        openSettings("shortcuts");
+                      }}
+                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      Keyboard shortcuts
+                    </button>
                 </div>
 
                 {/* Sign Out */}
@@ -165,7 +216,7 @@ export default function Dashboard() {
               key={item.id}
               onClick={() => {
                 if (item.id === 'settings') {
-                  setSettingsOpen(true);
+                  openSettings("general");
                 } else if (item.path !== '#') {
                   router.push(item.path);
                 }
