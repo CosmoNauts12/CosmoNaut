@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Instant;
 
+mod auth;
+
 /// Represents an HTTP request sent from the frontend.
 #[derive(Debug, Deserialize)]
 pub struct CosmoRequest {
@@ -250,7 +252,12 @@ pub fn run() {
         save_workspaces,
         load_workspaces,
         save_history,
-        load_history
+        load_history,
+        // Google OAuth commands
+        auth::google::start_google_auth,
+        auth::storage::logout,
+        auth::storage::restore_session,
+        auth::token::refresh_token,
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

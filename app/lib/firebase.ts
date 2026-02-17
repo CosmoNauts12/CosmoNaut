@@ -69,3 +69,46 @@ export const resetPassword = async (email: string) =>
 
 export { app, auth, onAuthStateChanged, updateProfile };
 export type { User };
+
+/**
+ * Initiates Google Sign-In via Tauri backend (system browser).
+ * Backend handles OAuth flow, token verification, and secure storage.
+ * 
+ * Frontend should listen for 'auth-success' or 'auth-error' events.
+ */
+export const signInWithGoogle = async (): Promise<void> => {
+    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('start_google_auth');
+    } else {
+        throw new Error("Google Sign-In is only available in the desktop app");
+    }
+};
+
+/**
+ * Restores user session from OS keychain on app startup.
+ * Returns user data if valid session exists, null otherwise.
+ */
+export const restoreSession = async (userId: string): Promise<any | null> => {
+    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+        try {
+            const { invoke } = await import('@tauri-apps/api/core');
+            const userData = await invoke<any>('restore_session', { userId });
+            return userData;
+        } catch (e) {
+            console.error('Session restore failed:', e);
+            return null;
+        }
+    }
+    return null;
+};
+
+/**
+ * Logs out user by removing tokens from OS keychain.
+ */
+export const logoutTauri = async (userId: string): Promise<void> => {
+    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('logout', { userId });
+    }
+};

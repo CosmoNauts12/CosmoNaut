@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { auth, onAuthStateChanged, logout as firebaseLogout, User } from "@/app/lib/firebase";
+import { auth, onAuthStateChanged, logout as firebaseLogout, User, signInWithGoogle, restoreSession, logoutTauri } from "@/app/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSplash from "./LoadingSplash";
 
@@ -15,6 +15,10 @@ interface AuthContextType {
   loading: boolean;
   /** Function to sign out the current user and redirect to landing. */
   logout: () => Promise<void>;
+  /** Function to initiate Google Sign-In via Tauri backend */
+  googleSignIn: () => Promise<void>;
+  /** Error message from authentication attempts */
+  authError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +46,7 @@ export function useAuth() {
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -89,16 +94,89 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   /**
+   * Effect to listen for Tauri auth events (Google Sign-In)
+   */
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+      let unlistenSuccess: (() => void) | null = null;
+      let unlistenError: (() => void) | null = null;
+
+      (async () => {
+        const { listen } = await import('@tauri-apps/api/event');
+
+        // Listen for successful authentication
+        unlistenSuccess = await listen('auth-success', (event: any) => {
+          console.log('AuthProvider: Google auth success', event.payload);
+          const userData = event.payload;
+          
+          // Create a User-like object from the payload
+          const mockUser = {
+            uid: userData.uid,
+            email: userData.email,
+            displayName: userData.name || null,
+            photoURL: userData.picture || null,
+          } as User;
+
+          setUser(mockUser);
+          setAuthError(null);
+          setLoading(false);
+
+          // Route based on onboarding status
+          const hasCompletedOnboarding = localStorage.getItem("onboarding_complete") === "true";
+          const target = hasCompletedOnboarding ? "/dashboard" : "/onboarding/loading";
+          router.push(target);
+        });
+
+        // Listen for authentication errors
+        unlistenError = await listen('auth-error', (event: any) => {
+          console.error('AuthProvider: Google auth error', event.payload);
+          setAuthError(event.payload.message || 'Authentication failed');
+          setLoading(false);
+        });
+      })();
+
+      return () => {
+        if (unlistenSuccess) unlistenSuccess();
+        if (unlistenError) unlistenError();
+      };
+    }
+  }, [router]);
+
+  /**
    * Signs out the user via Firebase and redirects to the landing page.
    */
   const logout = async () => {
+    // If Tauri app, also clear keychain
+    if (user && typeof window !== "undefined" && (window as any).__TAURI__) {
+      try {
+        await logoutTauri(user.uid);
+      } catch (e) {
+        console.error('Failed to clear Tauri tokens:', e);
+      }
+    }
+    
     await firebaseLogout();
     setUser(null);
     router.push("/");
   };
 
+  /**
+   * Initiates Google Sign-In via Tauri backend
+   */
+  const googleSignIn = async () => {
+    setAuthError(null);
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      // Success will be handled by event listener
+    } catch (error: any) {
+      setAuthError(error.message || 'Failed to start Google Sign-In');
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout, googleSignIn, authError }}>
       {loading ? <LoadingSplash /> : children}
     </AuthContext.Provider>
   );
