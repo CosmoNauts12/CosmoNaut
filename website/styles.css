@@ -46,34 +46,13 @@
 
 html {
     scroll-behavior: smooth;
+    background-color: var(--bg-primary);
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--text-primary);
-    background:
-        radial-gradient(2px 2px at 20% 30%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(2px 2px at 60% 70%, rgba(13, 148, 136, 0.3), transparent),
-        radial-gradient(1px 1px at 50% 50%, rgba(2, 132, 199, 0.2), transparent),
-        radial-gradient(1px 1px at 80% 10%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 90% 60%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(1px 1px at 33% 80%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 70% 40%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(1px 1px at 15% 60%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 40% 20%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(1px 1px at 85% 90%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 25% 45%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(1px 1px at 95% 25%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 10% 85%, rgba(2, 132, 199, 0.3), transparent),
-        radial-gradient(1px 1px at 55% 15%, rgba(13, 148, 136, 0.2), transparent),
-        radial-gradient(2px 2px at 75% 75%, rgba(2, 132, 199, 0.3), transparent),
-        linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-    background-size:
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        100% 100%;
-    background-attachment: fixed;
+    background: transparent;
     line-height: 1.6;
     transition: background-color 0.3s ease, color 0.3s ease;
     position: relative;
@@ -81,39 +60,13 @@ body {
 }
 
 [data-theme="dark"] body {
-    background:
-        radial-gradient(3px 3px at 20% 30%, rgba(56, 189, 248, 0.8), transparent),
-        radial-gradient(2px 2px at 60% 70%, rgba(45, 212, 191, 0.6), transparent),
-        radial-gradient(2px 2px at 50% 50%, rgba(56, 189, 248, 0.5), transparent),
-        radial-gradient(1px 1px at 80% 10%, rgba(45, 212, 191, 0.4), transparent),
-        radial-gradient(3px 3px at 90% 60%, rgba(56, 189, 248, 0.7), transparent),
-        radial-gradient(1px 1px at 33% 80%, rgba(45, 212, 191, 0.5), transparent),
-        radial-gradient(2px 2px at 70% 40%, rgba(56, 189, 248, 0.5), transparent),
-        radial-gradient(1px 1px at 15% 60%, rgba(45, 212, 191, 0.4), transparent),
-        radial-gradient(3px 3px at 40% 20%, rgba(56, 189, 248, 0.6), transparent),
-        radial-gradient(1px 1px at 85% 90%, rgba(45, 212, 191, 0.5), transparent),
-        radial-gradient(2px 2px at 25% 45%, rgba(56, 189, 248, 0.7), transparent),
-        radial-gradient(1px 1px at 95% 25%, rgba(45, 212, 191, 0.4), transparent),
-        radial-gradient(3px 3px at 10% 85%, rgba(56, 189, 248, 0.5), transparent),
-        radial-gradient(1px 1px at 55% 15%, rgba(45, 212, 191, 0.4), transparent),
-        radial-gradient(2px 2px at 75% 75%, rgba(56, 189, 248, 0.6), transparent),
-        radial-gradient(2px 2px at 45% 90%, rgba(45, 212, 191, 0.5), transparent),
-        radial-gradient(1px 1px at 65% 35%, rgba(56, 189, 248, 0.4), transparent),
-        radial-gradient(3px 3px at 30% 55%, rgba(45, 212, 191, 0.4), transparent),
-        radial-gradient(2px 2px at 88% 78%, rgba(56, 189, 248, 0.5), transparent),
-        radial-gradient(1px 1px at 12% 22%, rgba(45, 212, 191, 0.4), transparent),
-        linear-gradient(135deg, #020617 0%, #0F172A 50%, #1E293B 100%);
-    background-size:
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%,
-        100% 100%;
+    background: transparent;
     background-attachment: fixed;
 }
 
 /* Animated Stars Background */
 .stars-container {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -625,7 +578,11 @@ footer {
 .visual-container {
     position: relative;
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
+    height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero-logo {
@@ -1274,4 +1231,118 @@ section {
         gap: 16px;
         text-align: center;
     }
+}
+
+/* StarBorder Effect */
+.star-border-container {
+    display: inline-block;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 2px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.star-border-container:hover {
+    transform: translateY(-2px);
+}
+
+.border-gradient-bottom {
+    position: absolute;
+    width: 300%;
+    height: 100%;
+    opacity: 0.8;
+    bottom: -50%;
+    right: -250%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--primary), transparent 20%);
+    animation: star-movement-bottom 6s linear infinite alternate;
+    z-index: 0;
+}
+
+.border-gradient-top {
+    position: absolute;
+    opacity: 0.8;
+    width: 300%;
+    height: 100%;
+    top: -50%;
+    left: -250%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--primary), transparent 20%);
+    animation: star-movement-top 6s linear infinite alternate;
+    z-index: 0;
+}
+
+.star-border-container .inner-content {
+    position: relative;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    padding: 14px 28px;
+    border-radius: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    width: 100%;
+    height: 100%;
+}
+
+[data-theme="dark"] .star-border-container .inner-content {
+    background: #000;
+}
+
+.star-border-container:hover .inner-content {
+    background: var(--bg-secondary);
+    border-color: var(--primary);
+}
+
+/* Secondary StarBorder Variation */
+.star-border-container.secondary .border-gradient-bottom,
+.star-border-container.secondary .border-gradient-top {
+    background: radial-gradient(circle, var(--accent), transparent 20%);
+}
+
+/* Specialized variations */
+.star-border-container.nav-btn .inner-content {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.star-border-container.sm .inner-content {
+    padding: 10px 20px;
+    font-size: 13px;
+}
+
+@keyframes star-movement-bottom {
+    0% {
+        transform: translate(0%, 0%);
+    }
+
+    100% {
+        transform: translate(-100%, 0%);
+    }
+}
+
+@keyframes star-movement-top {
+    0% {
+        transform: translate(0%, 0%);
+    }
+
+    100% {
+        transform: translate(100%, 0%);
+    }
+}
+
+.star-border-container.full-width {
+    display: flex;
+    width: 100%;
 }

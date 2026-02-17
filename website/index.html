@@ -15,6 +15,10 @@
 </head>
 
 <body>
+    <!-- Full-screen Background Animation -->
+    <div id="antigravity-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none;"></div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
@@ -47,7 +51,11 @@
                     </button>
                     <!-- User Authentication -->
                     <div class="user-auth" id="userAuth">
-                        <button class="btn-nav" id="signInBtn">Sign In</button>
+                        <button class="star-border-container nav-btn" id="signInBtn">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">Sign In</div>
+                        </button>
                         <div class="user-menu" id="userMenu" style="display: none;">
                             <div class="user-avatar" id="userAvatar"></div>
                             <div class="user-dropdown">
@@ -56,7 +64,12 @@
                             </div>
                         </div>
                     </div>
-                    <a href="https://github.com/Adith1207/CosmoNaut" class="btn-nav" target="_blank">GitHub</a>
+                    <a href="https://github.com/Adith1207/CosmoNaut" class="star-border-container nav-btn"
+                        target="_blank">
+                        <div class="border-gradient-bottom"></div>
+                        <div class="border-gradient-top"></div>
+                        <div class="inner-content">GitHub</div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -80,14 +93,22 @@
                         Built on Rust and Next.js, designed for teams that demand excellence.
                     </p>
                     <div class="hero-cta">
-                        <a href="#download" class="btn btn-primary">
-                            Get Started
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+                        <a href="#download" class="star-border-container">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">
+                                Get Started
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
                         </a>
-                        <a href="#capabilities" class="btn btn-secondary">Explore Capabilities</a>
+                        <a href="#capabilities" class="star-border-container">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">Explore Capabilities</div>
+                        </a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat">
@@ -105,7 +126,7 @@
                     </div>
                 </div>
                 <div class="hero-visual">
-                    <div class="visual-container">
+                    <div class="visual-container" id="antigravity-container">
                         <img src="logo.svg" alt="CosmoNaut Platform" class="hero-logo">
                         <div class="visual-glow"></div>
                     </div>
@@ -113,6 +134,51 @@
             </div>
         </div>
     </section>
+
+    <!-- Background & Interaction Animations -->
+    <script type="module">
+        import { Antigravity } from './antigravity.js';
+        import { ClickSpark } from './clickspark.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('antigravity-canvas');
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#5227FF';
+
+            const antigravity = new Antigravity(container, {
+                count: 500,
+                magnetRadius: 12,
+                ringRadius: 18,
+                waveSpeed: 0.3,
+                waveAmplitude: 2,
+                particleSize: 1.2,
+                lerpSpeed: 0.04,
+                color: primaryColor,
+                autoAnimate: true,
+                particleVariance: 8,
+                rotationSpeed: 0.05,
+                depthFactor: 3,
+                pulseSpeed: 2,
+                particleShape: 'capsule',
+                fieldStrength: 5
+            });
+
+            // ClickSpark effect
+            new ClickSpark({
+                sparkColor: '#fff',
+                sparkSize: 10,
+                sparkRadius: 15,
+                sparkCount: 8,
+                duration: 400
+            });
+
+            // Update color on theme change
+            const observer = new MutationObserver(() => {
+                const newColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                antigravity.updateColor(newColor);
+            });
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        });
+    </script>
 
     <!-- Capabilities Section -->
     <section id="capabilities" class="capabilities">
@@ -244,15 +310,23 @@
                         </div>
                     </div>
                     <div class="platform-downloads">
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn primary">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
-                                <path d="M3 16H17V14H3V16Z" fill="currentColor" />
-                            </svg>
-                            <span>Download .msi</span>
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm full-width">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
+                                    <path d="M3 16H17V14H3V16Z" fill="currentColor" />
+                                </svg>
+                                <span>Download .msi</span>
+                            </div>
                         </a>
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn secondary">
-                            Portable .exe
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm secondary full-width">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">Portable .exe</div>
                         </a>
                     </div>
                 </div>
@@ -275,15 +349,23 @@
                         </div>
                     </div>
                     <div class="platform-downloads">
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn primary">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
-                                <path d="M3 16H17V14H3V16Z" fill="currentColor" />
-                            </svg>
-                            <span>Apple Silicon</span>
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm full-width">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
+                                    <path d="M3 16H17V14H3V16Z" fill="currentColor" />
+                                </svg>
+                                <span>Apple Silicon</span>
+                            </div>
                         </a>
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn secondary">
-                            Intel Chip
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm secondary full-width">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">Intel Chip</div>
                         </a>
                     </div>
                 </div>
@@ -301,15 +383,23 @@
                         </div>
                     </div>
                     <div class="platform-downloads">
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn primary">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
-                                <path d="M3 16H17V14H3V16Z" fill="currentColor" />
-                            </svg>
-                            <span>Download .deb</span>
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 13L6 9H8V4H12V9H14L10 13Z" fill="currentColor" />
+                                    <path d="M3 16H17V14H3V16Z" fill="currentColor" />
+                                </svg>
+                                <span>Download .deb</span>
+                            </div>
                         </a>
-                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest" class="download-btn secondary">
-                            AppImage
+                        <a href="https://github.com/Adith1207/CosmoNaut/releases/latest"
+                            class="star-border-container sm secondary">
+                            <div class="border-gradient-bottom"></div>
+                            <div class="border-gradient-top"></div>
+                            <div class="inner-content">AppImage</div>
                         </a>
                     </div>
                 </div>
