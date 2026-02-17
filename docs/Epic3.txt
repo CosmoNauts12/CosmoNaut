@@ -1,0 +1,34 @@
+EPIC 3: Visual API Workflow and Scenario Design
+
+Objective
+Enable developers to visually design, execute, and understand multi-step API workflows that reflect real-world application behavior.
+
+Why this Epic Exists
+Modern systems rarely rely on single API calls. This epic bridges the gap by offering flow-based execution, data dependency tracking, and guided debugging.
+
+User Story 3.1: Visual Scenario Creation
+Client Perspective:
+As a developer, I want to create API scenarios using visual blocks so that execution flow is clear.
+
+Implementation Tasks:
+FE: Design visual block container with vertical layout.
+FE: Enable adding, deleting, and reordering blocks.
+BE: Persist block order and configuration.
+
+User Story 3.2: Self-contained Block Configuration
+Embed request editor inside each block.
+Validate step configuration.
+Display step-level errors.
+
+User Story 3.3: Sequential Scenario Execution
+Execute blocks top to bottom.
+Highlight active block.
+Stop execution on failure.
+Display execution summary.
+
+User Story 3.4: Context-aware In-app Chatbot
+Integrate chatbot into scenario builder.
+Provide contextual explanations.
+Explain errors in simple language.
+Suggest best practices.
+Allow chatbot enable or disable.

@@ -10,6 +10,67 @@ import { CosmoResponse } from "./RequestEngine";
  * @param response The response object from the engine, or null if no request sent.
  * @param isExecuting Boolean reflecting the current execution state.
  */
+
+/**
+ * Map of error types to user-friendly titles, descriptions, and icons.
+ */
+const ERROR_DETAILS = {
+  DNS_ERROR: {
+    title: "DNS Resolution Failed",
+    desc: "The domain name could not be resolved. Please check the URL spelling or your DNS settings.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
+        <path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+      </svg>
+    )
+  },
+  TIMEOUT_ERROR: {
+    title: "Mission Timed Out",
+    desc: "The server took too long to respond. This might be due to a slow connection or a heavy server-side operation.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500/80 mb-6">
+        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline><path d="M12 6c-3.31 0-6 2.69-6 6"></path>
+      </svg>
+    )
+  },
+  SSL_ERROR: {
+    title: "Secure Connection Failed",
+    desc: "There was a problem establishing a secure SSL/TLS connection. This could be an expired certificate or a protocol mismatch.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path><path d="M12 16v-1"></path>
+      </svg>
+    )
+  },
+  NETWORK_ERROR: {
+    title: "Connection Failed",
+    desc: "Could not reach the server. Please check your internet connection or ensuring the server is running.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
+        <path d="M1 1l22 22"></path><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><path d="M12 20h.01"></path>
+      </svg>
+    )
+  },
+  INVALID_URL: {
+    title: "Invalid Protocol",
+    desc: "The request terminal could not interpret the protocol. Ensure the URL starts with http:// or https://.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
+        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    )
+  },
+  UNKNOWN_ERROR: {
+    title: "Unexpected Failure",
+    desc: "An unknown anomaly occurred during request execution. Check the console for more details.",
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-6">
+        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    )
+  }
+};
+
 export default function ResponsePanel({
   response,
   isExecuting
@@ -18,7 +79,7 @@ export default function ResponsePanel({
   isExecuting: boolean;
 }) {
   const [activeTab, setActiveTab] = useState("pretty");
-  const [visualMode, setVisualMode] = useState("graph");
+  // const [visualMode, setVisualMode] = useState("graph");
 
   /**
    * Memoized formatted body. Attempts to parse as JSON for pretty-printing,
@@ -53,68 +114,7 @@ export default function ResponsePanel({
 
   if (response.error) {
     const { error_type, message } = response.error;
-
-    /**
-     * Map of error types to user-friendly titles, descriptions, and icons.
-     */
-    const errorDetails = {
-      DNS_ERROR: {
-        title: "DNS Resolution Failed",
-        desc: "The domain name could not be resolved. Please check the URL spelling or your DNS settings.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
-            <path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-          </svg>
-        )
-      },
-      TIMEOUT_ERROR: {
-        title: "Mission Timed Out",
-        desc: "The server took too long to respond. This might be due to a slow connection or a heavy server-side operation.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500/80 mb-6">
-            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline><path d="M12 6c-3.31 0-6 2.69-6 6"></path>
-          </svg>
-        )
-      },
-      SSL_ERROR: {
-        title: "Secure Connection Failed",
-        desc: "There was a problem establishing a secure SSL/TLS connection. This could be an expired certificate or a protocol mismatch.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path><path d="M12 16v-1"></path>
-          </svg>
-        )
-      },
-      NETWORK_ERROR: {
-        title: "Connection Failed",
-        desc: "Could not reach the server. Please check your internet connection or ensuring the server is running.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
-            <path d="M1 1l22 22"></path><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><path d="M12 20h.01"></path>
-          </svg>
-        )
-      },
-      INVALID_URL: {
-        title: "Invalid Protocol",
-        desc: "The request terminal could not interpret the protocol. Ensure the URL starts with http:// or https://.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500/80 mb-6">
-            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        )
-      },
-      UNKNOWN_ERROR: {
-        title: "Unexpected Failure",
-        desc: "An unknown anomaly occurred during request execution. Check the console for more details.",
-        icon: (
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-6">
-            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        )
-      }
-    };
-
-    const details = errorDetails[error_type.toUpperCase() as keyof typeof errorDetails] || errorDetails.UNKNOWN_ERROR;
+    const details = ERROR_DETAILS[error_type.toUpperCase() as keyof typeof ERROR_DETAILS] || ERROR_DETAILS.UNKNOWN_ERROR;
 
     return (
       <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-md border-t border-card-border items-center justify-center p-8 text-center scrollbar-hide">

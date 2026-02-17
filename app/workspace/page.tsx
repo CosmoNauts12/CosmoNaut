@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import WorkspaceSidebar from "../components/WorkspaceSidebar";
@@ -93,32 +93,46 @@ export default function WorkspacePage() {
    * Keeps open tabs in sync with the global collections state.
    * Handles renames and removes tabs if their source request is deleted.
    */
+  // Synchronize tabs with collections during render to avoid cascading renders in useEffect
+  const synchronizedTabs = useMemo(() => {
+    let changed = false;
+    const nextTabs = tabs.reduce<ActiveRequest[]>((acc, t) => {
+      if (!('collectionId' in t)) {
+        acc.push(t);
+        return acc;
+      }
+
+      const collection = collections.find(c => c.id === t.collectionId);
+      const request = collection?.requests.find(r => r.id === t.id);
+
+      if (!request) {
+        changed = true;
+        return acc;
+      }
+
+      if (request.name !== t.name || request.method !== t.method) {
+        acc.push({ ...t, name: request.name, method: request.method });
+        changed = true;
+      } else {
+        acc.push(t);
+      }
+
+      return acc;
+    }, []);
+
+    // If something changed during derivation, we should probably update the underlying state
+    // but doing so during render is tricky. 
+    // Actually, if we just use synchronizedTabs for rendering, we don't need to 'save' it back to state
+    // unless the user performs an action that needs the updated state.
+    return nextTabs;
+  }, [tabs, collections]);
+
+  // Update tabs state if they were synchronized (effectively syncing on change)
   useEffect(() => {
-    setTabs(prev => {
-      let changed = false;
-      const newTabs = prev.filter(t => {
-        if (!('collectionId' in t)) return true; // Metadata tab (New Request)
-
-        const collection = collections.find(c => c.id === t.collectionId);
-        const request = collection?.requests.find(r => r.id === t.id);
-
-        if (!request) {
-          changed = true;
-          return false; // Request was deleted
-        }
-
-        if (request.name !== t.name || request.method !== t.method) {
-          t.name = request.name;
-          t.method = request.method;
-          changed = true;
-        }
-
-        return true;
-      });
-
-      return changed ? [...newTabs] : prev;
-    });
-  }, [collections]);
+    if (JSON.stringify(synchronizedTabs) !== JSON.stringify(tabs)) {
+      setTabs(synchronizedTabs);
+    }
+  }, [synchronizedTabs, tabs]);
 
   if (loading || !user) {
     return (
