@@ -77,7 +77,7 @@ export type { User };
  * Frontend should listen for 'auth-success' or 'auth-error' events.
  */
 export const signInWithGoogle = async (): Promise<void> => {
-    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+    if (typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
         const { invoke } = await import('@tauri-apps/api/core');
         await invoke('start_google_auth');
     } else {
@@ -90,10 +90,10 @@ export const signInWithGoogle = async (): Promise<void> => {
  * Returns user data if valid session exists, null otherwise.
  */
 export const restoreSession = async (userId: string): Promise<any | null> => {
-    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+    if (typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const userData = await invoke<any>('restore_session', { userId });
+            const userData = await invoke('restore_session', { userId });
             return userData;
         } catch (e) {
             console.error('Session restore failed:', e);
@@ -107,7 +107,7 @@ export const restoreSession = async (userId: string): Promise<any | null> => {
  * Logs out user by removing tokens from OS keychain.
  */
 export const logoutTauri = async (userId: string): Promise<void> => {
-    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+    if (typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
         const { invoke } = await import('@tauri-apps/api/core');
         await invoke('logout', { userId });
     }

@@ -2,9 +2,8 @@ use crate::auth::{AuthState, FIREBASE_WEB_CLIENT_ID};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use rand::Rng;
 use std::sync::{Arc, Mutex};
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 
-/// Global state storage for OAuth flow
 lazy_static::lazy_static! {
     static ref AUTH_STATE: Arc<Mutex<Option<AuthState>>> = Arc::new(Mutex::new(None));
 }
@@ -27,8 +26,9 @@ pub async fn start_google_auth(app_handle: tauri::AppHandle) -> Result<(), Strin
     let state = generate_random_string(32);
     let nonce = generate_random_string(32);
 
-    // Start local callback server on random available port
-    let port = crate::auth::server::start_callback_server(app_handle.clone(), state.clone())
+    // Start local callback server on fixed port 35585
+    let port = 35585;
+    crate::auth::server::start_callback_server(app_handle.clone(), state.clone(), port)
         .await
         .map_err(|e| format!("Failed to start callback server: {}", e))?;
 
@@ -50,10 +50,10 @@ pub async fn start_google_auth(app_handle: tauri::AppHandle) -> Result<(), Strin
 
     log::info!("Opening browser with auth URL");
 
-    // Open system browser
-    let shell = app_handle.shell();
-    shell
-        .open(&auth_url, None)
+    // Open system browser using tauri-plugin-opener
+    app_handle
+        .opener()
+        .open_url(&auth_url, None::<&str>)
         .map_err(|e| format!("Failed to open browser: {}", e))?;
 
     Ok(())

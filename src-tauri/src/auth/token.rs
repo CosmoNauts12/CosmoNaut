@@ -1,4 +1,5 @@
 use crate::auth::FIREBASE_PROJECT_ID;
+use crate::auth::FIREBASE_API_KEY;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -24,6 +25,14 @@ pub struct TokenClaims {
 pub struct FirebaseClaims {
     pub identities: Option<HashMap<String, Vec<String>>>,
     pub sign_in_provider: Option<String>,
+}
+
+/// Response from Google Identity Toolkit exchange
+#[derive(Debug, Deserialize)]
+pub struct ExchangeResponse {
+    pub idToken: String,
+    pub refreshToken: String,
+    pub expiresIn: String,
 }
 
 /// Verifies a Firebase ID token
@@ -93,6 +102,43 @@ async fn fetch_firebase_public_keys() -> Result<HashMap<String, String>, String>
     Ok(keys)
 }
 
+/// Exchanges Google ID token for Firebase ID token
+pub async fn exchange_google_token(google_id_token: &str) -> Result<ExchangeResponse, String> {
+    log::info!("Exchanging Google token for Firebase token");
+
+    let client = reqwest::Client::new();
+    let url = format!(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key={}",
+        FIREBASE_API_KEY
+    );
+
+    let response = client
+        .post(&url)
+        .json(&serde_json::json!({
+            "postBody": format!("id_token={}&providerId=google.com", google_id_token),
+            "requestUri": "http://localhost",
+            "returnIdpCredential": true,
+            "returnSecureToken": true
+        }))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to exchange token: {}", e))?;
+
+    if !response.status().is_success() {
+        let error_text = response.text().await.unwrap_or_default();
+        return Err(format!("Token exchange failed: {}", error_text));
+    }
+
+    let result: ExchangeResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse exchange response: {}", e))?;
+
+    log::info!("Token exchanged successfully");
+
+    Ok(result)
+}
+
 /// Refreshes an expired ID token using refresh token
 /// 
 /// Calls Firebase token refresh endpoint and returns new tokens
@@ -102,7 +148,8 @@ pub async fn refresh_token(refresh_token: String) -> Result<serde_json::Value, S
 
     let client = reqwest::Client::new();
     let url = format!(
-        "https://securetoken.googleapis.com/v1/token?key=AIzaSyDfRbTA2Qi3RYmXcJKZkpspOUqypcA5wgs"
+        "https://securetoken.googleapis.com/v1/token?key={}",
+        FIREBASE_API_KEY
     );
 
     let response = client

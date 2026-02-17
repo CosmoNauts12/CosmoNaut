@@ -9,7 +9,9 @@ pub mod token;
 #[derive(Debug, Clone)]
 pub struct AuthState {
     pub state: String,
+    #[allow(dead_code)]
     pub nonce: String,
+    #[allow(dead_code)]
     pub port: u16,
 }
 
@@ -32,5 +34,6 @@ pub struct Tokens {
 
 /// Firebase project configuration
 pub const FIREBASE_PROJECT_ID: &str = "software-project-45fdc";
-pub const FIREBASE_WEB_CLIENT_ID: &str = "260320074179-YOUR_CLIENT_ID.apps.googleusercontent.com"; // TODO: Replace with actual Web Client ID
+pub const FIREBASE_WEB_CLIENT_ID: &str = "260320074179-b7pbsofdm5s9dr330bghfpobbqmfeie0.apps.googleusercontent.com"; // TODO: Replace with actual Web Client ID
+pub const FIREBASE_API_KEY: &str = "AIzaSyDfRbTA2Qi3RYmXcJKZkpspOUqypcA5wgs";
 pub const KEYCHAIN_SERVICE: &str = "com.cosmonaut.auth";

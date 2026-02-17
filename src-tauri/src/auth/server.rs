@@ -33,6 +33,7 @@ pub struct TokenPayload {
 pub async fn start_callback_server(
     app_handle: tauri::AppHandle,
     expected_state: String,
+    port: u16,
 ) -> Result<u16, String> {
     // Create a channel to signal server shutdown
     let (shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
@@ -40,7 +41,7 @@ pub async fn start_callback_server(
 
     // Clone app_handle for use in handlers
     let app_handle_clone = app_handle.clone();
-    let app_handle_clone2 = app_handle.clone();
+    let _app_handle_clone2 = app_handle.clone();
 
     // Create router with callback handlers
     let app = Router::new()
@@ -69,21 +70,16 @@ pub async fn start_callback_server(
             }),
         );
 
-    // Bind to localhost on random available port
-    let addr = SocketAddr::from(([127, 0, 0, 1], 0));
+    // Bind to localhost on fixed port
+    let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = tokio::net::TcpListener::bind(addr)
         .await
-        .map_err(|e| format!("Failed to bind server: {}", e))?;
+        .map_err(|e| format!("Failed to bind server to port {}: {}", port, e))?;
 
-    let port = listener
-        .local_addr()
-        .map_err(|e| format!("Failed to get local address: {}", e))?
-        .port();
-
+    log::info!("Callback server listening on port {}", port);
+    
     // Spawn server in background
     tokio::spawn(async move {
-        log::info!("Callback server listening on port {}", port);
-
         axum::serve(listener, app)
             .with_graceful_shutdown(async {
                 shutdown_rx.await.ok();
@@ -124,7 +120,7 @@ async fn handle_callback_get(
 async fn handle_process_tokens(
     Json(payload): Json<TokenPayload>,
     app_handle: tauri::AppHandle,
-    expected_state: String,
+    _expected_state: String,
     shutdown_tx: Arc<tokio::sync::Mutex<Option<oneshot::Sender<()>>>>,
 ) -> impl IntoResponse {
     log::info!("Processing tokens from callback");
@@ -147,57 +143,82 @@ async fn handle_process_tokens(
         return Json(serde_json::json!({ "status": "error", "message": e }));
     }
 
-    // Verify ID token
-    match crate::auth::token::verify_firebase_token(&payload.id_token).await {
-        Ok(claims) => {
-            log::info!("Token verified for user: {:?}", claims.email);
+    // Exchange Google ID token for Firebase ID token
+    let exchange_result = crate::auth::token::exchange_google_token(&payload.id_token).await;
 
-            // Extract user data
-            let user_data = UserData {
-                uid: claims.user_id.clone(),
-                email: claims.email.clone().unwrap_or_default(),
-                name: claims.name.clone(),
-                picture: claims.picture.clone(),
-            };
+    match exchange_result {
+        Ok(firebase_tokens) => {
+            log::info!("Firebase token exchange successful");
 
-            // Save tokens to keychain
-            let tokens = Tokens {
-                id_token: payload.id_token.clone(),
-                access_token: payload.access_token.clone(),
-                refresh_token: None, // Google OAuth doesn't return refresh token in implicit flow
-            };
+            // Verify the new Firebase ID token
+            match crate::auth::token::verify_firebase_token(&firebase_tokens.idToken).await {
+                Ok(claims) => {
+                    log::info!("Token verified for user: {:?}", claims.email);
 
-            if let Err(e) = crate::auth::storage::save_tokens(&claims.user_id, &tokens) {
-                log::error!("Failed to save tokens: {}", e);
-                
-                app_handle
-                    .emit("auth-error", serde_json::json!({
-                        "message": format!("Failed to save credentials: {}", e)
-                    }))
-                    .ok();
-            } else {
-                // Emit success event to frontend
-                app_handle
-                    .emit("auth-success", user_data)
-                    .ok();
+                    // Extract user data
+                    let user_data = UserData {
+                        uid: claims.user_id.clone(),
+                        email: claims.email.clone().unwrap_or_default(),
+                        name: claims.name.clone(),
+                        picture: claims.picture.clone(),
+                    };
+
+                    // Save tokens to keychain
+                    let tokens = Tokens {
+                        id_token: firebase_tokens.idToken,
+                        access_token: payload.access_token.clone(), // Keep original Google access token if needed, or use firebase_tokens.access_token if available/needed
+                        refresh_token: Some(firebase_tokens.refreshToken),
+                    };
+
+                    if let Err(e) = crate::auth::storage::save_tokens(&claims.user_id, &tokens) {
+                        log::error!("Failed to save tokens: {}", e);
+                        
+                        app_handle
+                            .emit("auth-error", serde_json::json!({
+                                "message": format!("Failed to save credentials: {}", e)
+                            }))
+                            .ok();
+                    } else {
+                        // Emit success event to frontend
+                        app_handle
+                            .emit("auth-success", user_data)
+                            .ok();
+                    }
+
+                    // Clear auth state
+                    crate::auth::google::clear_auth_state();
+
+                    // Shutdown server
+                    if let Some(tx) = shutdown_tx.lock().await.take() {
+                        tx.send(()).ok();
+                    }
+
+                    Json(serde_json::json!({ "status": "success" }))
+                }
+                Err(e) => {
+                    log::error!("Token verification failed: {}", e);
+                    
+                    app_handle
+                        .emit("auth-error", serde_json::json!({
+                            "message": format!("Token verification failed: {}", e)
+                        }))
+                        .ok();
+
+                    // Shutdown server
+                    if let Some(tx) = shutdown_tx.lock().await.take() {
+                        tx.send(()).ok();
+                    }
+
+                    Json(serde_json::json!({ "status": "error", "message": e }))
+                }
             }
-
-            // Clear auth state
-            crate::auth::google::clear_auth_state();
-
-            // Shutdown server
-            if let Some(tx) = shutdown_tx.lock().await.take() {
-                tx.send(()).ok();
-            }
-
-            Json(serde_json::json!({ "status": "success" }))
         }
         Err(e) => {
-            log::error!("Token verification failed: {}", e);
+            log::error!("Token exchange failed: {}", e);
             
             app_handle
                 .emit("auth-error", serde_json::json!({
-                    "message": format!("Token verification failed: {}", e)
+                    "message": format!("Token exchange failed: {}", e)
                 }))
                 .ok();
 

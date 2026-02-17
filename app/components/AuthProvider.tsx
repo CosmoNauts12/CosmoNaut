@@ -97,7 +97,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
    * Effect to listen for Tauri auth events (Google Sign-In)
    */
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).__TAURI__) {
+    if (typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
       let unlistenSuccess: (() => void) | null = null;
       let unlistenError: (() => void) | null = null;
 
@@ -147,7 +147,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
    */
   const logout = async () => {
     // If Tauri app, also clear keychain
-    if (user && typeof window !== "undefined" && (window as any).__TAURI__) {
+    if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
       try {
         await logoutTauri(user.uid);
       } catch (e) {
