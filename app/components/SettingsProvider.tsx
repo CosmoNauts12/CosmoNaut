@@ -18,6 +18,8 @@ export interface Settings {
   defaultMethod: "GET" | "POST";
   /** ID of the last active workspace, used for session recovery. */
   lastWorkspaceId?: string;
+  /** User's custom status message. */
+  status?: string;
 }
 
 /**
@@ -40,7 +42,10 @@ const DEFAULT_SETTINGS: Settings = {
   confirmCloseTab: true,
   confirmDelete: true,
   defaultMethod: "GET",
+  status: "",
 };
+
+import { useAuth } from "./AuthProvider";
 
 const STORAGE_KEY = "cosmonaut_settings_v1";
 
@@ -48,36 +53,73 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 /**
  * Provider for managing user preferences and app-wide configuration state.
- * Handles persistence to localStorage.
+ * Handles persistence to localStorage (for guests) and backend filesystem (for users).
  */
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const { user } = useAuth();
 
   /**
-   * Initial load effect. Populates state from localStorage on mount.
+   * Initial load effect. Populates state from backend or localStorage.
    */
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+    const loadSettings = async () => {
       try {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+        if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
+          const { invoke } = await import('@tauri-apps/api/core');
+          const saved = await invoke<string>('load_user_preferences', { userId: user.uid });
+          if (saved && saved !== "{}") {
+             setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+          } else {
+             // If no backend settings, try migration from local storage or defaults
+             const localSaved = localStorage.getItem(STORAGE_KEY);
+             if (localSaved) {
+                setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(localSaved) });
+             }
+          }
+        } else {
+          // Fallback for guest/web
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+          }
+        }
       } catch (e) {
-        console.error("Failed to parse settings", e);
+        console.error("Failed to load settings", e);
+      } finally {
+        setIsInitialized(true);
       }
-    }
-    setIsInitialized(true);
-  }, []);
+    };
+
+    loadSettings();
+  }, [user]);
 
   /**
-   * Persistence effect. Updates localStorage whenever settings change.
+   * Persistence effect. Updates backend/localStorage whenever settings change.
    */
   useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    }
-  }, [settings, isInitialized]);
+    if (!isInitialized) return;
+
+    const saveSettings = async () => {
+      try {
+        if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
+          const { invoke } = await import('@tauri-apps/api/core');
+          await invoke('save_user_preferences', { 
+            userId: user.uid, 
+            preferences: JSON.stringify(settings) 
+          });
+        }
+        // Always save to local storage as backup/guest mode
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      } catch (e) {
+        console.error("Failed to save settings", e);
+      }
+    };
+
+    saveSettings();
+  }, [settings, isInitialized, user]);
 
   /**
    * Updates settings state with a partial update object.

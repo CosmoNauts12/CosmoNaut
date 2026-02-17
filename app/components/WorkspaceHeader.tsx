@@ -1,5 +1,6 @@
 "use client";
 
+
 import Link from "next/link";
 import { useState } from "react";
 import ThemeToggle from "./ThemeToggle";
@@ -16,9 +17,10 @@ import { useAuth } from "./AuthProvider";
  * - User profile dropdown and theme toggle.
  */
 export default function WorkspaceHeader() {
-  const { setSettingsOpen } = useSettings();
+  const { settings, updateSettings, setSettingsOpen } = useSettings();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
 
   return (
     <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
@@ -39,7 +41,6 @@ export default function WorkspaceHeader() {
           <button className="text-primary bg-primary/10 px-2.5 py-1 rounded-md">Overview</button>
           <button className="text-muted hover:text-foreground px-2.5 py-1 transition-colors">Updates</button>
           <button
-            id="settings-btn"
             onClick={() => setSettingsOpen(true)}
             className="text-muted hover:text-foreground px-2.5 py-1 transition-colors"
           >
@@ -49,7 +50,7 @@ export default function WorkspaceHeader() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* User Dropdown */}
+{/* User Dropdown */}
         <div className="relative flex items-center h-full">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -72,15 +73,41 @@ export default function WorkspaceHeader() {
                   <div className="mb-4">
                     <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Signed in as</p>
                     <p className="font-bold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
-                    <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] text-muted hover:text-primary hover:border-primary/50 cursor-pointer transition-all hover:bg-white/10 group">
-                      <span className="group-hover:scale-110 transition-transform">✨</span> Set status
+                    
+                    {/* Status Display/Edit */}
+                    <div className="mt-2">
+                       {isEditingStatus ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            value={settings.status || ""}
+                            onChange={(e) => updateSettings({ status: e.target.value })}
+                            onBlur={() => setIsEditingStatus(false)}
+                            onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
+                            placeholder="Set status..."
+                            className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          />
+                       ) : (
+                          <div 
+                            onClick={() => setIsEditingStatus(true)}
+                            className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${
+                               settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                            }`}
+                          >
+                            <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span> 
+                            <span className="truncate">{settings.status || "Set status"}</span>
+                          </div>
+                       )}
                     </div>
                   </div>
 
                   <div className="h-px bg-card-border/50 my-2" />
 
                   <div className="space-y-1">
-                    <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                    <button 
+                      onClick={() => setSettingsOpen(true)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                    >
                       Profile Settings
                     </button>
                     <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">

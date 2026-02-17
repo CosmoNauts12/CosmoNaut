@@ -239,6 +239,39 @@ async fn load_history(
     std::fs::read_to_string(file_path).map_err(|e| e.to_string())
 }
 
+/// Saves user preferences to a JSON file.
+#[tauri::command]
+async fn save_user_preferences(
+    app_handle: tauri::AppHandle, 
+    user_id: String, 
+    preferences: String
+) -> Result<(), String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    let user_dir = app_dir.join("users").join(&user_id);
+    std::fs::create_dir_all(&user_dir).map_err(|e| e.to_string())?;
+    
+    let file_path = user_dir.join("preferences.json");
+    std::fs::write(file_path, preferences).map_err(|e| e.to_string())?;
+    
+    Ok(())
+}
+
+/// Loads user preferences from the local filesystem.
+#[tauri::command]
+async fn load_user_preferences(
+    app_handle: tauri::AppHandle, 
+    user_id: String
+) -> Result<String, String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    let file_path = app_dir.join("users").join(&user_id).join("preferences.json");
+    
+    if !file_path.exists() {
+        return Ok("{}".to_string());
+    }
+    
+    std::fs::read_to_string(file_path).map_err(|e| e.to_string())
+}
+
 /// Entry point for the Tauri application.
 /// Configures handlers, plugins, and setup logic.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -259,6 +292,8 @@ pub fn run() {
         auth::storage::logout,
         auth::storage::restore_session,
         auth::token::refresh_token,
+        save_user_preferences,
+        load_user_preferences,
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

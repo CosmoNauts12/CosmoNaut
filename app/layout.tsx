@@ -10,8 +10,8 @@ import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeContext";
 import { SettingsProvider } from "./components/SettingsProvider";
-import SettingsModal from "./components/SettingsModal";
 import { CollectionsProvider } from "./components/CollectionsProvider";
+import SettingsModal from "./components/SettingsModal";
 
 // Fonts
 const geistSans = Geist({
@@ -54,16 +54,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${allura.variable} antialiased min-h-screen`}
       >
-        <SettingsProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <SettingsProvider>
             <CollectionsProvider>
               <ThemeProvider>
                 {children}
                 <SettingsModal />
               </ThemeProvider>
             </CollectionsProvider>
-          </AuthProvider>
-        </SettingsProvider>
+          </SettingsProvider>
+        </AuthProvider>
       </body>
     </html>
   );
