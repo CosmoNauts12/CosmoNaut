@@ -1,0 +1,589 @@
+:root {
+    --primary: #A100FF;
+    --secondary: #00D9FF;
+    --bg-dark: #050508;
+    --text-main: #ffffff;
+    --text-dim: rgba(255, 255, 255, 0.6);
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --transit: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: none;
+    /* We use custom cursor */
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.1;
+}
+
+/* --- Custom Cursor --- */
+.cursor-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--secondary);
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.cursor-outline {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--primary);
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease-out;
+}
+
+/* --- Space Engine (Background) --- */
+.space-engine {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #050508 100%);
+}
+
+.stars {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background-image:
+        radial-gradient(1px 1px at 25% 10%, white 100%, transparent),
+        radial-gradient(1.5px 1.5px at 15% 40%, var(--primary) 100%, transparent),
+        radial-gradient(1px 1px at 70% 25%, var(--secondary) 100%, transparent),
+        radial-gradient(2px 2px at 90% 80%, white 100%, transparent);
+    background-size: 300px 300px;
+    opacity: 0.6;
+    /* Increased brightness */
+}
+
+.layer-1 {
+    animation: drift 60s linear infinite, twinkle 4s ease-in-out infinite;
+}
+
+.layer-2 {
+    background-size: 450px 450px;
+    opacity: 0.4;
+    /* Increased brightness */
+    animation: drift 90s linear infinite reverse, twinkle 5s ease-in-out infinite 1s;
+}
+
+.layer-3 {
+    background-size: 600px 600px;
+    opacity: 0.3;
+    /* Increased brightness */
+    animation: drift 120s linear infinite, twinkle 6s ease-in-out infinite 2s;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes drift {
+    from {
+        transform: rotate(0deg) translate(0, 0);
+    }
+
+    to {
+        transform: rotate(360deg) translate(-50px, -50px);
+    }
+}
+
+.nebula {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 70% 30%, rgba(161, 0, 255, 0.1), transparent 50%),
+        radial-gradient(circle at 20% 70%, rgba(0, 217, 255, 0.05), transparent 50%);
+    filter: blur(80px);
+}
+
+/* --- Roaming Comets --- */
+.comets {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.comet {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    animation: comet-pass linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Head is at the 'end' of the flex line */
+}
+
+.comet::before {
+    content: '';
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(to left, #fff, transparent);
+    flex-shrink: 0;
+}
+
+.comet:nth-child(1) {
+    top: 10%;
+    left: -10%;
+    transform: rotate(45deg);
+    animation-duration: 15s;
+    animation-delay: 2s;
+}
+
+.comet:nth-child(2) {
+    top: 40%;
+    left: 110%;
+    transform: rotate(225deg);
+    animation-duration: 12s;
+    animation-delay: 5s;
+}
+
+.comet:nth-child(3) {
+    top: 110%;
+    left: 70%;
+    transform: rotate(-90deg);
+    animation-duration: 20s;
+    animation-delay: 0s;
+}
+
+.comet:nth-child(4) {
+    top: 25%;
+    left: -10%;
+    transform: rotate(15deg);
+    animation-duration: 18s;
+    animation-delay: 8s;
+}
+
+.comet:nth-child(5) {
+    top: 55%;
+    left: -10%;
+    transform: rotate(-30deg);
+    animation-duration: 22s;
+    animation-delay: 3s;
+}
+
+.comet:nth-child(6) {
+    top: 85%;
+    left: 110%;
+    transform: rotate(160deg);
+    animation-duration: 14s;
+    animation-delay: 11s;
+}
+
+.comet:nth-child(7) {
+    top: -10%;
+    left: 15%;
+    transform: rotate(90deg);
+    animation-duration: 17s;
+    animation-delay: 6s;
+}
+
+.comet:nth-child(8) {
+    top: 35%;
+    left: 110%;
+    transform: rotate(190deg);
+    animation-duration: 25s;
+    animation-delay: 1s;
+}
+
+.comet:nth-child(9) {
+    top: 110%;
+    left: 10%;
+    transform: rotate(-45deg);
+    animation-duration: 13s;
+    animation-delay: 9s;
+}
+
+.comet:nth-child(10) {
+    top: -10%;
+    left: 85%;
+    transform: rotate(120deg);
+    animation-duration: 19s;
+    animation-delay: 4s;
+}
+
+@keyframes comet-pass {
+    0% {
+        translate: 0 0;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        translate: 150vw 0;
+        opacity: 0;
+    }
+}
+
+/* --- Astronaut Pinned Container --- */
+.hero-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.astronaut-wrapper {
+    width: 400px;
+    height: 400px;
+    position: relative;
+    transition: var(--transit);
+    filter: drop-shadow(0 0 30px rgba(161, 0, 255, 0.2));
+}
+
+.astronaut-svg {
+    width: 100%;
+    height: 100%;
+    transform-origin: center;
+    animation: float 6s ease-in-out infinite;
+}
+
+.astronaut-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+    transition: var(--transit);
+    filter: blur(40px);
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(2deg);
+    }
+}
+
+/* --- Content Sections --- */
+.story-scroll {
+    position: relative;
+    z-index: 20;
+}
+
+.scene {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 10%;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s, transform 1s;
+}
+
+.scene.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#launchpad {
+    justify-content: flex-start;
+}
+
+#ignition {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+#speed {
+    justify-content: center;
+    text-align: center;
+}
+
+#orbit {
+    justify-content: flex-start;
+}
+
+#terminal {
+    justify-content: center;
+    text-align: center;
+}
+
+.content-box {
+    max-width: 600px;
+}
+
+.scene-label {
+    display: block;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    color: var(--secondary);
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 5rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- Scene Specific Astronaut States --- */
+body[data-active-scene="launchpad"] .astronaut-wrapper {
+    transform: scale(0.8) translateY(100px);
+    opacity: 0.6;
+}
+
+body[data-active-scene="ignition"] .astronaut-wrapper {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+body[data-active-scene="ignition"] .astronaut-glow {
+    opacity: 0.4;
+}
+
+body[data-active-scene="speed"] .astronaut-wrapper {
+    transform: scale(1.2);
+}
+
+body[data-active-scene="speed"] .astronaut-glow {
+    opacity: 0.6;
+    width: 140%;
+    background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+}
+
+body[data-active-scene="speed"] .stars {
+    transform: scale(1.5);
+}
+
+body[data-active-scene="orbit"] .astronaut-wrapper {
+    transform: translateX(300px) scale(0.7);
+}
+
+body[data-active-scene="end"] .astronaut-wrapper {
+    transform: scale(0.4) translateY(-300px);
+    opacity: 0.8;
+}
+
+/* --- Glass UI --- */
+.glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    padding: 60px;
+    border-radius: 40px;
+}
+
+/* --- Buttons --- */
+.cta-group {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-main {
+    padding: 16px 40px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-sub {
+    padding: 16px 40px;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-main:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(161, 0, 255, 0.4);
+}
+
+.btn-sub:hover {
+    background: var(--glass);
+}
+
+/* --- Scroll Indicator --- */
+.scroll-indicator {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.6;
+}
+
+.arrow {
+    width: 2px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--secondary), transparent);
+    position: relative;
+}
+
+.arrow::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--secondary);
+    border-bottom: 2px solid var(--secondary);
+    transform: translateX(-50%) rotate(45deg);
+}
+
+/* --- Glitch Effect (Simplistic) --- */
+.glitch-text {
+    position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+}
+
+.glitch-text::before {
+    color: var(--primary);
+    left: 2px;
+    z-index: -1;
+    animation: glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+    }
+
+    40% {
+        transform: translate(-2px, -2px);
+    }
+
+    60% {
+        transform: translate(2px, 2px);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    h1 {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+    }
+
+    .scene {
+        padding: 0 5%;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .astronaut-wrapper {
+        width: 250px;
+        height: 250px;
+    }
+}
