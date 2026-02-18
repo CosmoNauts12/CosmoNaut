@@ -8,7 +8,8 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     onAuthStateChanged,
-    User
+    User,
+    signInWithRedirect
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 

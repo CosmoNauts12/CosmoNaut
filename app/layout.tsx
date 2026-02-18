@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Allura } from "next/font/google"; // Changed Dancing
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeContext";
+import { SettingsProvider } from "./components/SettingsProvider";
+import { CollectionsProvider } from "./components/CollectionsProvider";
 
 // Fonts
 const geistSans = Geist({
@@ -39,7 +41,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ThemeProvider>
-            {children}
+            <SettingsProvider>
+              <CollectionsProvider>
+                {children}
+              </CollectionsProvider>
+            </SettingsProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>
