@@ -1,0 +1,20 @@
+{
+    "version": 2,
+    "name": "cosmonaut-website",
+    "builds": [
+        {
+            "src": "**/*",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/odyssey/(.*)",
+            "dest": "/odyssey/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ]
+}
