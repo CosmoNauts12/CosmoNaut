@@ -86,6 +86,20 @@ Build:
 bun tauri build
 ```
 
+## 🌐 Website & Marketing
+The public-facing website is located in the `website/` directory. It is designed to be deployed independently to platforms like **Vercel**.
+
+- **URL:** [cosmonaut.vercel.app](https://cosmonaut.vercel.app) (Example)
+- **Features:** Interactive Odyssey scrollytelling, dynamic download linking, and Firebase-integrated authentication.
+
+## 🚀 Release Automation
+We use **GitHub Actions** to automate the build and distribution of the desktop application.
+
+1. **Tagging:** Push a tag (e.g., `v0.1.0`) to trigger the build.
+2. **Multi-Platform:** GitHub will build installers for Windows (`.msi`, `.exe`), macOS (`.dmg`), and Linux (`.deb`).
+3. **Draft Release:** Builds are automatically uploaded to a new Release in GitHub.
+4. **Website Sync:** The website automatically detects the latest Release and updates the download buttons.
+
 ## Collections vs History:
 Cosmonaut separates request data into two distinct systems.
 ### Collections (Explicit Save):

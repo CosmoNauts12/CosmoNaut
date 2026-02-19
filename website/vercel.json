@@ -9,8 +9,7 @@
     ],
     "routes": [
         {
-            "src": "/odyssey/(.*)",
-            "dest": "/odyssey/$1"
+            "handle": "filesystem"
         },
         {
             "src": "/(.*)",
