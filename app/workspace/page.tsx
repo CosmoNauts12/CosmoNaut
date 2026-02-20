@@ -36,6 +36,9 @@ export default function WorkspacePage() {
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
 
+  /** Current active activity from sidebar. */
+  const [activeActivity, setActiveActivity] = useState("collections");
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
