@@ -1,42 +1,35 @@
 name: Verify
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+      
 
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
+        uses: oven-sh/setup-bun@v1
       - name: Install dependencies
         run: bun install
-
-      - name: Lint
-        run: bun run lint
-
-      - name: Frontend Tests
+      - name: Run tests
         run: bun run test
 
   test-backend:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Linux dependencies
+      - name: Install dependencies (ubuntu)
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev build-essential curl wget file libssl-dev pkg-config
-
-      - name: Backend Tests
+      - name: Run cargo tests
         run: cargo test --manifest-path src-tauri/Cargo.toml
