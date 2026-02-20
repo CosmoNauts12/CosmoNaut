@@ -1,13 +1,14 @@
 {
   "name": "software_project",
   "version": "0.1.0",
-  "private": true ,
+  "private": true,
   "scripts": {
     "dev": "bunx next dev",
     "build": "bunx next build",
     "start": "bunx next start",
     "lint": "bunx eslint",
-    "tauri": "bunx tauri"
+    "tauri": "bunx tauri",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.10.1",
