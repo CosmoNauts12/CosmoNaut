@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useSettings } from "./SettingsProvider";
 import { useCollections } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
+import PromptModal from "./PromptModal";
+import ConfirmModal from "./ConfirmModal";
 
 const activities = [
   {
@@ -53,6 +55,22 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
   const [activeActivity, setActiveActivity] = useState('collections');
   const [expandedCollections, setExpandedCollections] = useState<string[]>([]);
 
+  const [promptModal, setPromptModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    initialValue?: string;
+    placeholder?: string;
+    onSubmit: (value: string) => void;
+  }>({ isOpen: false, title: "", onSubmit: () => { } });
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDestructive?: boolean;
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => { } });
+
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
   /**
@@ -67,51 +85,62 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
   /**
    * Prompts user and creates a new workspace.
    */
-  const handleCreateWorkspace = async () => {
-    const name = window.prompt("Workspace Name:");
-    if (name) {
-      await createWorkspace(name);
-    }
+  const handleCreateWorkspace = () => {
+    setPromptModal({
+      isOpen: true,
+      title: "Create Workspace",
+      placeholder: "Workspace Name",
+      onSubmit: (name) => createWorkspace(name)
+    });
   };
 
   /**
    * Prompts user and renames the active workspace.
    */
-  const handleRenameWorkspace = async () => {
-    const name = window.prompt("New Workspace Name:", activeWorkspace?.name);
-    if (name && activeWorkspace) {
-      await renameWorkspace(activeWorkspace.id, name);
-    }
+  const handleRenameWorkspace = () => {
+    if (!activeWorkspace) return;
+    setPromptModal({
+      isOpen: true,
+      title: "Rename Workspace",
+      initialValue: activeWorkspace.name,
+      onSubmit: (name) => renameWorkspace(activeWorkspace.id, name)
+    });
   };
 
   /**
    * Prompts user and creates a new collection in the active workspace.
    */
-  const handleCreateCollection = async () => {
-    const name = window.prompt("Collection Name:");
-    if (name) {
-      await createCollection(name);
-    }
+  const handleCreateCollection = () => {
+    setPromptModal({
+      isOpen: true,
+      title: "New Collection",
+      placeholder: "Collection Name",
+      onSubmit: (name) => createCollection(name)
+    });
   };
 
   /**
    * Prompts user and renames a specific collection.
    */
-  const handleRenameCollection = async (id: string, currentName: string) => {
-    const name = window.prompt("Rename Collection:", currentName);
-    if (name) {
-      await renameCollection(id, name);
-    }
+  const handleRenameCollection = (id: string, currentName: string) => {
+    setPromptModal({
+      isOpen: true,
+      title: "Rename Collection",
+      initialValue: currentName,
+      onSubmit: (name) => renameCollection(id, name)
+    });
   };
 
   /**
    * Prompts user and renames a specific request.
    */
-  const handleRenameRequest = async (id: string, collectionId: string, currentName: string) => {
-    const name = window.prompt("Rename Request:", currentName);
-    if (name) {
-      await renameRequest(id, collectionId, name);
-    }
+  const handleRenameRequest = (id: string, collectionId: string, currentName: string) => {
+    setPromptModal({
+      isOpen: true,
+      title: "Rename Request",
+      initialValue: currentName,
+      onSubmit: (name) => renameRequest(id, collectionId, name)
+    });
   };
 
   /**
@@ -119,11 +148,16 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
    */
   const handleDeleteRequest = async (requestId: string, collectionId: string, name: string) => {
     if (settings.confirmDelete) {
-      if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-        return;
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: "Delete Request",
+        message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+        isDestructive: true,
+        onConfirm: () => deleteRequest(requestId, collectionId)
+      });
+    } else {
+      await deleteRequest(requestId, collectionId);
     }
-    await deleteRequest(requestId, collectionId);
   };
 
   /**
@@ -131,11 +165,16 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
    */
   const handleDeleteCollection = async (collectionId: string, name: string) => {
     if (settings.confirmDelete) {
-      if (!window.confirm(`Are you sure you want to delete collection "${name}" and all its requests?`)) {
-        return;
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: "Delete Collection",
+        message: `Are you sure you want to delete collection "${name}" and all its requests?`,
+        isDestructive: true,
+        onConfirm: () => deleteCollection(collectionId)
+      });
+    } else {
+      await deleteCollection(collectionId);
     }
-    await deleteCollection(collectionId);
   };
 
   return (
@@ -350,6 +389,24 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
           </div>
         </div>
       </div>
+      {/* Modals */}
+      <PromptModal
+        isOpen={promptModal.isOpen}
+        onClose={() => setPromptModal({ ...promptModal, isOpen: false })}
+        onSubmit={promptModal.onSubmit}
+        title={promptModal.title}
+        initialValue={promptModal.initialValue}
+        placeholder={promptModal.placeholder}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDestructive={confirmModal.isDestructive}
+      />
     </div>
   );
 }

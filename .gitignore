@@ -46,3 +46,11 @@ src-tauri/gen
 src-tauri/binaries
 *.exe
 *.log
+
+# build logs
+build_log.txt
+
+# editors
+.vscode
+.idea
+*.jks

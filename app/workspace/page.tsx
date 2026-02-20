@@ -13,6 +13,7 @@ import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 import { CosmoResponse } from "../components/RequestEngine";
 import { SavedRequest } from "../lib/collections";
+import ConfirmModal from "../components/ConfirmModal";
 
 /**
  * The main workspace interface of CosmoNaut.
@@ -34,6 +35,13 @@ export default function WorkspacePage() {
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => { } });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -60,13 +68,10 @@ export default function WorkspacePage() {
    * Prompts for confirmation if the relevant setting is enabled.
    * @param tabId - Unique identifier of the tab to close.
    */
-  const handleCloseTab = (tabId: string) => {
-    if (settings.confirmCloseTab) {
-      if (!window.confirm("Are you sure you want to close this tab? Any unsaved changes may be lost.")) {
-        return;
-      }
-    }
-
+  /**
+   * Executes the actual tab closing logic.
+   */
+  const performCloseTab = (tabId: string) => {
     setTabs(prev => {
       const newTabs = prev.filter(t => t.id !== tabId);
 
@@ -84,6 +89,24 @@ export default function WorkspacePage() {
 
       return newTabs;
     });
+  };
+
+  /**
+   * Initiates the tab closing process.
+   * Prompts for confirmation if the relevant setting is enabled.
+   * @param tabId - Unique identifier of the tab to close.
+   */
+  const handleCloseTab = (tabId: string) => {
+    if (settings.confirmCloseTab) {
+      setConfirmModal({
+        isOpen: true,
+        title: "Close Tab",
+        message: "Are you sure you want to close this tab? Any unsaved changes may be lost.",
+        onConfirm: () => performCloseTab(tabId)
+      });
+    } else {
+      performCloseTab(tabId);
+    }
   };
 
   const activeRequest = tabs.find(t => t.id === activeTabId);
@@ -321,6 +344,14 @@ export default function WorkspacePage() {
       </footer>
 
       <DemoTour />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
     </div>
   );
 }
