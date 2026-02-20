@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, query, where, onSnapshot, getDoc, doc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, getDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import ThemeToggle from "./ThemeToggle";
 import { useSettings } from "./SettingsProvider";
 import { useAuth } from "./AuthProvider";
@@ -33,6 +33,29 @@ export default function WorkspaceHeader() {
   const [pendingCount, setPendingCount] = useState(0);
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [ownerInfo, setOwnerInfo] = useState<any>(null);
+  const [editingCollabId, setEditingCollabId] = useState<string | null>(null);
+
+  const handleRoleChange = async (collabId: string, newRole: string) => {
+    try {
+      if (activeWorkspace?.ownerId !== user?.uid) return;
+      await updateDoc(doc(db, "collaborators", collabId), {
+        role: newRole
+      });
+    } catch (error) {
+      console.error("Error updating role:", error);
+    }
+  };
+
+  const handleRemoveCollaborator = async (collabId: string) => {
+    try {
+      if (activeWorkspace?.ownerId !== user?.uid) return;
+      if (confirm("Are you sure you want to remove this collaborator?")) {
+        await deleteDoc(doc(db, "collaborators", collabId));
+      }
+    } catch (error) {
+      console.error("Error removing collaborator:", error);
+    }
+  };
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
@@ -304,19 +327,76 @@ export default function WorkspaceHeader() {
 
                   {/* Collaborators Rows */}
                   {collaborators.filter(c => c.userId !== activeWorkspace?.ownerId).map((collab) => (
-                    <div key={collab.id} className="flex items-center gap-3">
+                    <div key={collab.id} className="flex items-center gap-3 group">
                       <div className="w-8 h-8 rounded-full bg-primary/10 shrink-0 text-primary border border-background flex items-center justify-center text-xs font-bold shadow-sm">
                         {collab.initial}
                       </div>
-                      <div className="flex flex-col min-w-0">
+                      <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-bold text-foreground truncate">{collab.displayName}</span>
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${collab.role === 'write' ? 'bg-primary/20 text-primary' : 'bg-slate-500/20 text-slate-400'}`}>
-                            {collab.role}
-                          </span>
+                          {/* Role Badge or Edit Selector */}
+                          {editingCollabId === collab.id ? (
+                            <select
+                              value={collab.role}
+                              onChange={(e) => handleRoleChange(collab.id, e.target.value)}
+                              className={`text-[9px] px-1 py-0.5 rounded font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none text-center ${collab.role === 'write' ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'bg-slate-500/20 text-slate-400 hover:bg-slate-500/30'}`}
+                              title="Change Role"
+                            >
+                              <option value="read" className="bg-card-bg text-foreground">READ</option>
+                              <option value="write" className="bg-card-bg text-foreground">WRITE</option>
+                            </select>
+                          ) : (
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${collab.role === 'write' ? 'bg-primary/20 text-primary' : 'bg-slate-500/20 text-slate-400'}`}>
+                              {collab.role}
+                            </span>
+                          )}
                         </div>
                         <span className="text-[10px] text-muted truncate">{collab.email}</span>
                       </div>
+
+                      {/* Owner Actions */}
+                      {activeWorkspace?.ownerId === user?.uid && (
+                        <div className="ml-auto flex items-center gap-1 pointer-events-auto shrink-0">
+                          {editingCollabId === collab.id ? (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleRemoveCollaborator(collab.id);
+                                }}
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                                title="Remove Collaborator"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setEditingCollabId(null);
+                                }}
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                                title="Done Editing"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setEditingCollabId(collab.id);
+                              }}
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/10 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Edit Access"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
