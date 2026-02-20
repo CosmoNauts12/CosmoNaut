@@ -107,7 +107,20 @@ export default function AnalyticsDashboard() {
         const data = history;
 
         const totalRequests = data.length;
-        const successRequests = data.filter(item => item.status >= 200 && item.status < 300).length;
+        // Status codes distribution
+        const statusMap = data.reduce((acc: any, item) => {
+            const code = item.status;
+            let category = '5xx'; // Default to error
+            if (code >= 200 && code < 400) category = '2xx';
+            else if (code >= 400 && code < 500) category = '4xx';
+            else if (code >= 500) category = '5xx';
+            else if (code === 0) category = '5xx'; // Network failure
+
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+        }, {});
+
+        const successRequests = statusMap['2xx'] || 0;
         const failRequests = totalRequests - successRequests;
         const successRate = totalRequests > 0 ? (successRequests / totalRequests * 100).toFixed(1) : "0";
         const failureRate = totalRequests > 0 ? (failRequests / totalRequests * 100).toFixed(1) : "0";
@@ -116,18 +129,10 @@ export default function AnalyticsDashboard() {
             ? Math.round(data.reduce((acc, item) => acc + item.duration_ms, 0) / totalRequests)
             : 0;
 
-        // Status codes distribution
-        const statusMap = data.reduce((acc: any, item) => {
-            const code = item.status;
-            const category = code >= 500 ? '5xx' : code >= 400 ? '4xx' : '2xx';
-            acc[category] = (acc[category] || 0) + 1;
-            return acc;
-        }, {});
-
         const statusCodeData = [
-            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#22c55e' },
-            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#eab308' },
-            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#ef4444' },
+            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#10b981' },
+            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#f59e0b' },
+            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#f43f5e' },
         ];
 
         // HTTP Methods distribution
@@ -139,7 +144,12 @@ export default function AnalyticsDashboard() {
         const methodData = Object.entries(methodMap).map(([name, value]) => ({
             name,
             value,
-            color: name === 'GET' ? '#10b981' : name === 'POST' ? '#3b82f6' : name === 'PUT' ? '#f59e0b' : '#f43f5e'
+            color:
+                name === 'GET' ? '#10b981' :
+                    name === 'POST' ? '#3b82f6' :
+                        name === 'PUT' ? '#f59e0b' :
+                            name === 'DELETE' ? '#f43f5e' :
+                                name === 'PATCH' ? '#8b5cf6' : '#64748b'
         }));
 
         // Performance trend (grouped by hour or similar)
@@ -268,12 +278,10 @@ export default function AnalyticsDashboard() {
                                     <PieChart>
                                         <Pie
                                             data={analytics.statusCodeData}
-                                            innerRadius={60}
-                                            outerRadius={80}
-                                            paddingAngle={5}
+                                            innerRadius={70}
+                                            outerRadius={90}
+                                            paddingAngle={8}
                                             dataKey="value"
-                                            labelLine={false}
-                                            label={({ percent }) => percent ? `${(percent * 100).toFixed(0)}%` : ''}
                                         >
                                             {analytics.statusCodeData.map((entry, index) => (entry.value > 0 &&
                                                 <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
@@ -298,6 +306,10 @@ export default function AnalyticsDashboard() {
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-6">
+                                    <span className="text-2xl font-black text-foreground">{analytics.successRate}%</span>
+                                    <span className="text-[9px] font-black text-muted uppercase tracking-widest">Uptime</span>
+                                </div>
                             </div>
                         </div>
 

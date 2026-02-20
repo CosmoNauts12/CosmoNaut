@@ -90,8 +90,8 @@ export default function Dashboard() {
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px]" />
       </div>
 
-      {/* Sidebar - Fixed */}
-      <aside className="w-64 hidden md:flex flex-col border-r border-card-border bg-card-bg/50 backdrop-blur-md z-20 fixed inset-y-0 left-0">
+      {/* Sidebar */}
+      <aside className="w-64 hidden md:flex flex-col border-r border-card-border bg-card-bg/50 backdrop-blur-md z-20">
         <div className="p-6">
           {/* User Profile in Sidebar - Dropdown */}
           <div className="relative mb-6">
@@ -300,8 +300,8 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* Main Content Area - Scrollable with margin for fixed sidebar */}
-      <main className="flex-1 flex flex-col min-w-0 relative z-10 md:ml-64 h-screen overflow-y-auto overflow-x-hidden">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 relative z-10">
 
         {/* Top Header */}
         <header className="h-14 flex items-center justify-between px-8 border-b border-card-border bg-card-bg/30 backdrop-blur-sm sticky top-0 z-30">
