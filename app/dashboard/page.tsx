@@ -6,6 +6,7 @@ import { useAuth } from "../components/AuthProvider";
 import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
+import InviteModal from "../components/InviteModal";
 
 /**
  * Dashboard Page
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -119,72 +121,71 @@ export default function Dashboard() {
                 <div className="p-4">
                   <p className="text-xs text-muted">Signed in as</p>
                   <p className="font-semibold text-sm text-foreground truncate">{user.displayName || "User"}</p>
-                  
+
                   {/* Status Editor */}
                   <div className="mt-2">
-                       {isEditingStatus ? (
-                          <input
-                            autoFocus
-                            type="text"
-                            value={settings.status || ""}
-                            onChange={(e) => updateSettings({ status: e.target.value })}
-                            onBlur={() => setIsEditingStatus(false)}
-                            onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
-                            placeholder="Set status..."
-                            className="w-full bg-black/5 dark:bg-black/20 border border-gray-200 dark:border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-                          />
-                       ) : (
-                          <div 
-                            onClick={() => setIsEditingStatus(true)}
-                            className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-xs cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-white/10 group ${
-                               settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
-                            }`}
-                          >
-                            <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '☺'}</span> 
-                            <span className="truncate">{settings.status || "Set status"}</span>
-                          </div>
-                       )}
+                    {isEditingStatus ? (
+                      <input
+                        autoFocus
+                        type="text"
+                        value={settings.status || ""}
+                        onChange={(e) => updateSettings({ status: e.target.value })}
+                        onBlur={() => setIsEditingStatus(false)}
+                        onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
+                        placeholder="Set status..."
+                        className="w-full bg-black/5 dark:bg-black/20 border border-gray-200 dark:border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingStatus(true)}
+                        className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-xs cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                          }`}
+                      >
+                        <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '☺'}</span>
+                        <span className="truncate">{settings.status || "Set status"}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Section 1 */}
                 <div className="py-2">
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        openSettings("profile");
-                      }}
-                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
-                    >
-                      Your Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        openSettings("billing");
-                      }}
-                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
-                    >
-                      Billing
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        openSettings("general");
-                      }}
-                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
-                    >
-                      Settings
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        openSettings("shortcuts");
-                      }}
-                      className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
-                    >
-                      Keyboard shortcuts
-                    </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      openSettings("profile");
+                    }}
+                    className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Your Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      openSettings("billing");
+                    }}
+                    className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Billing
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      openSettings("general");
+                    }}
+                    className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      openSettings("shortcuts");
+                    }}
+                    className="w-full text-left px-4 py-1.5 text-sm text-muted hover:bg-gray-50 dark:hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Keyboard shortcuts
+                  </button>
                 </div>
 
                 {/* Sign Out */}
@@ -233,7 +234,7 @@ export default function Dashboard() {
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">
-            <button className="w-full py-2 px-3 bg-white dark:bg-[#14283C] border border-gray-200 dark:border-none text-foreground text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">
+            <button onClick={() => setIsInviteOpen(true)} className="w-full py-2 px-3 bg-white dark:bg-[#14283C] border border-gray-200 dark:border-none text-foreground text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">
               + Invite Member
             </button>
           </div>
@@ -382,6 +383,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </div>
   );
 }
