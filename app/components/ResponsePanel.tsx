@@ -189,7 +189,7 @@ export default function ResponsePanel({
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 text-[12px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-white/10"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[12px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/10"
             >
               <span className="text-primary/70">{formats.find(f => f.id === format)?.icon}</span>
               <span className="uppercase tracking-wider">{formats.find(f => f.id === format)?.name}</span>
@@ -199,7 +199,7 @@ export default function ResponsePanel({
             {isDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
-                <div className="absolute top-full left-0 mt-1 w-36 bg-[#1e293b] border border-white/20 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-1.5 z-20 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/20 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-1.5 z-20 animate-in fade-in zoom-in-95 duration-100">
                   {formats.map((f) => (
                     <button
                       key={f.id}
@@ -208,7 +208,7 @@ export default function ResponsePanel({
                         setIsDropdownOpen(false);
                         setActiveTab("pretty");
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-white/5 hover:text-foreground'}`}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
                     >
                       <span className={format === f.id ? 'text-primary' : 'text-muted opacity-50'}>{f.icon}</span>
                       {f.name}
@@ -257,7 +257,10 @@ export default function ResponsePanel({
         {activeTab === 'pretty' && (
           <div className="h-full overflow-y-auto p-4 font-mono text-[11px] leading-relaxed selection:bg-primary/20">
             <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
-              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-200/90' : format === 'javascript' ? 'text-blue-200/90' : 'text-emerald-200/90'} whitespace-pre-wrap`}>
+              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-600 dark:text-amber-200/90' :
+                  format === 'javascript' ? 'text-blue-600 dark:text-blue-200/90' :
+                    'text-emerald-600 dark:text-emerald-200/90'
+                } whitespace-pre-wrap`}>
                 {formattedBody}
               </pre>
             </div>

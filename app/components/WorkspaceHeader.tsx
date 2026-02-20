@@ -85,12 +85,12 @@ export default function WorkspaceHeader() {
                           onBlur={() => setIsEditingStatus(false)}
                           onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
                           placeholder="Set status..."
-                          className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full bg-slate-200 dark:bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                         />
                       ) : (
                         <div
                           onClick={() => setIsEditingStatus(true)}
-                          className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                          className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-black/5 dark:bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-black/10 dark:hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
                             }`}
                         >
                           <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span>
@@ -105,11 +105,11 @@ export default function WorkspaceHeader() {
                   <div className="space-y-1">
                     <button
                       onClick={() => openSettings("profile")}
-                      className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                      className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                     >
                       Profile Settings
                     </button>
-                    <button className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                    <button className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all">
                       Resource Center
                     </button>
                   </div>
