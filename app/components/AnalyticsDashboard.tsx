@@ -125,9 +125,9 @@ export default function AnalyticsDashboard() {
         }, {});
 
         const statusCodeData = [
-            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#10b981' },
-            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#f59e0b' },
-            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#f43f5e' },
+            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#22c55e' },
+            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#eab308' },
+            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#ef4444' },
         ];
 
         // HTTP Methods distribution
@@ -268,10 +268,12 @@ export default function AnalyticsDashboard() {
                                     <PieChart>
                                         <Pie
                                             data={analytics.statusCodeData}
-                                            innerRadius={70}
-                                            outerRadius={90}
-                                            paddingAngle={8}
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
                                             dataKey="value"
+                                            labelLine={false}
+                                            label={({ percent }) => percent ? `${(percent * 100).toFixed(0)}%` : ''}
                                         >
                                             {analytics.statusCodeData.map((entry, index) => (entry.value > 0 &&
                                                 <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
@@ -296,10 +298,6 @@ export default function AnalyticsDashboard() {
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-6">
-                                    <span className="text-2xl font-black text-foreground">{analytics.successRate}%</span>
-                                    <span className="text-[9px] font-black text-muted uppercase tracking-widest">Uptime</span>
-                                </div>
                             </div>
                         </div>
 
