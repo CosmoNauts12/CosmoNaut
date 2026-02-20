@@ -11,7 +11,9 @@ import {
     updateProfile,
     User,
     signInWithCredential,
-    GoogleAuthProvider
+    GoogleAuthProvider,
+    confirmPasswordReset,
+    verifyPasswordResetCode
 } from "firebase/auth";
 
 /**
@@ -83,11 +85,37 @@ export const logout = async () => signOut(auth);
 /**
  * Send a password reset email to the specified address.
  * @param email - Recipient's email.
+ * @param actionCodeSettings - Optional settings for redirecting.
  */
-export const resetPassword = async (email: string) =>
-    sendPasswordResetEmail(auth, email);
+export const resetPassword = async (email: string, actionCodeSettings?: any) =>
+    sendPasswordResetEmail(auth, email, actionCodeSettings);
 
-export { app, auth, onAuthStateChanged, updateProfile, signInWithCredential, GoogleAuthProvider };
+/**
+ * Verifies a password reset code.
+ * @param code - The reset code sent via email.
+ * @returns The email address associated with the code.
+ */
+export async function verifyCode(code: string): Promise<string> {
+    return verifyPasswordResetCode(auth, code);
+}
+
+/**
+ * Confirms a password reset with a new password.
+ * @param code - The reset code.
+ * @param newPassword - The new password chosen by the user.
+ */
+export async function confirmReset(code: string, newPassword: string): Promise<void> {
+    return confirmPasswordReset(auth, code, newPassword);
+}
+
+export {
+    app,
+    auth,
+    onAuthStateChanged,
+    updateProfile,
+    signInWithCredential,
+    GoogleAuthProvider
+};
 export type { User };
 
 /**

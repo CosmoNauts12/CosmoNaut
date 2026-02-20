@@ -20,7 +20,13 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      await resetPassword(email);
+      const actionCodeSettings = {
+        // Redirection URL must be whitelisted in Firebase Console -> Auth -> Settings -> Authorized Domains
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: true,
+      };
+
+      await resetPassword(email, actionCodeSettings);
       setSuccess(true);
     } catch (err: any) {
       if (err.code === "auth/user-not-found") {
@@ -46,7 +52,7 @@ export default function ForgotPassword() {
       </div>
 
       {/* Main Content */}
-      
+
       <div className="min-h-screen flex items-center justify-center gap-4 px-8 relative z-10">
         <AuthCard>
           <h1 className="text-3xl font-bold text-glass-title mb-2">Reset password</h1>
