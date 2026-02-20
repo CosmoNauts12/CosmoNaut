@@ -204,7 +204,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         {/* Workspace Switcher */}
         <div className="p-4 border-b border-card-border/50 bg-black/5 dark:bg-white/5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[9px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
+            <span className="text-[11px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
             <div className="flex gap-1">
               <button onClick={handleCreateWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
               <button onClick={handleRenameWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
@@ -213,7 +213,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
           <select
             value={activeWorkspaceId}
             onChange={(e) => setActiveWorkspaceId(e.target.value)}
-            className="glass-select w-full rounded-lg px-2 py-1.5 text-xs font-bold focus:border-primary/50"
+            className="glass-select w-full rounded-lg px-2 py-1.5 text-[13px] font-bold focus:border-primary/50"
           >
             {workspaces.map(w => (
               <option key={w.id} value={w.id} className="bg-background">{w.name}</option>
@@ -223,7 +223,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
 
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] opacity-50">
+            <h2 className="text-[12px] font-black text-foreground uppercase tracking-[0.2em] opacity-50">
               {activeActivity}
             </h2>
             <div className="flex gap-1">
@@ -234,7 +234,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </button>
-              <button className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[10px] font-bold uppercase tracking-wider">
+              <button className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[12px] font-bold uppercase tracking-wider">
                 Import
               </button>
             </div>
@@ -245,7 +245,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             <input
               type="text"
               placeholder={`Search ${activeActivity}...`}
-              className="w-full bg-foreground/5 border border-card-border/50 rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all focus:ring-1 focus:ring-primary/20"
+              className="w-full bg-foreground/5 border border-card-border/50 rounded-xl px-3 py-1.5 text-[13px] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all focus:ring-1 focus:ring-primary/20"
             />
           </div>
 
@@ -256,7 +256,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                 <div className="group relative flex items-center">
                   <button
                     onClick={() => toggleCollection(collection.id)}
-                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-foreground/5 text-xs font-semibold text-foreground/80 group transition-colors"
+                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-foreground/5 text-[13px] font-semibold text-foreground/80 group transition-colors"
                   >
                     <svg
                       width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
@@ -291,9 +291,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       <div key={request.id} className="group relative flex items-center">
                         <button
                           onClick={() => onSelectRequest?.({ ...request, collectionId: collection.id })}
-                          className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[10px] font-medium transition-colors group/item"
+                          className="flex-1 flex items-center gap-4 py-1.5 px-2 rounded-md hover:bg-primary/5 text-[12px] font-medium transition-colors group/item"
                         >
-                          <span className={`w-10 font-black text-right ${request.method === 'GET' ? 'text-emerald-500' :
+                          <span className={`w-12 font-black text-right text-[12px] ${request.method === 'GET' ? 'text-emerald-500' :
                             request.method === 'POST' ? 'text-amber-500' :
                               request.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                             }`}>
