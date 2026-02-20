@@ -237,58 +237,398 @@ async fn handle_process_tokens(
 fn token_extraction_page() -> String {
     r#"
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Authentication Successful</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Successful - CosmoNaut</title>
     <style>
+        :root {
+            /* Light Mode Variables */
+            --background: #F0F9FF;
+            --foreground: #0F172A;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --primary: #0284C7;
+            --primary-glow: rgba(2, 132, 199, 0.3);
+            --secondary: #0D9488;
+            --muted: #64748B;
+            --success: #10B981;
+            --error: #EF4444;
+            --glass-shimmer: rgba(255, 255, 255, 0.6);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Dark Mode Variables */
+                --background: #020617;
+                --foreground: #E5F6FF;
+                --card-bg: rgba(20, 40, 60, 0.45);
+                --card-border: rgba(255, 255, 255, 0.1);
+                --primary: #38BDF8;
+                --primary-glow: rgba(56, 189, 248, 0.3);
+                --secondary: #2DD4BF;
+                --muted: #94A3B8;
+                --success: #34D399;
+                --error: #F87171;
+                --glass-shimmer: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
-        .container {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+
+        /* Star Background Animations */
+        .stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+
+        .star {
+            position: absolute;
+            background-color: white;
             border-radius: 50%;
-            border-top: 4px solid white;
+            animation: twinkle var(--duration, 3s) infinite ease-in-out alternate;
+            opacity: 0;
+        }
+
+        /* Create 3 layers of stars with different sizes/speeds */
+        .stars-sm .star { width: 1px; height: 1px; box-shadow: 0 0 2px white; }
+        .stars-md .star { width: 2px; height: 2px; box-shadow: 0 0 4px white; }
+        .stars-lg .star { width: 3px; height: 3px; box-shadow: 0 0 6px white; }
+
+        @keyframes twinkle {
+            0% { opacity: 0.1; transform: scale(0.8); }
+            100% { opacity: 0.9; transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        }
+
+        /* Ambient Background Elements (kept behind stars) */
+        .ambient-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: pulse-glow 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* Liquid Glass Card Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 32px;
+            margin: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 15px 40px var(--primary-glow);
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Logo Area */
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logo svg {
+            width: 28px;
+            height: 28px;
+            color: var(--primary);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+            margin: 0 -32px 32px -32px;
+        }
+
+        /* Status Icon Animations */
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px auto;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 1px var(--card-border) inset;
+        }
+
+        /* Spinner for loading state */
+        .spinner {
             width: 40px;
             height: 40px;
+            border: 3px solid rgba(148, 163, 184, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
         }
+
+        /* Success Checkmark */
+        .checkmark-svg {
+            width: 40px;
+            height: 40px;
+            color: var(--success);
+            display: none; /* Hidden initially */
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+        }
+
+        /* Error X */
+        .error-svg {
+            width: 40px;
+            height: 40px;
+            color: var(--error);
+            display: none;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+        }
+
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
-        h1 { margin: 0 0 1rem 0; font-size: 1.5rem; }
-        p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
-        .success { color: #4ade80; }
-        .error { color: #f87171; }
+
+        @keyframes fade-in-up {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--foreground);
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        /* Primary Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            outline: none;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+        }
+        
+        .btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Subtle text below button */
+        .sub-text {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 16px;
+            margin-bottom: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .sub-text.visible {
+            opacity: 0.7;
+        }
+
+        /* State Classes */
+        .state-success .spinner { display: none; }
+        .state-success .status-icon { box-shadow: 0 0 30px rgba(16, 185, 129, 0.3), 0 0 0 1px var(--card-border) inset; }
+        .state-success .checkmark-svg { 
+            display: block; 
+            animation: draw 0.8s cubic-bezier(0.65, 0, 0.45, 1) forwards, pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .state-error .spinner { display: none; }
+        .state-error .status-icon { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), 0 0 0 1px var(--card-border) inset; }
+        .state-error .error-svg { 
+            display: block;
+            animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="spinner"></div>
-        <h1>Authentication Successful!</h1>
-        <p id="status">Completing sign-in...</p>
+    <div class="stars-container" id="stars-bg">
+        <div class="stars-sm" id="stars-sm"></div>
+        <div class="stars-md" id="stars-md"></div>
+        <div class="stars-lg" id="stars-lg"></div>
+    </div>
+    <div class="ambient-glow"></div>
+    
+    <div class="container" id="card">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 0 0-7.09 17.09c.12-.12.25-.24.38-.35.43-.36.96-.58 1.5-.64.55-.06 1.11.02 1.63.22.45.18.91.4 1.39.63.48.23 1 .45 1.53.58A10.05 10.05 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2Z"></path>
+                <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                <path d="M16.5 18s-1.5-2-4.5-2-4.5 2-4.5 2"></path>
+            </svg>
+            CosmoNaut
+        </div>
+        
+        <div class="divider"></div>
+
+        <div class="status-icon">
+            <div class="spinner"></div>
+            <!-- Success Checkmark -->
+            <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <!-- Error X -->
+            <svg class="error-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+
+        <h1 id="title">Authenticating...</h1>
+        <p id="description">Please wait while we securely log you in.</p>
+
+        <button id="action-btn" class="btn btn-primary" onclick="window.close()">
+            Return to Application
+        </button>
+        <p id="sub-msg" class="sub-text">You may close this tab manually if tracking fails.</p>
     </div>
     
     <script>
+        // Generate Star Background
+        function createStars(containerId, count) {
+            const container = document.getElementById(containerId);
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.setProperty('--duration', `${2 + Math.random() * 4}s`);
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(star);
+            }
+        }
+
+        // Initialize stars (more stars for a "space" feel)
+        createStars('stars-sm', 100);
+        createStars('stars-md', 50);
+        createStars('stars-lg', 20);
+
         (async function() {
+            const card = document.getElementById('card');
+            const title = document.getElementById('title');
+            const desc = document.getElementById('description');
+            const btn = document.getElementById('action-btn');
+            const subMsg = document.getElementById('sub-msg');
+            
+            function showSuccess() {
+                card.classList.add('state-success');
+                title.textContent = 'Authentication Successful';
+                desc.textContent = 'You have successfully signed in. You can now return to the CosmoNaut app.';
+                btn.textContent = 'Close Tab & Return';
+                btn.classList.add('visible');
+                subMsg.classList.add('visible');
+            }
+            
+            function showError(message) {
+                card.classList.add('state-error');
+                title.textContent = 'Authentication Failed';
+                desc.textContent = message || 'An unexpected error occurred during sign in.';
+                btn.textContent = 'Close Tab';
+                btn.classList.add('visible');
+                subMsg.classList.add('visible');
+            }
+
             try {
                 // Extract tokens from URL fragment
                 const hash = window.location.hash.substring(1);
@@ -299,7 +639,7 @@ fn token_extraction_page() -> String {
                 const state = params.get('state');
                 
                 if (!idToken || !accessToken || !state) {
-                    throw new Error('Missing authentication tokens');
+                    throw new Error('Missing authentication tokens in callback URL.');
                 }
                 
                 // Send tokens to backend
@@ -316,16 +656,13 @@ fn token_extraction_page() -> String {
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    document.getElementById('status').innerHTML = 
-                        '<span class="success">✓ Sign-in complete!</span><br><small>You can close this window.</small>';
-                    setTimeout(() => window.close(), 2000);
+                    showSuccess();
                 } else {
-                    throw new Error(result.message || 'Authentication failed');
+                    throw new Error(result.message || 'Authentication failed on server.');
                 }
             } catch (error) {
                 console.error('Auth error:', error);
-                document.querySelector('.container').innerHTML = 
-                    '<h1 class="error">❌ Error</h1><p>' + error.message + '</p><p style="margin-top: 1rem; font-size: 0.85rem;">You can close this window and try again.</p>';
+                showError(error.message);
             }
         })();
     </script>
@@ -339,39 +676,252 @@ fn error_page(error: &str) -> String {
     format!(
         r#"
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Authentication Failed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Failed - CosmoNaut</title>
     <style>
+        :root {{
+            /* Light Mode Variables */
+            --background: #F0F9FF;
+            --foreground: #0F172A;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --primary: #0284C7;
+            --primary-glow: rgba(2, 132, 199, 0.3);
+            --secondary: #0D9488;
+            --muted: #64748B;
+            --success: #10B981;
+            --error: #EF4444;
+            --glass-shimmer: rgba(255, 255, 255, 0.6);
+        }}
+
+        @media (prefers-color-scheme: dark) {{
+            :root {{
+                /* Dark Mode Variables */
+                --background: #020617;
+                --foreground: #E5F6FF;
+                --card-bg: rgba(20, 40, 60, 0.45);
+                --card-border: rgba(255, 255, 255, 0.1);
+                --primary: #38BDF8;
+                --primary-glow: rgba(56, 189, 248, 0.3);
+                --secondary: #2DD4BF;
+                --muted: #94A3B8;
+                --success: #34D399;
+                --error: #F87171;
+                --glass-shimmer: rgba(255, 255, 255, 0.1);
+            }}
+        }}
+
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }}
+
+        /* Ambient Background Elements */
+        .ambient-glow {{
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }}
+
+        @keyframes pulse-glow {{
+            0% {{ opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); }}
+            100% {{ opacity: 0.7; transform: translate(-50%, -50%) scale(1.05); }}
+        }}
+
+        /* Liquid Glass Card Container */
         .container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 32px;
+            margin: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 10px 30px rgba(239, 68, 68, 0.1);
             text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }}
-        h1 {{ margin: 0 0 1rem 0; }}
-        p {{ margin: 0; opacity: 0.9; }}
+
+        /* Logo Area */
+        .logo {{
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }}
+        
+        .logo svg {{
+            width: 28px;
+            height: 28px;
+            color: var(--primary);
+        }}
+
+        .divider {{
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+            margin: 0 -32px 32px -32px;
+        }}
+
+        /* Status Icon Animations */
+        .status-icon {{
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px auto;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2), 0 0 0 1px var(--card-border) inset;
+        }}
+
+        /* Error X */
+        .error-svg {{
+            width: 40px;
+            height: 40px;
+            color: var(--error);
+            animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }}
+
+        @keyframes pop-in {{
+            0% {{ transform: scale(0.8); opacity: 0; }}
+            50% {{ transform: scale(1.1); }}
+            100% {{ transform: scale(1); opacity: 1; }}
+        }}
+
+        @keyframes fade-in-up {{
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+
+        h1 {{
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--foreground);
+            letter-spacing: -0.5px;
+        }}
+
+        p {{
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }}
+
+        /* Primary Button */
+        .btn {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            outline: none;
+        }}
+
+        .btn-primary {{
+            background: var(--card-border);
+            color: var(--foreground);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }}
+
+        .btn-primary:hover {{
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }}
+
+        .btn-primary:active {{
+            transform: translateY(0);
+        }}
+
+        /* Subtle text below button */
+        .sub-text {{
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 16px;
+            margin-bottom: 0;
+            opacity: 0.7;
+        }}
     </style>
 </head>
 <body>
+    <div class="ambient-glow"></div>
+    
     <div class="container">
-        <h1>❌ Authentication Failed</h1>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 0 0-7.09 17.09c.12-.12.25-.24.38-.35.43-.36.96-.58 1.5-.64.55-.06 1.11.02 1.63.22.45.18.91.4 1.39.63.48.23 1 .45 1.53.58A10.05 10.05 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2Z"></path>
+                <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                <path d="M16.5 18s-1.5-2-4.5-2-4.5 2-4.5 2"></path>
+            </svg>
+            CosmoNaut
+        </div>
+        
+        <div class="divider"></div>
+
+        <div class="status-icon">
+            <svg class="error-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+
+        <h1>Authentication Failed</h1>
         <p>{}</p>
-        <p style="margin-top: 1rem; font-size: 0.9rem;">You can close this window and try again.</p>
+
+        <button class="btn btn-primary" onclick="window.close()">
+            Close Tab
+        </button>
+        <p class="sub-text">You may close this tab and try again.</p>
     </div>
 </body>
 </html>
