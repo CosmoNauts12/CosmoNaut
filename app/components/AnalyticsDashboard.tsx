@@ -12,16 +12,35 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Legend
+    Legend,
+    BarChart,
+    Bar
 } from 'recharts';
 import { useCollections, HistoryItem } from './CollectionsProvider';
 
 // --- Sub-Components ---
 
-const FiltersBar = ({ periods, activePeriod, onPeriodChange, onRefresh }: any) => {
+const FiltersBar = ({ periods, activePeriod, onPeriodChange, workspaces, activeWorkspaceId, onWorkspaceChange, onRefresh }: any) => {
     return (
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8 p-4 liquid-glass rounded-2xl border-card-border/50">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-6">
+                {/* Project Selector */}
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-muted uppercase tracking-widest">Project</span>
+                    <select
+                        value={activeWorkspaceId}
+                        onChange={(e) => onWorkspaceChange(e.target.value)}
+                        className="bg-black/10 dark:bg-white/5 border border-card-border/30 rounded-xl px-4 py-2 text-[11px] font-black text-foreground focus:outline-none focus:ring-2 ring-primary/20 appearance-none cursor-pointer hover:bg-black/20 dark:hover:bg-white/10 transition-all min-w-[180px]"
+                    >
+                        {workspaces.map((w: any) => (
+                            <option key={w.id} value={w.id} className="bg-background text-foreground uppercase">{w.name}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="h-4 w-px bg-card-border/30 hidden md:block" />
+
+                {/* Period Selector */}
                 <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                     {periods.map((period: string) => (
                         <button
@@ -76,7 +95,7 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function AnalyticsDashboard() {
-    const { history } = useCollections();
+    const { history, workspaces, activeWorkspaceId, setActiveWorkspaceId } = useCollections();
     const [searchTerm, setSearchTerm] = useState('');
     const [period, setPeriod] = useState('All Time');
 
@@ -106,10 +125,21 @@ export default function AnalyticsDashboard() {
         }, {});
 
         const statusCodeData = [
-            { name: '2xx Success', value: statusMap['2xx'] || 0, color: '#10b981' },
-            { name: '4xx Client Err', value: statusMap['4xx'] || 0, color: '#f59e0b' },
-            { name: '5xx Server Err', value: statusMap['5xx'] || 0, color: '#f43f5e' },
+            { name: 'Success (2xx)', value: statusMap['2xx'] || 0, color: '#10b981' },
+            { name: 'Failure (4xx/5xx)', value: (statusMap['4xx'] || 0) + (statusMap['5xx'] || 0), color: '#f43f5e' },
         ];
+
+        // HTTP Methods distribution
+        const methodMap = data.reduce((acc: any, item) => {
+            acc[item.method] = (acc[item.method] || 0) + 1;
+            return acc;
+        }, {});
+
+        const methodData = Object.entries(methodMap).map(([name, value]) => ({
+            name,
+            value,
+            color: name === 'GET' ? '#10b981' : name === 'POST' ? '#3b82f6' : name === 'PUT' ? '#f59e0b' : '#f43f5e'
+        }));
 
         // Performance trend (grouped by hour or similar)
         // Here we'll just take the last 20 items to show a trend line
@@ -136,8 +166,14 @@ export default function AnalyticsDashboard() {
             const sortedLatencies = [...e.latencies].sort((a, b) => a - b);
             const p95 = sortedLatencies[Math.floor(sortedLatencies.length * 0.95)] || sortedLatencies[0];
             const successPct = ((e.success / e.total) * 100).toFixed(1);
+
+            // Try to extract method from the first history item for this URL
+            const firstRequest = data.find(item => item.url === e.endpoint);
+            const method = firstRequest?.method || 'GET';
+
             return {
                 endpoint: e.endpoint,
+                method: method,
                 total: e.total,
                 success: successPct,
                 avgResponse: Math.round(e.totalLatency / e.total),
@@ -152,6 +188,7 @@ export default function AnalyticsDashboard() {
             failureRate,
             avgLatency,
             statusCodeData,
+            methodData,
             trendData,
             endpointData
         };
@@ -159,14 +196,33 @@ export default function AnalyticsDashboard() {
 
     if (!analytics || history.length === 0) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                <div className="w-20 h-20 rounded-3xl bg-foreground/5 flex items-center justify-center mb-6 animate-pulse">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <div className="flex-1 flex flex-col p-8 scrollbar-hide bg-card-bg/5 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto w-full">
+                    <div className="flex flex-col mb-8">
+                        <h1 className="text-2xl font-black tracking-tight text-foreground uppercase tracking-[0.1em] mb-1">Performance Dashboard</h1>
+                        <p className="text-muted text-[10px] font-black uppercase tracking-widest opacity-50">Real-time API Analytics • MISSION CONTROL</p>
+                    </div>
+
+                    <FiltersBar
+                        periods={['Today', '7 Days', '30 Days', 'All Time']}
+                        activePeriod={period}
+                        onPeriodChange={setPeriod}
+                        workspaces={workspaces}
+                        activeWorkspaceId={activeWorkspaceId}
+                        onWorkspaceChange={setActiveWorkspaceId}
+                        onRefresh={() => { }}
+                    />
+
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <div className="w-20 h-20 rounded-3xl bg-foreground/5 flex items-center justify-center mb-6 animate-pulse">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                        </div>
+                        <h3 className="text-lg font-black text-foreground uppercase tracking-widest mb-2">No Mission Data Yet</h3>
+                        <p className="text-xs text-muted max-w-xs uppercase tracking-tight font-bold leading-relaxed">
+                            Select a project or complete some API requests in your workspace to generate performance analytics.
+                        </p>
+                    </div>
                 </div>
-                <h3 className="text-lg font-black text-foreground uppercase tracking-widest mb-2">No Mission Data Yet</h3>
-                <p className="text-xs text-muted max-w-xs uppercase tracking-tight font-bold leading-relaxed">
-                    Complete some API requests in your workspace to generate performance analytics.
-                </p>
             </div>
         );
     }
@@ -186,6 +242,9 @@ export default function AnalyticsDashboard() {
                     periods={['Today', '7 Days', '30 Days', 'All Time']}
                     activePeriod={period}
                     onPeriodChange={setPeriod}
+                    workspaces={workspaces}
+                    activeWorkspaceId={activeWorkspaceId}
+                    onWorkspaceChange={setActiveWorkspaceId}
                     onRefresh={() => { }}
                 />
 
@@ -244,9 +303,9 @@ export default function AnalyticsDashboard() {
                         </div>
 
                         {/* Response Time Trend */}
-                        <div className="lg:col-span-2 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col">
-                            <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Recent Performance Trend</h3>
-                            <div className="flex-1 min-h-[250px]">
+                        <div className="lg:col-span-1 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col min-h-[350px]">
+                            <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Latency Trend</h3>
+                            <div className="flex-1">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={analytics.trendData}>
                                         <defs>
@@ -260,12 +319,12 @@ export default function AnalyticsDashboard() {
                                             dataKey="time"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
                                         />
                                         <YAxis
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
                                         />
                                         <Tooltip
                                             contentStyle={{
@@ -280,7 +339,7 @@ export default function AnalyticsDashboard() {
                                             type="monotone"
                                             dataKey="latency"
                                             stroke="#3b82f6"
-                                            strokeWidth={4}
+                                            strokeWidth={3}
                                             fillOpacity={1}
                                             fill="url(#colorLatency)"
                                         />
@@ -288,57 +347,146 @@ export default function AnalyticsDashboard() {
                                 </ResponsiveContainer>
                             </div>
                         </div>
+
+                        {/* Method Distribution */}
+                        <div className="lg:col-span-1 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col min-h-[350px]">
+                            <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Method Frequency</h3>
+                            <div className="flex-1">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={analytics.methodData}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                        <XAxis
+                                            dataKey="name"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                            contentStyle={{
+                                                borderRadius: '16px',
+                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                border: 'none',
+                                                color: '#fff',
+                                                fontSize: '10px'
+                                            }}
+                                        />
+                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                            {analytics.methodData.map((entry: any, index: number) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
                     </div>
                 </ClientOnly>
 
                 {/* Endpoint Table */}
-                <div className="liquid-glass rounded-[2.5rem] border-card-border/50 overflow-hidden">
-                    <div className="p-6 border-b border-card-border/30 flex items-center justify-between">
-                        <h3 className="text-xs font-black text-foreground uppercase tracking-widest">Endpoint Performance Metrics</h3>
-                        <div className="relative w-64">
+                <div className="liquid-glass rounded-[2.5rem] border-card-border/50 overflow-hidden shadow-2xl">
+                    <div className="p-8 border-b border-card-border/30 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5">
+                        <div>
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] mb-1">Service Performance Matrix</h3>
+                            <p className="text-[10px] text-muted font-bold uppercase tracking-widest opacity-60">Comparative analysis of active mission protocols</p>
+                        </div>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
                             <input
                                 type="text"
-                                placeholder="Filter endpoints..."
+                                placeholder="Filter by endpoint or protocol..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-black/5 dark:bg-white/5 border border-card-border/30 rounded-xl px-4 py-2 text-[11px] font-bold text-foreground focus:outline-none focus:ring-2 ring-primary/20 transition-all"
+                                className="w-full md:w-80 bg-black/20 border border-card-border/40 rounded-2xl pl-12 pr-4 py-3 text-[11px] font-black text-foreground focus:outline-none focus:ring-2 ring-primary/20 focus:border-primary/50 transition-all placeholder:text-muted/50"
                             />
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto overflow-y-hidden">
                         <table className="w-full border-collapse text-left">
-                            <thead>
-                                <tr className="bg-black/10 dark:bg-white/5">
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest">Endpoint</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest text-right">Requests</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest text-right">Success %</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest text-right">Avg (ms)</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest text-right">P95 (ms)</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-muted uppercase tracking-widest text-center">Health</th>
+                            <thead className="sticky top-0 z-10">
+                                <tr className="bg-black/20 dark:bg-white/5 backdrop-blur-sm border-b border-card-border/20">
+                                    <th className="px-8 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em]">
+                                        <div className="flex items-center gap-2">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                                            Endpoint Protocol
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em] text-right">Missions</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em] text-right">Integrity</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em] text-right">Avg (ms)</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em] text-right">P95 (ms)</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-muted uppercase tracking-[0.2em] text-center">Status</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-card-border/20">
+                            <tbody className="divide-y divide-card-border/10">
                                 {filteredEndpoints.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-foreground/5 transition-colors group">
-                                        <td className="px-6 py-4 max-w-xs">
-                                            <code className="text-[10px] font-black text-primary px-2 py-1 rounded-md bg-primary/5 group-hover:bg-primary/10 transition-colors truncate block">
-                                                {item.endpoint}
-                                            </code>
+                                    <tr key={idx} className="group hover:bg-primary/5 transition-all duration-300">
+                                        <td className="px-8 py-6 max-w-md">
+                                            <div className="flex items-center gap-4">
+                                                <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black shadow-sm ring-1 ring-inset ${item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
+                                                    item.method === 'POST' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
+                                                        'bg-blue-500/10 text-blue-500 ring-blue-500/20'
+                                                    }`}>
+                                                    {item.method}
+                                                </span>
+                                                <div className="flex flex-col min-w-0">
+                                                    <code className="text-[11px] font-black text-foreground/90 truncate group-hover:text-primary transition-colors">
+                                                        {item.endpoint}
+                                                    </code>
+                                                    <span className="text-[8px] font-black text-muted uppercase tracking-[0.1em] mt-1 opacity-60">Source IP: External Gateway</span>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-[12px] font-black text-foreground/80">{item.total.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`text-[12px] font-black ${parseFloat(item.success) >= 95 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                                {item.success}%
-                                            </span>
+                                        <td className="px-6 py-6 text-right">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[14px] font-black text-foreground tracking-tight">{item.total.toLocaleString()}</span>
+                                                <span className="text-[8px] font-black text-muted/60 uppercase">Executions</span>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-[12px] font-black text-foreground/70">{item.avgResponse}ms</td>
-                                        <td className="px-6 py-4 text-right text-[12px] font-black text-foreground/70">{item.p95}ms</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex justify-center">
-                                                <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${item.health === 'green' ? 'bg-emerald-500 shadow-emerald-500/30' :
-                                                    item.health === 'yellow' ? 'bg-amber-500 shadow-amber-500/30' : 'bg-rose-500 shadow-rose-500/30'
-                                                    }`} />
+                                        <td className="px-6 py-6 text-right">
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className={`text-[14px] font-black tracking-tight ${parseFloat(item.success) >= 95 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                                    {item.success}%
+                                                </span>
+                                                <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full ${parseFloat(item.success) >= 95 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                                        style={{ width: `${item.success}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-6 text-right">
+                                            <span className="text-[13px] font-black text-foreground/70 tracking-tight">{item.avgResponse}</span>
+                                            <span className="text-[10px] font-bold text-muted/40 ml-1">ms</span>
+                                        </td>
+                                        <td className="px-6 py-6 text-right">
+                                            <span className="text-[13px] font-black text-foreground/70 tracking-tight">{item.p95}</span>
+                                            <span className="text-[10px] font-bold text-muted/40 ml-1">ms</span>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex justify-center flex-col items-center gap-2">
+                                                <div className="relative">
+                                                    <div className={`w-3 h-3 rounded-full blur-[2px] animate-pulse absolute inset-0 ${item.health === 'green' ? 'bg-emerald-400' :
+                                                        item.health === 'yellow' ? 'bg-amber-400' : 'bg-rose-400'
+                                                        }`} />
+                                                    <div className={`w-3 h-3 rounded-full relative z-10 border border-white/20 shadow-lg ${item.health === 'green' ? 'bg-emerald-500' :
+                                                        item.health === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'
+                                                        }`} />
+                                                </div>
+                                                <span className={`text-[8px] font-black uppercase tracking-widest ${item.health === 'green' ? 'text-emerald-500' :
+                                                    item.health === 'yellow' ? 'text-amber-500' : 'text-rose-500'
+                                                    }`}>
+                                                    {item.health === 'green' ? 'Nominal' : item.health === 'yellow' ? 'Unstable' : 'Critical'}
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
