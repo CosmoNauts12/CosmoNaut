@@ -125,8 +125,9 @@ export default function AnalyticsDashboard() {
         }, {});
 
         const statusCodeData = [
-            { name: 'Success (2xx)', value: statusMap['2xx'] || 0, color: '#10b981' },
-            { name: 'Failure (4xx/5xx)', value: (statusMap['4xx'] || 0) + (statusMap['5xx'] || 0), color: '#f43f5e' },
+            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#10b981' },
+            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#f59e0b' },
+            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#f43f5e' },
         ];
 
         // HTTP Methods distribution
@@ -297,7 +298,7 @@ export default function AnalyticsDashboard() {
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-6">
                                     <span className="text-2xl font-black text-foreground">{analytics.successRate}%</span>
-                                    <span className="text-[9px] font-black text-muted uppercase tracking-widest">Success</span>
+                                    <span className="text-[9px] font-black text-muted uppercase tracking-widest">Uptime</span>
                                 </div>
                             </div>
                         </div>
