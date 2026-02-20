@@ -19,6 +19,7 @@ const AnalyticsDashboard = dynamic(() => import("../components/AnalyticsDashboar
     </div>
   )
 });
+import InviteModal from "../components/InviteModal";
 
 /**
  * Dashboard Page
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -245,7 +247,7 @@ export default function Dashboard() {
 
           {/* Invite CTA - Clean */}
           <div className="mt-10 px-2">
-            <button className="w-full py-2 px-3 bg-white dark:bg-[#14283C] border border-gray-200 dark:border-none text-foreground text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">
+            <button onClick={() => setIsInviteOpen(true)} className="w-full py-2 px-3 bg-white dark:bg-[#14283C] border border-gray-200 dark:border-none text-foreground text-xs font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">
               + Invite Member
             </button>
           </div>
@@ -397,6 +399,8 @@ export default function Dashboard() {
           ) : null}
         </div>
       </main>
+
+      <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </div>
   );
 }
