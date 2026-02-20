@@ -243,7 +243,7 @@ export default function RequestPanel({
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
-              className={`glass-select h-11 px-4 rounded-xl font-black text-[13px] appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
+              className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
                 method === 'POST' ? 'text-amber-500' :
                   method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                 }`}
@@ -260,14 +260,14 @@ export default function RequestPanel({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter request URL"
-            className="flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-[15px] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+            className="flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
           />
 
           {'url' in activeRequest ? (
             <>
               <button
                 onClick={handleSave}
-                className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-[13px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
+                className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                 Update
@@ -278,7 +278,7 @@ export default function RequestPanel({
                   setSaveName(`${activeRequest.name} (Copy)`);
                   setShowSaveModal(true);
                 }}
-                className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-[13px] font-black uppercase tracking-widest hover:text-foreground transition-all"
+                className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
               >
                 Save As
               </button>
@@ -289,7 +289,7 @@ export default function RequestPanel({
                 if (collections.length > 0) setTargetCollectionId(collections[0].id);
                 setShowSaveModal(true);
               }}
-              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-[13px] font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all flex items-center gap-2"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
               Save
@@ -298,7 +298,7 @@ export default function RequestPanel({
 
           <button
             onClick={handleSend}
-            className="h-11 px-8 rounded-xl bg-primary text-white text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+            className="h-11 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             Send
@@ -314,21 +314,21 @@ export default function RequestPanel({
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[12px] font-black uppercase tracking-widest text-muted mb-2 block">Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Name</label>
                   <input
                     type="text"
                     value={saveName}
                     onChange={(e) => setSaveName(e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-[15px] focus:outline-none focus:border-primary/50"
+                    className="w-full h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[12px] font-black uppercase tracking-widest text-muted mb-2 block">Collection</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Collection</label>
                   <select
                     value={targetCollectionId}
                     onChange={(e) => setTargetCollectionId(e.target.value)}
-                    className="glass-select w-full h-11 px-4 rounded-xl text-[15px] focus:border-primary/50"
+                    className="glass-select w-full h-11 px-4 rounded-xl text-sm focus:border-primary/50"
                   >
                     <option value="">Select a collection</option>
                     {collections.map(c => (
@@ -341,13 +341,13 @@ export default function RequestPanel({
               <div className="flex gap-3 mt-8">
                 <button
                   onClick={() => setShowSaveModal(false)}
-                  className="flex-1 h-11 rounded-xl border border-card-border/50 text-[13px] font-black uppercase tracking-widest hover:bg-foreground/5 transition-all"
+                  className="flex-1 h-11 rounded-xl border border-card-border/50 text-xs font-black uppercase tracking-widest hover:bg-foreground/5 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 h-11 rounded-xl bg-primary text-white text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
+                  className="flex-1 h-11 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
                 >
                   Save
                 </button>
@@ -362,7 +362,7 @@ export default function RequestPanel({
             <button
               key={tab}
               onClick={() => setActiveTab(tab.toLowerCase())}
-              className={`text-[12px] font-black uppercase tracking-widest pb-1 transition-all relative ${activeTab === tab.toLowerCase() ? 'text-primary' : 'text-muted hover:text-foreground'
+              className={`text-[10px] font-black uppercase tracking-widest pb-1 transition-all relative ${activeTab === tab.toLowerCase() ? 'text-primary' : 'text-muted hover:text-foreground'
                 }`}
             >
               {tab}

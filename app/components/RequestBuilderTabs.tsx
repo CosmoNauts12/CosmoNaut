@@ -36,7 +36,7 @@ const deleteKV = (list: KVItem[], index: number) => {
 export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: (p: KVItem[]) => void }) {
   return (
     <div className="w-full space-y-2 p-2">
-      <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted dark:text-muted/50 mb-2">
+      <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted/50 mb-2">
         <span></span>
         <span>Key</span>
         <span>Value</span>
@@ -149,7 +149,7 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
 export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], setHeaders: (h: KVItem[]) => void, auth: AuthState }) {
   return (
     <div className="w-full space-y-2 p-2">
-      <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted dark:text-muted/50 mb-2">
+      <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted/50 mb-2">
         <span></span>
         <span>Key</span>
         <span>Value</span>

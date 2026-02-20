@@ -171,13 +171,13 @@ export default function ResponsePanel({
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("pretty")}
-              className={`px-3 py-1 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'pretty' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+              className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pretty' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
             >
               Body
             </button>
             <button
               onClick={() => setActiveTab("visualize")}
-              className={`px-3 py-1 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'visualize' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+              className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'visualize' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
             >
               Preview
             </button>
@@ -189,7 +189,7 @@ export default function ResponsePanel({
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[12px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/10"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 text-[10px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-white/10"
             >
               <span className="text-primary/70">{formats.find(f => f.id === format)?.icon}</span>
               <span className="uppercase tracking-wider">{formats.find(f => f.id === format)?.name}</span>
@@ -199,7 +199,7 @@ export default function ResponsePanel({
             {isDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
-                <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/20 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-1.5 z-20 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-36 glass-panel rounded-xl border border-card-border/50 shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100">
                   {formats.map((f) => (
                     <button
                       key={f.id}
@@ -208,7 +208,7 @@ export default function ResponsePanel({
                         setIsDropdownOpen(false);
                         setActiveTab("pretty");
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-white/5 hover:text-foreground'}`}
                     >
                       <span className={format === f.id ? 'text-primary' : 'text-muted opacity-50'}>{f.icon}</span>
                       {f.name}
@@ -224,18 +224,18 @@ export default function ResponsePanel({
         <div className="flex items-center gap-6">
           <div className="flex gap-4">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Status</span>
-              <span className={`text-[12px] font-black ${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <span className="text-[8px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Status</span>
+              <span className={`text-[10px] font-black ${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {response.status} {getStatusLabel(response.status)}
               </span>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Time</span>
-              <span className="text-[12px] font-black text-foreground/80">{response.duration_ms} ms</span>
+              <span className="text-[8px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Time</span>
+              <span className="text-[10px] font-black text-foreground/80">{response.duration_ms} ms</span>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Size</span>
-              <span className="text-[12px] font-black text-foreground/80">
+              <span className="text-[8px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Size</span>
+              <span className="text-[10px] font-black text-foreground/80">
                 {response.body.length < 1024
                   ? `${response.body.length} B`
                   : `${(response.body.length / 1024).toFixed(2)} KB`}
@@ -246,7 +246,7 @@ export default function ResponsePanel({
           <div className="w-[1px] h-4 bg-muted/20" />
 
           <button className="flex items-center gap-2 group">
-            <span className="text-[11px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save Response</span>
+            <span className="text-[9px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save Response</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
           </button>
         </div>
@@ -257,10 +257,7 @@ export default function ResponsePanel({
         {activeTab === 'pretty' && (
           <div className="h-full overflow-y-auto p-4 font-mono text-[11px] leading-relaxed selection:bg-primary/20">
             <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
-              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-600 dark:text-amber-200/90' :
-                  format === 'javascript' ? 'text-blue-600 dark:text-blue-200/90' :
-                    'text-emerald-600 dark:text-emerald-200/90'
-                } whitespace-pre-wrap`}>
+              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-200/90' : format === 'javascript' ? 'text-blue-200/90' : 'text-emerald-200/90'} whitespace-pre-wrap`}>
                 {formattedBody}
               </pre>
             </div>
