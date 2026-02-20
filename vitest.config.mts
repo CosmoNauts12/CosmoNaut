@@ -10,7 +10,7 @@ export default defineConfig({
         alias: {
             '@': resolve(__dirname, './'),
         },
-        setupFiles: './test/setup.ts',
+        setupFiles: './test/setup.tsx',
     },
 })
 

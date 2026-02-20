@@ -156,10 +156,10 @@ export default function SignUp() {
 
           <form onSubmit={handleSignUp}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-              {/* Name Field */}
               <div>
-                <label className="block text-sm glass-label mb-2">Name</label>
+                <label htmlFor="signup-name" className="block text-sm glass-label mb-2">Name</label>
                 <input
+                  id="signup-name"
                   type="text"
                   placeholder="Your full name"
                   value={name}
@@ -169,10 +169,10 @@ export default function SignUp() {
                 />
               </div>
 
-              {/* Email Field */}
               <div>
-                <label className="block text-sm glass-label mb-2">Email</label>
+                <label htmlFor="signup-email" className="block text-sm glass-label mb-2">Email</label>
                 <input
+                  id="signup-email"
                   type="email"
                   placeholder="Email Address"
                   value={email}
@@ -182,11 +182,11 @@ export default function SignUp() {
                 />
               </div>
 
-              {/* Password Field */}
               <div className="relative">
-                <label className="block text-sm glass-label mb-2">Password</label>
+                <label htmlFor="signup-password" className="block text-sm glass-label mb-2">Password</label>
                 <div className="relative">
                   <input
+                    id="signup-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Password (min 8 chars)"
                     value={password}
@@ -260,11 +260,11 @@ export default function SignUp() {
                 )}
               </div>
 
-              {/* Confirm Password Field */}
               <div className="relative">
-                <label className="block text-sm glass-label mb-2">Confirm Password</label>
+                <label htmlFor="signup-confirm-password" className="block text-sm glass-label mb-2">Confirm Password</label>
                 <div className="relative">
                   <input
+                    id="signup-confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm password"
                     value={confirmPassword}

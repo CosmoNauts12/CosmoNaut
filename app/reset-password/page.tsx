@@ -144,9 +144,10 @@ function ResetPasswordForm() {
             ) : (
                 <form onSubmit={handleReset}>
                     <div className="mb-4">
-                        <label className="block text-sm glass-label mb-2">New Password</label>
+                        <label htmlFor="reset-new-password" className="block text-sm glass-label mb-2">New Password</label>
                         <div className="relative">
                             <input
+                                id="reset-new-password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 value={password}
@@ -220,9 +221,10 @@ function ResetPasswordForm() {
                     </div>
 
                     <div className="mb-8">
-                        <label className="block text-sm glass-label mb-2">Confirm New Password</label>
+                        <label htmlFor="reset-confirm-password" className="block text-sm glass-label mb-2">Confirm New Password</label>
                         <div className="relative">
                             <input
+                                id="reset-confirm-password"
                                 type={showConfirmPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 value={confirmPassword}

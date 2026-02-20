@@ -154,8 +154,9 @@ export default function ProfileModal() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted">Current Status</label>
+              <label htmlFor="profile-status" className="text-[10px] font-black uppercase tracking-widest text-muted">Current Status</label>
               <input
+                id="profile-status"
                 type="text"
                 value={settings.status || ""}
                 onChange={(e) => updateSettings({ status: e.target.value })}
@@ -192,7 +193,9 @@ export default function ProfileModal() {
                 <form onSubmit={handlePasswordChange} className="space-y-3">
                   {/* Current Password */}
                   <div className="relative">
+                    <label htmlFor="profile-current-password" style={{ display: 'none' }}>Current Password</label>
                     <input
+                      id="profile-current-password"
                       type={showCurrent ? "text" : "password"}
                       placeholder="Current Password"
                       value={currentPassword}
@@ -207,7 +210,9 @@ export default function ProfileModal() {
 
                   {/* New Password */}
                   <div className="relative">
+                    <label htmlFor="profile-new-password" style={{ display: 'none' }}>New Password</label>
                     <input
+                      id="profile-new-password"
                       type={showNew ? "text" : "password"}
                       placeholder="New Password"
                       value={newPassword}
@@ -253,7 +258,9 @@ export default function ProfileModal() {
 
                   {/* Confirm Password */}
                   <div className="relative">
+                    <label htmlFor="profile-confirm-password" style={{ display: 'none' }}>Confirm New Password</label>
                     <input
+                      id="profile-confirm-password"
                       type={showConfirm ? "text" : "password"}
                       placeholder="Confirm New Password"
                       value={confirmNewPassword}
