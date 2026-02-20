@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSettings } from "./SettingsProvider";
-import { useCollections } from "./CollectionsProvider";
+import { useCollections, HistoryItem as HistoryItemType } from "./CollectionsProvider";
 import { SavedRequest } from "@/app/lib/collections";
 import PromptModal from "./PromptModal";
 import ConfirmModal from "./ConfirmModal";
@@ -329,8 +329,8 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
             ))}
 
             {activeActivity === 'history' && (
-              <div className="space-y-1">
-                <div className="flex justify-between items-center mb-2 px-2">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-2">
                   <span className="text-[9px] font-black text-muted uppercase tracking-widest">Recent Activity</span>
                   <button
                     onClick={clearHistory}
@@ -339,50 +339,39 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                     Clear All
                   </button>
                 </div>
+
                 {requestHistory.length === 0 ? (
                   <div className="p-8 text-center bg-foreground/5 rounded-xl border border-dashed border-card-border/50">
                     <p className="text-[10px] text-muted font-bold uppercase tracking-widest">No History Yet</p>
                   </div>
                 ) : (
-                  requestHistory.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => onSelectRequest?.({
-                        id: item.id,
-                        name: item.url.split('/').pop() || item.url,
-                        method: item.method,
-                        url: item.url,
-                        params: item.params,
-                        headers: item.headers,
-                        auth: item.auth,
-                        body: item.body,
-                        collectionId: 'history'
-                      })}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
-                    >
-                      <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
-                        item.method === 'POST' ? 'text-amber-500' :
-                          item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-                        }`}>
-                        {item.method}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold text-foreground/80 truncate">{item.url}</p>
-                        <p className="text-[9px] text-muted font-medium">
-                          {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+                  <div className="space-y-4">
+                    {/* Failed Requests */}
+                    {requestHistory.some(item => item.error || item.status >= 400) && (
+                      <div className="space-y-1">
+                        <div className="px-2 flex items-center gap-2 mb-1">
+                          <div className="w-1 h-1 rounded-full bg-rose-500" />
+                          <span className="text-[8px] font-black text-rose-500/70 uppercase tracking-tighter">Failed Requests</span>
+                        </div>
+                        {requestHistory.filter(item => item.error || item.status >= 400).map((item) => (
+                          <HistoryItemRow key={item.id} item={item} onSelect={onSelectRequest} />
+                        ))}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {item.error ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        ) : (
-                          <span className={`text-[9px] font-black ${item.status < 400 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {item.status}
-                          </span>
-                        )}
+                    )}
+
+                    {/* Successful Requests */}
+                    {requestHistory.some(item => !item.error && item.status < 400) && (
+                      <div className="space-y-1">
+                        <div className="px-2 flex items-center gap-2 mb-1">
+                          <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                          <span className="text-[8px] font-black text-emerald-500/70 uppercase tracking-tighter">Successful Requests</span>
+                        </div>
+                        {requestHistory.filter(item => !item.error && item.status < 400).map((item) => (
+                          <HistoryItemRow key={item.id} item={item} onSelect={onSelectRequest} />
+                        ))}
                       </div>
-                    </button>
-                  ))
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -408,5 +397,61 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         isDestructive={confirmModal.isDestructive}
       />
     </div>
+  );
+}
+
+/**
+ * Internal helper component for rendering a single history item row.
+ */
+function HistoryItemRow({
+  item,
+  onSelect
+}: {
+  item: HistoryItemType;
+  onSelect?: (request: SavedRequest & { collectionId: string }) => void;
+}) {
+  const date = new Date(item.timestamp);
+  const formattedDate = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <button
+      onClick={() => onSelect?.({
+        id: item.id,
+        name: item.url.split('/').pop() || item.url,
+        method: item.method,
+        url: item.url,
+        params: item.params,
+        headers: item.headers,
+        auth: item.auth,
+        body: item.body,
+        collectionId: 'history'
+      })}
+      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
+    >
+      <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
+        item.method === 'POST' ? 'text-amber-500' :
+          item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+        }`}>
+        {item.method}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold text-foreground/80 truncate">{item.url}</p>
+        <p className="text-[9px] text-muted font-medium">
+          {formattedDate} • {formattedTime}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        {item.error ? (
+          <div title={typeof item.error === 'string' ? item.error : 'Request Error'}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          </div>
+        ) : (
+          <span className={`text-[9px] font-black ${item.status < 400 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            {item.status}
+          </span>
+        )}
+      </div>
+    </button>
   );
 }
