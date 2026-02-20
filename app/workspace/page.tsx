@@ -14,6 +14,7 @@ import { useCollections } from "../components/CollectionsProvider";
 import { CosmoResponse } from "../components/RequestEngine";
 import { SavedRequest } from "../lib/collections";
 import ConfirmModal from "../components/ConfirmModal";
+import AnalyticsDashboard from "../components/AnalyticsDashboard";
 
 /**
  * The main workspace interface of CosmoNaut.
@@ -35,6 +36,9 @@ export default function WorkspacePage() {
   const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
+
+  /** Current active activity from sidebar. */
+  const [activeActivity, setActiveActivity] = useState("collections");
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -176,7 +180,10 @@ export default function WorkspacePage() {
       <WorkspaceHeader />
 
       <div className="flex-1 flex overflow-hidden relative z-10">
-        <WorkspaceSidebar onSelectRequest={handleSelectRequest} />
+        <WorkspaceSidebar
+          onSelectRequest={handleSelectRequest}
+          onActivityChange={setActiveActivity}
+        />
 
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
@@ -227,7 +234,9 @@ export default function WorkspacePage() {
           </div>
 
           <div id="tour-main-content" className="flex-1 overflow-hidden flex flex-col">
-            {activeTabId === "overview" || !activeRequest ? (
+            {activeActivity === "reports" ? (
+              <AnalyticsDashboard />
+            ) : activeTabId === "overview" || !activeRequest ? (
               <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-4 mb-8 text-center md:text-left">

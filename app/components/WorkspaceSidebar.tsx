@@ -23,6 +23,11 @@ const activities = [
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     )
   },
+  {
+    id: 'reports', name: 'Reports', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+    )
+  },
 ];
 
 /**
@@ -33,7 +38,13 @@ const activities = [
  * - Left narrow bar: Activity switcher (Collections, History, Flows).
  * - Right wide bar: Contextual content for the active activity.
  */
-export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void }) {
+export default function WorkspaceSidebar({
+  onSelectRequest,
+  onActivityChange
+}: {
+  onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void;
+  onActivityChange?: (activity: string) => void;
+}) {
   const { settings } = useSettings();
   const {
     collections,
@@ -184,7 +195,10 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         {activities.map((activity) => (
           <button
             key={activity.id}
-            onClick={() => setActiveActivity(activity.id)}
+            onClick={() => {
+              setActiveActivity(activity.id);
+              onActivityChange?.(activity.id);
+            }}
             title={activity.name}
             className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
               ? 'text-primary bg-primary/10'
@@ -373,6 +387,22 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                     )}
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeActivity === 'reports' && (
+              <div className="space-y-4">
+                <div className="px-2 mb-2">
+                  <span className="text-[12px] font-black text-muted uppercase tracking-widest">Recent reports</span>
+                </div>
+                <div className="space-y-1">
+                  {['Monthly Performance', 'Error Analysis', 'Latency Breakdown'].map((report, idx) => (
+                    <button key={idx} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 text-left transition-all group border border-transparent hover:border-card-border/50">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/50 group-hover:text-primary transition-colors"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                      <span className="text-[12px] font-bold text-foreground/80">{report}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
