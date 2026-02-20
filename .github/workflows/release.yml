@@ -1,10 +1,10 @@
 name: Release
 on:
   push:
-    branches:
-      - Yuvan
     tags:
-      - 'v*' # Triggers whenever you push a tag starting with 'v' (e.g., v1.0.0)
+      - 'v*'
+    branches:
+      - main
 
 jobs:
   release:
