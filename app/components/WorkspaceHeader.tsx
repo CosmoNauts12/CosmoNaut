@@ -32,6 +32,7 @@ export default function WorkspaceHeader() {
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [collaborators, setCollaborators] = useState<any[]>([]);
+  const [ownerInfo, setOwnerInfo] = useState<any>(null);
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
@@ -61,7 +62,21 @@ export default function WorkspaceHeader() {
   useEffect(() => {
     if (!activeWorkspaceId || activeWorkspaceId === "default") {
       setCollaborators([]);
+      setOwnerInfo(null);
       return;
+    }
+
+    // Fetch the workspace owner info once when workspace changes
+    if (activeWorkspace?.ownerId) {
+      getDoc(doc(db, "users", activeWorkspace.ownerId)).then(userDocSnap => {
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          setOwnerInfo({
+            displayName: userData.displayName || userData.email || "Unknown",
+            initial: (userData.displayName || userData.email || "O").charAt(0).toUpperCase()
+          });
+        }
+      });
     }
 
     const q = query(
@@ -89,15 +104,18 @@ export default function WorkspaceHeader() {
           return null;
         });
 
-        const resolvedCollabs = (await Promise.all(collabPromises)).filter(Boolean);
-        setCollaborators(resolvedCollabs);
+        const resolvedCollabs = (await Promise.all(collabPromises)).filter(Boolean) as any[];
+
+        // Deduplicate by userId in case of old test data
+        const uniqueCollabs = Array.from(new Map(resolvedCollabs.map(item => [item.userId, item])).values());
+        setCollaborators(uniqueCollabs);
       } catch (error) {
         console.error("Error fetching collaborator details:", error);
       }
     });
 
     return () => unsubscribe();
-  }, [activeWorkspaceId]);
+  }, [activeWorkspaceId, activeWorkspace?.ownerId]);
 
   return (
     <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
@@ -228,35 +246,82 @@ export default function WorkspaceHeader() {
 
         {/* Collaborators Facepile */}
         {(collaborators.length > 0 || (activeWorkspace?.ownerId === user?.uid)) && (
-          <div className="flex items-center ml-2 relative">
-            {/* Show Owner if we know who it is and they are the current user */}
-            <div
-              className="w-8 h-8 rounded-full bg-slate-200 border-2 border-background flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm relative group cursor-help z-10"
-              title="You (Owner)"
-            >
-              {user?.displayName?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "O"}
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-background flex items-center justify-center">
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-              </div>
+          <div className="relative flex items-center ml-2 group/facepile cursor-help pt-2 pb-2">
+            <div className="flex items-center relative transition-opacity">
+              {/* Show Actual Workspace Owner */}
+              {ownerInfo && (
+                <div
+                  className="w-8 h-8 rounded-full bg-slate-200 border-2 border-background flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm relative z-10"
+                  title={`${ownerInfo.displayName} (Owner)`}
+                >
+                  {ownerInfo.initial}
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-background flex items-center justify-center">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </div>
+                </div>
+              )}
+
+              {/* Render other collaborators */}
+              {collaborators.filter(c => c.userId !== activeWorkspace?.ownerId).slice(0, 4).map((collab, index) => (
+                <div
+                  key={collab.id}
+                  className={`w-8 h-8 rounded-full bg-primary/10 text-primary border-2 border-background flex items-center justify-center text-xs font-bold shadow-sm relative -ml-2`}
+                  style={{ zIndex: 10 - index - 1 }}
+                  title={`${collab.displayName} (${collab.role})`}
+                >
+                  {collab.initial}
+                </div>
+              ))}
+
+              {collaborators.filter(c => c.userId !== activeWorkspace?.ownerId).length > 4 && (
+                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 border-2 border-background flex items-center justify-center text-[10px] font-bold shadow-sm -ml-2 z-0">
+                  +{collaborators.filter(c => c.userId !== activeWorkspace?.ownerId).length - 4}
+                </div>
+              )}
             </div>
 
-            {/* Render other collaborators */}
-            {collaborators.filter(c => c.userId !== user?.uid).slice(0, 4).map((collab, index) => (
-              <div
-                key={collab.id}
-                className={`w-8 h-8 rounded-full bg-primary/10 text-primary border-2 border-background flex items-center justify-center text-xs font-bold shadow-sm relative group cursor-help -ml-2`}
-                style={{ zIndex: 10 - index - 1 }}
-                title={`${collab.displayName} (${collab.role})`}
-              >
-                {collab.initial}
-              </div>
-            ))}
+            {/* Collaborators Hover Tooltip */}
+            <div className="absolute right-0 top-full mt-2 w-64 bg-background rounded-2xl border border-card-border shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50 flex flex-col max-h-[400px] opacity-0 invisible group-hover/facepile:opacity-100 group-hover/facepile:visible transition-all duration-200 translate-y-2 group-hover/facepile:translate-y-0 origin-top-right pointer-events-none group-hover/facepile:pointer-events-auto overflow-hidden">
+              <div className="relative z-10 p-4 overflow-y-auto">
+                <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60 mb-3">Workspace Access</p>
 
-            {collaborators.filter(c => c.userId !== user?.uid).length > 4 && (
-              <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 border-2 border-background flex items-center justify-center text-[10px] font-bold shadow-sm -ml-2 z-0">
-                +{collaborators.filter(c => c.userId !== user?.uid).length - 4}
+                <div className="flex flex-col gap-3">
+                  {/* Owner Row */}
+                  {ownerInfo && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0 border border-background flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm relative">
+                        {ownerInfo.initial}
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border border-background flex items-center justify-center">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-bold text-foreground truncate">{ownerInfo.displayName}</span>
+                        <span className="text-[10px] text-muted truncate">Owner</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Collaborators Rows */}
+                  {collaborators.filter(c => c.userId !== activeWorkspace?.ownerId).map((collab) => (
+                    <div key={collab.id} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 shrink-0 text-primary border border-background flex items-center justify-center text-xs font-bold shadow-sm">
+                        {collab.initial}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-foreground truncate">{collab.displayName}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${collab.role === 'write' ? 'bg-primary/20 text-primary' : 'bg-slate-500/20 text-slate-400'}`}>
+                            {collab.role}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-muted truncate">{collab.email}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 

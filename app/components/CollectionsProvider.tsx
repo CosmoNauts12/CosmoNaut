@@ -108,7 +108,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     // 1. Listen for Workspaces owned by the user
     const qOwned = query(collection(db, "workspaces"), where("ownerId", "==", user.uid));
     const unsubOwned = onSnapshot(qOwned, (snapshot) => {
-      ownedWorkspaces = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name, isOwner: true } as any));
+      ownedWorkspaces = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name, ownerId: doc.data().ownerId, isOwner: true } as any));
       combineAndSet();
     }, (error) => {
       console.error("Firestore owned workspaces sync error:", error);
@@ -132,8 +132,9 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
         const fetchedCollabs = await Promise.all(
           workspaceIds.map(async (id) => {
             const wDoc = await getDoc(doc(db, "workspaces", id));
+            // Add ownerId manually so facepile knows who the owner is even if not them
             if (wDoc.exists()) {
-              return { id: wDoc.id, name: wDoc.data().name, isCollab: true } as any;
+              return { id: wDoc.id, name: wDoc.data().name, ownerId: wDoc.data().ownerId, isCollab: true } as any;
             }
             return null;
           })

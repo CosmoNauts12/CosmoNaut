@@ -105,7 +105,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     where("email", "<=", term + "\uf8ff")
                 );
 
-                const querySnapshot = await withTimeout(getDocs(q));
+                const querySnapshot = await getDocs(q);
                 const results: SearchUser[] = [];
                 querySnapshot.forEach((doc) => {
                     results.push(doc.data() as SearchUser);
@@ -181,7 +181,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     where("userId", "==", selectedUser.uid),
                     where("projectId", "==", activeWorkspaceId)
                 );
-                const collabsSnap = await withTimeout(getDocs(collabsQuery));
+                const collabsSnap = await getDocs(collabsQuery);
                 if (!collabsSnap.empty) {
                     setSearchError("This user is already a collaborator in this workspace.");
                     setIsSending(false);
@@ -196,14 +196,14 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                 where("projectId", "==", activeWorkspaceId),
                 where("status", "==", "pending")
             );
-            const invitesSnap = await withTimeout(getDocs(invitesQuery));
+            const invitesSnap = await getDocs(invitesQuery);
             if (!invitesSnap.empty) {
                 setSearchError("An invitation is already pending for this email in this workspace.");
                 setIsSending(false);
                 return;
             }
 
-            await withTimeout(addDoc(collection(db, "invitations"), {
+            await addDoc(collection(db, "invitations"), {
                 fromUserId: currentUser.uid,
                 fromEmail: currentUser.email,
                 toEmail: selectedUser.email,
@@ -212,7 +212,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                 role,
                 status: "pending",
                 createdAt: serverTimestamp(),
-            }));
+            });
 
             // Add to search history on successful send
             try {
@@ -230,13 +230,13 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
 
             setSuccessMessage("Invitation sent successfully!");
 
-            // Reset after a moment
+            // Reset after a short delay to let the animation play
             setTimeout(() => {
                 onClose();
                 clearSelection();
                 setSuccessMessage("");
                 setIsSending(false);
-            }, 2000);
+            }, 500);
 
         } catch (error: any) {
             console.error("Invite error:", error);
