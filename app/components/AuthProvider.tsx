@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { auth, onAuthStateChanged, logout as firebaseLogout, User, signInWithGoogle, restoreSession, logoutTauri, signInWithCredential, GoogleAuthProvider } from "@/app/lib/firebase";
+import { auth, onAuthStateChanged, logout as firebaseLogout, User, signInWithGoogle, restoreSession, logoutTauri, signInWithCredential, GoogleAuthProvider, db } from "@/app/lib/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSplash from "./LoadingSplash";
 
@@ -71,9 +72,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     console.log("AuthProvider: Initializing...");
 
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       console.log("AuthProvider: Session state recovered:", u?.email || "none");
-      
+
       const isDemoSession = localStorage.getItem("is_demo") === "true";
       if (isDemoSession) {
         console.log("AuthProvider: Demo session active");
@@ -93,6 +94,22 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(u);
       setIsDemo(false);
+
+      // Automatically sync authenticated user to Firestore database
+      if (u) {
+        try {
+          const userRef = doc(db, "users", u.uid);
+          await setDoc(userRef, {
+            uid: u.uid,
+            email: u.email,
+            displayName: u.displayName || "",
+            photoURL: u.photoURL || "",
+            lastLoginAt: serverTimestamp(),
+          }, { merge: true });
+        } catch (error) {
+          console.error("Failed to sync user to Firestore:", error);
+        }
+      }
 
       const isSigningUp = localStorage.getItem("is_signing_up") === "true";
       if (isSigningUp) {
@@ -132,7 +149,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         unlistenSuccess = await listen('auth-success', async (event: any) => {
           console.log('AuthProvider: Google auth success', event.payload);
           const userData = event.payload;
-          
+
           try {
             if (userData.google_id_token) {
               console.log('AuthProvider: Signing in with Google credential for persistence');
@@ -150,6 +167,21 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
               } as User;
 
               setUser(mockUser);
+
+              // Sync mock user to Firestore
+              try {
+                const userRef = doc(db, "users", mockUser.uid);
+                await setDoc(userRef, {
+                  uid: mockUser.uid,
+                  email: mockUser.email,
+                  displayName: mockUser.displayName || "",
+                  photoURL: mockUser.photoURL || "",
+                  lastLoginAt: serverTimestamp(),
+                }, { merge: true });
+              } catch (error) {
+                console.error("Failed to sync mock user to Firestore:", error);
+              }
+
               setAuthError(null);
               setLoading(false);
 
@@ -186,7 +218,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     localStorage.removeItem("is_demo");
     setIsDemo(false);
-    
+
     // If Tauri app, also clear keychain
     if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
       try {
@@ -195,7 +227,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Failed to clear Tauri tokens:', e);
       }
     }
-    
+
     await firebaseLogout();
     setUser(null);
     router.push("/");

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { db } from "../lib/firebase";
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc } from "firebase/firestore";
 import { useAuth } from "./AuthProvider";
 
 interface UpdatesModalProps {
@@ -14,6 +14,7 @@ interface Invitation {
     id: string;
     fromEmail: string;
     fromUserId: string;
+    projectId: string;
     role: "read" | "write";
     status: "pending" | "accepted" | "declined";
     createdAt: any;
@@ -52,8 +53,18 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
         return () => unsubscribe();
     }, [user]);
 
-    const handleAccept = async (inviteId: string) => {
+    const handleAccept = async (inviteId: string, fromUserId: string, role: string, projectId: string) => {
+        if (!user) return;
         try {
+            // Add to collaborators collection
+            await addDoc(collection(db, "collaborators"), {
+                userId: user.uid,
+                role: role,
+                projectId: projectId,
+                addedAt: new Date()
+            });
+
+            // Update invitation status
             await updateDoc(doc(db, "invitations", inviteId), {
                 status: "accepted"
             });
@@ -69,7 +80,7 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
         if (!confirm("Are you sure you want to decline this invitation?")) return;
         try {
             await updateDoc(doc(db, "invitations", inviteId), {
-                status: "declined"
+                status: "rejected"
             });
         } catch (error) {
             console.error("Error declining invite:", error);
@@ -124,7 +135,7 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                     </button>
                                     <button
-                                        onClick={() => handleAccept(invite.id)}
+                                        onClick={() => handleAccept(invite.id, invite.fromUserId, invite.role, invite.projectId)}
                                         className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
                                     >
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>

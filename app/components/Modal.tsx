@@ -6,6 +6,7 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    allowOverflow?: boolean;
 }
 
 /**
@@ -13,7 +14,7 @@ interface ModalProps {
  * 
  * Provides a standardized modal layout with backdrop, animation, and close behavior.
  */
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, allowOverflow = false }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Close on Escape key
@@ -52,7 +53,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             {/* Modal Content */}
             <div
                 ref={modalRef}
-                className="relative w-full max-w-md bg-white dark:bg-[#020617] liquid-glass border border-card-border/50 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col"
+                className={`relative w-full max-w-md bg-white dark:bg-[#020617] liquid-glass border border-card-border/50 rounded-2xl shadow-2xl ${allowOverflow ? "overflow-visible" : "overflow-hidden"} animate-in zoom-in-95 duration-200 flex flex-col`}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-card-border/50">

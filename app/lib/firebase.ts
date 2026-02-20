@@ -33,6 +33,24 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getFirestore, Firestore } from "firebase/firestore";
+
+let dbInstance: Firestore;
+
+if (typeof window !== "undefined") {
+    try {
+        dbInstance = initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        });
+    } catch (e) {
+        console.error("Failed to initialize Firestore with persistence. Falling back.", e);
+        dbInstance = getFirestore(app);
+    }
+} else {
+    dbInstance = getFirestore(app);
+}
+
+export const db = dbInstance;
 
 // Configure persistence explicitly
 if (typeof window !== "undefined") {

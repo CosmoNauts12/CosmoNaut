@@ -2,7 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Collection, SavedRequest, saveCollectionsToDisk, loadCollectionsFromDisk } from "@/app/lib/collections";
-import { Workspace, loadWorkspacesFromDisk, saveWorkspacesToDisk } from "@/app/lib/workspaces";
+import { Workspace } from "@/app/lib/workspaces";
+import { db } from "../lib/firebase";
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useAuth } from "./AuthProvider";
 import { useSettings } from "./SettingsProvider";
 import { CosmoError } from "./RequestEngine";
@@ -70,7 +72,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load Workspaces on Login
+  // Load Workspaces on Login (Real-time Firestore Sync)
   useEffect(() => {
     if (!user) {
       setWorkspaces([]);
@@ -78,101 +80,144 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    const loadWorkspaces = async () => {
-      setLoading(true);
-      try {
-        const data = await loadWorkspacesFromDisk(user.uid);
-        setWorkspaces(data);
+    setLoading(true);
 
-        // Restore last active workspace if it exists in the new list
-        const lastId = settings.lastWorkspaceId || "default";
-        if (data.some(w => w.id === lastId)) {
-          setActiveWorkspaceId(lastId);
-        } else if (data.length > 0) {
-          setActiveWorkspaceId(data[0].id);
-        }
-      } catch (error) {
-        console.error("CollectionsProvider: Load workspaces error", error);
-      } finally {
-        setLoading(false);
+    let ownedWorkspaces: Workspace[] = [];
+    let collabWorkspaces: Workspace[] = [];
+
+    const combineAndSet = () => {
+      const combined = [...ownedWorkspaces, ...collabWorkspaces];
+
+      // Remove duplicates just in case
+      const uniqueWorkspaces = Array.from(new Map(combined.map(item => [item.id, item])).values());
+
+      setWorkspaces(uniqueWorkspaces);
+
+      const lastId = settings.lastWorkspaceId || "default";
+      if (uniqueWorkspaces.some(w => w.id === lastId)) {
+        setActiveWorkspaceId(lastId);
+      } else if (uniqueWorkspaces.length > 0) {
+        setActiveWorkspaceId(uniqueWorkspaces[0].id);
+      } else {
+        // If absolutely no workspaces exist, ensure we don't crash
+        setActiveWorkspaceId("default");
       }
+      setLoading(false);
     };
 
-    loadWorkspaces();
-  }, [user, settings.lastWorkspaceId]);
+    // 1. Listen for Workspaces owned by the user
+    const qOwned = query(collection(db, "workspaces"), where("ownerId", "==", user.uid));
+    const unsubOwned = onSnapshot(qOwned, (snapshot) => {
+      ownedWorkspaces = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name, isOwner: true } as any));
+      combineAndSet();
+    }, (error) => {
+      console.error("Firestore owned workspaces sync error:", error);
+    });
 
-  // Load Collections when Workspace changes
+    // 2. Listen for Workspaces where user is a collaborator
+    const qCollab = query(collection(db, "collaborators"), where("userId", "==", user.uid));
+    const unsubCollab = onSnapshot(qCollab, async (snapshot) => {
+      const workspaceIds = snapshot.docs.map(doc => doc.data().projectId);
+
+      // If no collaborations, just clear the collab list and recombine
+      if (workspaceIds.length === 0) {
+        collabWorkspaces = [];
+        combineAndSet();
+        return;
+      }
+
+      // Note: fetching them one by one for now since "in" query has a limit of 10.
+      // In a very large app, we would cache or batch this.
+      try {
+        const fetchedCollabs = await Promise.all(
+          workspaceIds.map(async (id) => {
+            const wDoc = await getDoc(doc(db, "workspaces", id));
+            if (wDoc.exists()) {
+              return { id: wDoc.id, name: wDoc.data().name, isCollab: true } as any;
+            }
+            return null;
+          })
+        );
+        collabWorkspaces = fetchedCollabs.filter(Boolean);
+        combineAndSet();
+      } catch (e) {
+        console.error("Failed to fetch collaboration workspaces", e);
+      }
+    }, (error) => {
+      console.error("Firestore collab sync error:", error);
+    });
+
+    return () => {
+      unsubOwned();
+      unsubCollab();
+    };
+  }, [user]);
+
+  // Load Collections when Workspace changes (Real-time Firestore Sync)
   useEffect(() => {
-    if (!user || !activeWorkspaceId) return;
+    if (!user || !activeWorkspaceId || activeWorkspaceId === "default") {
+      setCollections([]);
+      return;
+    }
 
-    const loadCollections = async () => {
-      setLoading(true);
-      try {
-        const data = await loadCollectionsFromDisk(user.uid, activeWorkspaceId);
-        setCollections(data);
-      } catch (error) {
-        console.error("CollectionsProvider: Load collections error", error);
-        setCollections([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
 
-    loadCollections();
+    const q = collection(db, "workspaces", activeWorkspaceId, "collections");
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Collection[];
+      setCollections(data);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore collections sync error:", error);
+      setCollections([]);
+      setLoading(false);
+    });
 
-    // Load History
-    const loadHistory = async () => {
-      if (!user || !activeWorkspaceId) return;
-      try {
-        const data = await invoke<string>("load_history", { userId: user.uid, workspaceId: activeWorkspaceId });
-        setHistory(JSON.parse(data));
-      } catch (error) {
-        console.error("CollectionsProvider: Load history error", error);
-        setHistory([]);
-      }
-    };
-    loadHistory();
+    // Load History (Real-time Firestore Sync)
+    const qHistory = query(collection(db, "workspaces", activeWorkspaceId, "history"));
+    const unsubHistory = onSnapshot(qHistory, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as HistoryItem[];
+      // Sort by timestamp descending
+      data.sort((a, b) => b.timestamp - a.timestamp);
+      setHistory(data.slice(0, 50)); // Only keep latest 50 for local render
+    }, (error) => {
+      console.error("Firestore history sync error:", error);
+      setHistory([]);
+    });
 
     // Persist last active workspace across reloads
     if (settings.lastWorkspaceId !== activeWorkspaceId) {
       updateSettings({ lastWorkspaceId: activeWorkspaceId });
     }
+    return () => {
+      unsubscribe(); // Cleanup collections
+      unsubHistory(); // Cleanup history
+    };
   }, [user, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
-
-  /**
-   * Persists the current collections state to the local disk.
-   */
-  const persistCollections = useCallback(async (newCollections: Collection[]) => {
-    setCollections(newCollections);
-    if (!user || !activeWorkspaceId) return;
-    try {
-      await saveCollectionsToDisk(user.uid, activeWorkspaceId, newCollections);
-    } catch (error) {
-      console.error("CollectionsProvider: Persist collections error", error);
-    }
-  }, [user, activeWorkspaceId]);
-
-  /**
-   * Persists the current workspaces state to the local disk.
-   */
-  const persistWorkspaces = useCallback(async (newWorkspaces: Workspace[]) => {
-    setWorkspaces(newWorkspaces);
-    if (!user) return;
-    try {
-      await saveWorkspacesToDisk(user.uid, newWorkspaces);
-    } catch (error) {
-      console.error("CollectionsProvider: Persist workspaces error", error);
-    }
-  }, [user]);
 
   /**
    * Creates a new workspace and sets it as active.
    */
   const createWorkspace = async (name: string) => {
+    if (!user) return "";
     const id = `w_${Date.now()}`;
-    const newWorkspaces = [...workspaces, { id, name }];
-    await persistWorkspaces(newWorkspaces);
-    setActiveWorkspaceId(id);
+
+    try {
+      await setDoc(doc(db, "workspaces", id), {
+        name,
+        ownerId: user.uid,
+        createdAt: serverTimestamp()
+      });
+      setActiveWorkspaceId(id);
+    } catch (e) {
+      console.error("Failed to create workspace in Firestore:", e);
+    }
     return id;
   };
 
@@ -180,10 +225,15 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Deletes a workspace and switches to another if necessary.
    */
   const deleteWorkspace = async (id: string) => {
-    const newWorkspaces = workspaces.filter(w => w.id !== id);
-    await persistWorkspaces(newWorkspaces);
-    if (activeWorkspaceId === id) {
-      setActiveWorkspaceId(newWorkspaces[0]?.id || "default");
+    try {
+      await deleteDoc(doc(db, "workspaces", id));
+      if (activeWorkspaceId === id) {
+        // Find another workspace to switch to
+        const remaining = workspaces.filter(w => w.id !== id);
+        setActiveWorkspaceId(remaining[0]?.id || "default");
+      }
+    } catch (e) {
+      console.error("Failed to delete workspace in Firestore:", e);
     }
   };
 
@@ -191,17 +241,29 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Renames an existing workspace.
    */
   const renameWorkspace = async (id: string, name: string) => {
-    const newWorkspaces = workspaces.map(w => w.id === id ? { ...w, name } : w);
-    await persistWorkspaces(newWorkspaces);
+    try {
+      await setDoc(doc(db, "workspaces", id), { name }, { merge: true });
+    } catch (e) {
+      console.error("Failed to rename workspace in Firestore:", e);
+    }
   };
 
   /**
    * Creates a new empty collection in the active workspace.
    */
   const createCollection = async (name: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return "";
     const id = `c_${Date.now()}`;
-    const newCollections = [...collections, { id, name, requests: [] }];
-    await persistCollections(newCollections);
+
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", id), {
+        name,
+        requests: [],
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Failed to create collection in Firestore:", e);
+    }
     return id;
   };
 
@@ -209,105 +271,115 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Saves a new request to a specific collection.
    */
   const saveRequest = async (requestData: Omit<SavedRequest, 'id'>, collectionId: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
     const id = `r_${Date.now()}`;
     const newRequest = { ...requestData, id };
 
-    const newCollections = collections.map(c => {
-      if (c.id === collectionId) {
-        return { ...c, requests: [...c.requests, newRequest] };
-      }
-      return c;
-    });
+    const targetCollection = collections.find(c => c.id === collectionId);
+    if (!targetCollection) return;
 
-    await persistCollections(newCollections);
+    try {
+      await updateDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), {
+        requests: [...targetCollection.requests, newRequest]
+      });
+    } catch (e) {
+      console.error("Failed to save request in Firestore:", e);
+    }
   };
 
   /**
    * Updates an existing request within a collection.
    */
   const updateRequest = async (request: SavedRequest, collectionId: string) => {
-    const newCollections = collections.map(c => {
-      if (c.id === collectionId) {
-        return {
-          ...c,
-          requests: c.requests.map(r => r.id === request.id ? request : r)
-        };
-      }
-      return c;
-    });
-    await persistCollections(newCollections);
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    const targetCollection = collections.find(c => c.id === collectionId);
+    if (!targetCollection) return;
+
+    const newRequests = targetCollection.requests.map(r => r.id === request.id ? request : r);
+    try {
+      await updateDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), {
+        requests: newRequests
+      });
+    } catch (e) {
+      console.error("Failed to update request in Firestore:", e);
+    }
   };
 
   /**
    * Deletes a request from a collection.
    */
   const deleteRequest = async (requestId: string, collectionId: string) => {
-    const newCollections = collections.map(c => {
-      if (c.id === collectionId) {
-        return { ...c, requests: c.requests.filter(r => r.id !== requestId) };
-      }
-      return c;
-    });
-    await persistCollections(newCollections);
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    const targetCollection = collections.find(c => c.id === collectionId);
+    if (!targetCollection) return;
+
+    const newRequests = targetCollection.requests.filter(r => r.id !== requestId);
+    try {
+      await updateDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), {
+        requests: newRequests
+      });
+    } catch (e) {
+      console.error("Failed to delete request in Firestore:", e);
+    }
   };
 
   /**
    * Renames a request within a collection.
    */
   const renameRequest = async (requestId: string, collectionId: string, newName: string) => {
-    const newCollections = collections.map(c => {
-      if (c.id === collectionId) {
-        return {
-          ...c,
-          requests: c.requests.map(r => r.id === requestId ? { ...r, name: newName } : r)
-        };
-      }
-      return c;
-    });
-    await persistCollections(newCollections);
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    const targetCollection = collections.find(c => c.id === collectionId);
+    if (!targetCollection) return;
+
+    const newRequests = targetCollection.requests.map(r => r.id === requestId ? { ...r, name: newName } : r);
+    try {
+      await updateDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), {
+        requests: newRequests
+      });
+    } catch (e) {
+      console.error("Failed to rename request in Firestore:", e);
+    }
   };
 
   /**
    * Deletes a collection and all its requests.
    */
   const deleteCollection = async (collectionId: string) => {
-    const newCollections = collections.filter(c => c.id !== collectionId);
-    await persistCollections(newCollections);
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    try {
+      await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId));
+    } catch (e) {
+      console.error("Failed to delete collection in Firestore:", e);
+    }
   };
 
   /**
    * Renames a collection.
    */
   const renameCollection = async (collectionId: string, newName: string) => {
-    const newCollections = collections.map(c =>
-      c.id === collectionId ? { ...c, name: newName } : c
-    );
-    await persistCollections(newCollections);
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), { name: newName }, { merge: true });
+    } catch (e) {
+      console.error("Failed to rename collection in Firestore:", e);
+    }
   };
 
   /**
    * Adds a successful or failed request to the persistent history log.
-   * Limits history to the last 50 items per workspace.
    */
   const addToHistory = async (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
     const newItem: HistoryItem = {
       ...item,
       id: `h_${Date.now()}`,
       timestamp: Date.now()
     };
-    const newHistory = [newItem, ...history].slice(0, 50); // Keep last 50
-    setHistory(newHistory);
 
-    if (user && activeWorkspaceId) {
-      try {
-        await invoke("save_history", {
-          userId: user.uid,
-          workspaceId: activeWorkspaceId,
-          history: JSON.stringify(newHistory)
-        });
-      } catch (error) {
-        console.error("CollectionsProvider: Save history error", error);
-      }
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "history", newItem.id), newItem);
+    } catch (error) {
+      console.error("Failed to add history in Firestore:", error);
     }
   };
 
@@ -315,17 +387,16 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Clears the history for the active workspace.
    */
   const clearHistory = async () => {
-    setHistory([]);
-    if (user && activeWorkspaceId) {
-      try {
-        await invoke("save_history", {
-          userId: user.uid,
-          workspaceId: activeWorkspaceId,
-          history: "[]"
-        });
-      } catch (error) {
-        console.error("CollectionsProvider: Clear history error", error);
-      }
+    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    try {
+      const historyCol = collection(db, "workspaces", activeWorkspaceId, "history");
+      // Since it's client-side without batch limits usually hit here (max 50), looping is fine for clear.
+      history.forEach(async (h) => {
+        await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "history", h.id));
+      });
+      setHistory([]);
+    } catch (error) {
+      console.error("Failed to clear history in Firestore:", error);
     }
   };
 

@@ -4,6 +4,7 @@ import Modal from "./Modal";
 import { db } from "../lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "./AuthProvider";
+import { useCollections } from "./CollectionsProvider";
 
 interface InviteModalProps {
     isOpen: boolean;
@@ -17,8 +18,19 @@ interface SearchUser {
     photoURL?: string;
 }
 
+// Helper to timeout firebase requests. Firestore hangs indefinitely if the DB is not created in the Firebase Console
+const withTimeout = <T,>(promise: Promise<T>, ms: number = 8000) => {
+    return Promise.race([
+        promise,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), ms))
+    ]);
+};
+
 export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     const { user: currentUser } = useAuth();
+    const { activeWorkspaceId, workspaces } = useCollections();
+    const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
+
     const [email, setEmail] = useState("");
     const [role, setRole] = useState<"read" | "write">("read");
     const [isSearching, setIsSearching] = useState(false);
@@ -28,6 +40,32 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     const [isSending, setIsSending] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
+
+    // Maintain recent search history in local storage
+    const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+    // Reset UI state when modal is opened/closed
+    React.useEffect(() => {
+        if (isOpen) {
+            setEmail("");
+            setSelectedUser(null);
+            setSearchResults([]);
+            setShowDropdown(false);
+            setSuccessMessage("");
+            setSearchError("");
+            setIsSending(false);
+
+            // Load history
+            try {
+                const history = localStorage.getItem("inviteSearchHistory");
+                if (history) {
+                    setSearchHistory(JSON.parse(history));
+                }
+            } catch (e) {
+                console.error("Failed to load search history", e);
+            }
+        }
+    }, [isOpen]);
 
     // Debounce search
     const [debouncedEmail, setDebouncedEmail] = useState("");
@@ -67,7 +105,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     where("email", "<=", term + "\uf8ff")
                 );
 
-                const querySnapshot = await getDocs(q);
+                const querySnapshot = await withTimeout(getDocs(q));
                 const results: SearchUser[] = [];
                 querySnapshot.forEach((doc) => {
                     results.push(doc.data() as SearchUser);
@@ -83,9 +121,18 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     // Only show error if it looks like a full email but no user found
                     // searching...
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Search error:", error);
-                setSearchError("Failed to search.");
+                if (error.message === "TIMEOUT") {
+                    setSearchError("Database connection timed out.");
+                } else {
+                    // If the users collection doesn't exist yet or there's a permission error,
+                    // we still want to allow inviting by email as an external user.
+                    // Instead of blocking with a "Failed to search" error, we pretend we found no users.
+                    setSearchError("");
+                    setSearchResults([]);
+                    setShowDropdown(true);
+                }
             } finally {
                 setIsSearching(false);
             }
@@ -112,17 +159,74 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     const handleInvite = async () => {
         if (!currentUser || !selectedUser) return;
 
+        // Validation 1: Cannot invite yourself
+        if (currentUser.email === selectedUser.email) {
+            setSearchError("You cannot invite yourself to collaborate.");
+            return;
+        }
+
+        // Validation 1.5: Cannot invite the workspace owner
+        if (activeWorkspace?.ownerId === selectedUser.uid) {
+            setSearchError("This user is already the owner of this workspace.");
+            return;
+        }
+
         setIsSending(true);
+        setSearchError("");
         try {
-            await addDoc(collection(db, "invitations"), {
+            // Validation 2: Prevent inviting existing collaborator to THIS workspace
+            if (selectedUser.uid) {
+                const collabsQuery = query(
+                    collection(db, "collaborators"),
+                    where("userId", "==", selectedUser.uid),
+                    where("projectId", "==", activeWorkspaceId)
+                );
+                const collabsSnap = await withTimeout(getDocs(collabsQuery));
+                if (!collabsSnap.empty) {
+                    setSearchError("This user is already a collaborator in this workspace.");
+                    setIsSending(false);
+                    return;
+                }
+            }
+
+            // Validation 3: Prevent duplicate pending invites for THIS workspace
+            const invitesQuery = query(
+                collection(db, "invitations"),
+                where("toEmail", "==", selectedUser.email),
+                where("projectId", "==", activeWorkspaceId),
+                where("status", "==", "pending")
+            );
+            const invitesSnap = await withTimeout(getDocs(invitesQuery));
+            if (!invitesSnap.empty) {
+                setSearchError("An invitation is already pending for this email in this workspace.");
+                setIsSending(false);
+                return;
+            }
+
+            await withTimeout(addDoc(collection(db, "invitations"), {
                 fromUserId: currentUser.uid,
                 fromEmail: currentUser.email,
                 toEmail: selectedUser.email,
                 toUserId: selectedUser.uid || null,
+                projectId: activeWorkspaceId,
                 role,
                 status: "pending",
                 createdAt: serverTimestamp(),
-            });
+            }));
+
+            // Add to search history on successful send
+            try {
+                let currentHistory: string[] = [];
+                const saved = localStorage.getItem("inviteSearchHistory");
+                if (saved) {
+                    currentHistory = JSON.parse(saved);
+                }
+                const newHistory = [selectedUser.email, ...currentHistory.filter(e => e !== selectedUser.email)].slice(0, 5);
+                setSearchHistory(newHistory);
+                localStorage.setItem("inviteSearchHistory", JSON.stringify(newHistory));
+            } catch (e) {
+                console.error("Failed to save search history", e);
+            }
 
             setSuccessMessage("Invitation sent successfully!");
 
@@ -134,9 +238,13 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                 setIsSending(false);
             }, 2000);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Invite error:", error);
-            setSearchError("Failed to send invitation.");
+            if (error.message === "TIMEOUT") {
+                setSearchError("Connection timed out. Please ensure your Firestore Database is created and enabled in the Firebase Console.");
+            } else {
+                setSearchError("Failed to send invitation. Check console for details.");
+            }
             setIsSending(false);
         }
     };
@@ -159,68 +267,16 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                                     if (selectedUser) setSelectedUser(null); // Clear selection on edit
                                 }}
                                 placeholder="colleague@example.com"
-                                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-slate-400"
                                 required
                                 autoComplete="off"
                             />
                             {(isSearching || email !== debouncedEmail) && (
                                 <div className="absolute right-3 top-2.5">
-                                    <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
+                                    <div className="w-4 h-4 border-2 border-slate-200 border-t-primary rounded-full animate-spin"></div>
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    <div className="flex justify-end mt-1 gap-2">
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                setIsSearching(true);
-                                try {
-                                    const q = query(collection(db, "users"));
-                                    const snap = await getDocs(q);
-                                    const allUsers: SearchUser[] = [];
-                                    snap.forEach((doc) => allUsers.push(doc.data() as SearchUser));
-                                    console.log("Found users:", allUsers);
-                                    setSearchResults(allUsers.slice(0, 10));
-                                    setShowDropdown(true);
-                                    if (snap.empty) setSearchError("No users found in DB collection 'users'");
-                                    else setSearchError(`Debug: Found ${snap.size} users`);
-                                } catch (e: any) {
-                                    console.error(e);
-                                    setSearchError("Debug Error: " + e.message);
-                                } finally {
-                                    setIsSearching(false);
-                                }
-                            }}
-                            className="text-[10px] text-slate-400 hover:text-blue-500 underline"
-                        >
-                            Debug: List All
-                        </button>
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                try {
-                                    const { setDoc, doc } = await import("firebase/firestore");
-                                    for (let i = 1; i <= 3; i++) {
-                                        const id = `test-user-${Date.now()}-${i}`;
-                                        await setDoc(doc(db, "users", id), {
-                                            uid: id,
-                                            email: `user${i}@example.com`,
-                                            displayName: `Test User ${i}`,
-                                            photoURL: null
-                                        });
-                                    }
-                                    setSearchError("Seeded 3 dummy users! Try searching 'user'.");
-                                } catch (e: any) {
-                                    console.error(e);
-                                    setSearchError("Seed Failed: " + e.message);
-                                }
-                            }}
-                            className="text-[10px] text-slate-400 hover:text-blue-500 underline"
-                        >
-                            Seed Users
-                        </button>
                     </div>
 
                     {/* Error Message */}
@@ -230,16 +286,34 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                         </div>
                     )}
 
-                    {/* Dropdown Results */}
-                    {showDropdown && !selectedUser && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                    {/* Dropdown Results / History */}
+                    {!debouncedEmail.trim() && searchHistory.length > 0 && !selectedUser && (
+                        <div className="mt-2 bg-slate-50 border border-slate-200 rounded-xl shadow-sm max-h-60 overflow-y-auto">
+                            <div className="p-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent Searches</div>
+                            {searchHistory.map((historyEmail, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setEmail(historyEmail)}
+                                    className="w-full text-left p-3 hover:bg-white transition-colors flex items-center gap-3 border-b border-slate-200/50 last:border-0"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-600">{historyEmail}</p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {showDropdown && !selectedUser && debouncedEmail && (
+                        <div className="mt-2 bg-white border border-slate-200 rounded-xl shadow-sm max-h-60 overflow-y-auto">
                             {searchResults.map((user) => (
                                 <button
                                     key={user.uid}
                                     onClick={() => selectUser(user)}
                                     className="w-full text-left p-3 hover:bg-slate-50 transition-colors flex items-center gap-3 border-b border-slate-50 last:border-0"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shadow-inner">
                                         {user.displayName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -250,23 +324,14 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                             ))}
 
                             {/* Option to invite by email if no exact match found or just as an option */}
-                            {debouncedEmail.includes('@') && !searchResults.find(u => u.email === debouncedEmail) && (
-                                <button
-                                    onClick={() => selectUser({
-                                        uid: "", // Empty UID indicates external user
-                                        email: debouncedEmail,
-                                        displayName: debouncedEmail.split('@')[0],
-                                    })}
-                                    className="w-full text-left p-3 hover:bg-slate-50 transition-colors flex items-center gap-3 border-t border-slate-100 text-blue-600"
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            {debouncedEmail.trim() !== "" && searchResults.length === 0 && (
+                                <div className="w-full text-center p-4 py-6 flex flex-col items-center justify-center gap-2">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold">Invite <span className="underline">{debouncedEmail}</span></p>
-                                        <p className="text-xs text-slate-500">User not found? Send email invite.</p>
-                                    </div>
-                                </button>
+                                    <p className="text-sm font-semibold text-slate-500">User not found</p>
+                                    <p className="text-xs text-slate-400 max-w-[200px] leading-relaxed">No Cosmonaut user matches that email address.</p>
+                                </div>
                             )}
                         </div>
                     )}
@@ -275,20 +340,20 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                 {/* Results Section (Selected User) */}
                 {selectedUser && !successMessage && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-4 mb-4 relative group">
-                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-4 mb-4 relative group">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
                                 {selectedUser.displayName?.charAt(0).toUpperCase() || selectedUser.email.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1">
                                 <p className="text-sm font-bold text-slate-900">{selectedUser.displayName || "Unknown Name"}</p>
                                 <p className="text-xs text-slate-500">{selectedUser.email}</p>
                                 {!selectedUser.uid && (
-                                    <span className="text-[10px] bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-2">External</span>
+                                    <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-2">External</span>
                                 )}
                             </div>
                             <button
                                 onClick={clearSelection}
-                                className="p-2 hover:bg-blue-100 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
+                                className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
                             >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
@@ -303,8 +368,8 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                                     <button
                                         onClick={() => setRole("read")}
                                         className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all ${role === "read"
-                                            ? "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20"
-                                            : "bg-white text-slate-500 border-slate-200 hover:border-blue-200"
+                                            ? "bg-primary text-white border-transparent shadow-[0_4px_14px_0_rgba(2,132,199,0.39)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.23)] hover:brightness-110"
+                                            : "bg-white text-slate-500 border-slate-200 hover:border-primary/50"
                                             }`}
                                     >
                                         Read Only
@@ -312,8 +377,8 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                                     <button
                                         onClick={() => setRole("write")}
                                         className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all ${role === "write"
-                                            ? "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20"
-                                            : "bg-white text-slate-500 border-slate-200 hover:border-blue-200"
+                                            ? "bg-primary text-white border-transparent shadow-[0_4px_14px_0_rgba(2,132,199,0.39)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.23)] hover:brightness-110"
+                                            : "bg-white text-slate-500 border-slate-200 hover:border-primary/50"
                                             }`}
                                     >
                                         Read & Write
@@ -324,7 +389,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                             <button
                                 onClick={handleInvite}
                                 disabled={isSending}
-                                className="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-800 disabled:opacity-50 transition-all shadow-xl shadow-slate-900/10"
+                                className="w-full py-3 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:brightness-110 disabled:opacity-50 transition-all shadow-[0_4px_14px_0_rgba(2,132,199,0.39)]"
                             >
                                 {isSending ? "Sending Invitation..." : "Send Invitation"}
                             </button>
