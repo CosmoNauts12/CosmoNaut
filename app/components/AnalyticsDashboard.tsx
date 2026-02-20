@@ -104,12 +104,20 @@ const KPICard = ({ label, value, change, type }: any) => {
             <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2">{label}</span>
             <span className="text-2xl font-black text-foreground mb-1 tracking-tight">{value}</span>
             <span className={`text-[10px] font-black ${type === 'positive' ? 'text-emerald-500' :
-                    type === 'negative' ? 'text-rose-500' : 'text-primary/70'
+                type === 'negative' ? 'text-rose-500' : 'text-primary/70'
                 }`}>
                 {change}
             </span>
         </div>
     );
+};
+
+// Client-only wrapper to prevent hydration mismatches and hangs
+const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => setMounted(true), []);
+    if (!mounted) return null;
+    return <>{children}</>;
 };
 
 export default function AnalyticsDashboard() {
@@ -118,6 +126,8 @@ export default function AnalyticsDashboard() {
     const filteredEndpoints = useMemo(() => {
         return ENDPOINT_DATA.filter(e => e.endpoint.toLowerCase().includes(searchTerm.toLowerCase()));
     }, [searchTerm]);
+
+    console.log("[AnalyticsDashboard] Rendering reports view...");
 
     return (
         <div className="flex-1 overflow-y-auto p-8 scrollbar-hide bg-card-bg/5 backdrop-blur-xl">
@@ -137,105 +147,107 @@ export default function AnalyticsDashboard() {
                     ))}
                 </div>
 
-                {/* Charts Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    {/* Status Distribution */}
-                    <div className="lg:col-span-1 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col">
-                        <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Status Codes</h3>
-                        <div className="flex-1 min-h-[250px] relative">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={STATUS_CODE_DATA}
-                                        innerRadius={70}
-                                        outerRadius={90}
-                                        paddingAngle={8}
-                                        dataKey="value"
-                                    >
-                                        {STATUS_CODE_DATA.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{
-                                            borderRadius: '16px',
-                                            backgroundColor: 'rgba(0,0,0,0.8)',
-                                            border: 'none',
-                                            color: '#fff',
-                                            fontSize: '10px',
-                                            fontWeight: 'bold',
-                                            textTransform: 'uppercase'
-                                        }}
-                                    />
-                                    <Legend
-                                        verticalAlign="bottom"
-                                        align="center"
-                                        iconType="circle"
-                                        formatter={(value) => <span className="text-[10px] font-black text-muted uppercase tracking-wider">{value}</span>}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-6">
-                                <span className="text-2xl font-black text-foreground">96%</span>
-                                <span className="text-[9px] font-black text-muted uppercase tracking-widest">Uptime</span>
+                <ClientOnly>
+                    {/* Charts Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                        {/* Status Distribution */}
+                        <div className="lg:col-span-1 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col">
+                            <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Status Codes</h3>
+                            <div className="flex-1 min-h-[250px] relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={STATUS_CODE_DATA}
+                                            innerRadius={70}
+                                            outerRadius={90}
+                                            paddingAngle={8}
+                                            dataKey="value"
+                                        >
+                                            {STATUS_CODE_DATA.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{
+                                                borderRadius: '16px',
+                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                border: 'none',
+                                                color: '#fff',
+                                                fontSize: '10px',
+                                                fontWeight: 'bold',
+                                                textTransform: 'uppercase'
+                                            }}
+                                        />
+                                        <Legend
+                                            verticalAlign="bottom"
+                                            align="center"
+                                            iconType="circle"
+                                            formatter={(value) => <span className="text-[10px] font-black text-muted uppercase tracking-wider">{value}</span>}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mb-6">
+                                    <span className="text-2xl font-black text-foreground">96%</span>
+                                    <span className="text-[9px] font-black text-muted uppercase tracking-widest">Uptime</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Response Time Trend */}
+                        <div className="lg:col-span-2 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col">
+                            <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Global Performance Trend</h3>
+                            <div className="flex-1 min-h-[250px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={PERFORMANCE_TREND_DATA}>
+                                        <defs>
+                                            <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                        <XAxis
+                                            dataKey="time"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                borderRadius: '16px',
+                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                border: 'none',
+                                                color: '#fff',
+                                                fontSize: '11px'
+                                            }}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="latency"
+                                            stroke="#3b82f6"
+                                            strokeWidth={4}
+                                            fillOpacity={1}
+                                            fill="url(#colorLatency)"
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="requests"
+                                            stroke="#10b981"
+                                            strokeWidth={2}
+                                            strokeDasharray="5 5"
+                                            fill="transparent"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
                     </div>
-
-                    {/* Response Time Trend */}
-                    <div className="lg:col-span-2 liquid-glass p-6 rounded-[2.5rem] border-card-border/50 flex flex-col">
-                        <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Global Performance Trend</h3>
-                        <div className="flex-1 min-h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={PERFORMANCE_TREND_DATA}>
-                                    <defs>
-                                        <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                    <XAxis
-                                        dataKey="time"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 900 }}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{
-                                            borderRadius: '16px',
-                                            backgroundColor: 'rgba(0,0,0,0.8)',
-                                            border: 'none',
-                                            color: '#fff',
-                                            fontSize: '11px'
-                                        }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="latency"
-                                        stroke="#3b82f6"
-                                        strokeWidth={4}
-                                        fillOpacity={1}
-                                        fill="url(#colorLatency)"
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="requests"
-                                        stroke="#10b981"
-                                        strokeWidth={2}
-                                        strokeDasharray="5 5"
-                                        fill="transparent"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
+                </ClientOnly>
 
                 {/* Endpoint Table */}
                 <div className="liquid-glass rounded-[2.5rem] border-card-border/50 overflow-hidden">
@@ -284,7 +296,7 @@ export default function AnalyticsDashboard() {
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex justify-center">
                                                 <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${item.health === 'green' ? 'bg-emerald-500 shadow-emerald-500/30' :
-                                                        item.health === 'yellow' ? 'bg-amber-500 shadow-amber-500/30' : 'bg-rose-500 shadow-rose-500/30'
+                                                    item.health === 'yellow' ? 'bg-amber-500 shadow-amber-500/30' : 'bg-rose-500 shadow-rose-500/30'
                                                     }`} />
                                             </div>
                                         </td>
