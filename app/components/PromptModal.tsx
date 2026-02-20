@@ -63,9 +63,9 @@ export default function PromptModal({
                             if (error) setError("");
                         }}
                         placeholder={placeholder}
-                        className={`w-full h-10 px-3 rounded-xl border bg-slate-50 text-slate-900 text-sm focus:outline-none transition-all placeholder:text-slate-400 ${error
-                            ? "border-rose-500 focus:border-rose-500"
-                            : "border-slate-200 focus:border-blue-500"
+                        className={`w-full h-10 px-3 rounded-xl border bg-black/5 dark:bg-white/5 text-foreground text-sm focus:outline-none transition-all placeholder:text-muted/50 ${error
+                            ? "border-rose-500 focus:border-rose-500 flex"
+                            : "border-card-border focus:border-primary/50"
                             }`}
                     />
                     {error && <p className="text-[10px] text-rose-500 font-bold ml-1">{error}</p>}

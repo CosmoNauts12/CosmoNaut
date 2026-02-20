@@ -34,7 +34,7 @@ export default function ConfirmModal({
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
             <div className="space-y-4">
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-xs text-muted leading-relaxed font-medium">
                     {message}
                 </p>
 
