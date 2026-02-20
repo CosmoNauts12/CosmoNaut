@@ -8,7 +8,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 use tokio::sync::oneshot;
 
 /// Query parameters from OAuth callback (for errors)
@@ -184,6 +184,12 @@ async fn handle_process_tokens(
                         app_handle
                             .emit("auth-success", user_data)
                             .ok();
+
+                        // Attempt to focus the main app window
+                        if let Some(window) = app_handle.get_webview_window("main") {
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                        }
                     }
 
                     // Clear auth state
@@ -578,7 +584,7 @@ fn token_extraction_page() -> String {
         <h1 id="title">Authenticating...</h1>
         <p id="description">Please wait while we securely log you in.</p>
 
-        <button id="action-btn" class="btn btn-primary" onclick="window.close()">
+        <button id="action-btn" class="btn btn-primary" onclick="closeTab()">
             Return to Application
         </button>
         <p id="sub-msg" class="sub-text">You may close this tab manually if tracking fails.</p>
@@ -611,6 +617,13 @@ fn token_extraction_page() -> String {
             const btn = document.getElementById('action-btn');
             const subMsg = document.getElementById('sub-msg');
             
+            window.closeTab = function() {
+                btn.textContent = "Please switch to the app manually";
+                btn.style.background = "var(--card-border)";
+                subMsg.textContent = "Your browser prevents automatic closing.";
+                subMsg.classList.add('visible');
+            };
+
             function showSuccess() {
                 card.classList.add('state-success');
                 title.textContent = 'Authentication Successful';
@@ -918,10 +931,10 @@ fn error_page(error: &str) -> String {
         <h1>Authentication Failed</h1>
         <p>{}</p>
 
-        <button class="btn btn-primary" onclick="window.close()">
+        <button class="btn btn-primary" onclick="this.textContent = 'Please switch to the app manually'; this.style.background = 'var(--card-border)'; document.getElementById('sub-msg').style.opacity = '1';">
             Close Tab
         </button>
-        <p class="sub-text">You may close this tab and try again.</p>
+        <p id="sub-msg" class="sub-text" style="opacity:0">Your browser prevents automatic closing.</p>
     </div>
 </body>
 </html>

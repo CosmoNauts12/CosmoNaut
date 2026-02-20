@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "tauri": "tauri"
+    "dev": "bunx next dev",
+    "build": "bunx next build",
+    "start": "bunx next start",
+    "lint": "bunx eslint",
+    "tauri": "bunx tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.10.1",
