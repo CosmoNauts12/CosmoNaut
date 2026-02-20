@@ -26,10 +26,10 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-glow">
-            <span className="text-3xl">🚀</span>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-glow overflow-hidden">
+            <img src="/logo.svg" alt="Astronaut Logo" className="w-12 h-12" />
           </div>
-          
+
           <h2 className="text-2xl font-bold text-foreground mb-3">
             You've reached the demo limit
           </h2>
@@ -40,9 +40,9 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           <div className="flex flex-col w-full gap-3">
             <button
               onClick={async () => {
-                 onClose();
-                 await logout();
-                 router.push("/signup");
+                onClose();
+                await logout();
+                router.push("/signup");
               }}
               className="glass-btn-primary w-full py-3 rounded-xl font-semibold shadow-md active:scale-[0.98] transition-all"
             >
@@ -50,9 +50,9 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             </button>
             <button
               onClick={async () => {
-                 onClose();
-                 await logout();
-                 router.push("/");
+                onClose();
+                await logout();
+                router.push("/");
               }}
               className="w-full py-3 rounded-xl font-semibold border border-card-border hover:bg-card-bg text-foreground transition-colors active:scale-[0.98]"
             >

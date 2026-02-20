@@ -50,7 +50,7 @@ export default function WorkspaceHeader() {
       </div>
 
       <div className="flex items-center gap-4">
-{/* User Dropdown */}
+        {/* User Dropdown */}
         <div className="relative flex items-center h-full">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -73,38 +73,37 @@ export default function WorkspaceHeader() {
                   <div className="mb-4">
                     <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Signed in as</p>
                     <p className="font-bold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
-                    
+
                     {/* Status Display/Edit */}
                     <div className="mt-2">
-                       {isEditingStatus ? (
-                          <input
-                            autoFocus
-                            type="text"
-                            value={settings.status || ""}
-                            onChange={(e) => updateSettings({ status: e.target.value })}
-                            onBlur={() => setIsEditingStatus(false)}
-                            onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
-                            placeholder="Set status..."
-                            className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-                          />
-                       ) : (
-                          <div 
-                            onClick={() => setIsEditingStatus(true)}
-                            className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${
-                               settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                      {isEditingStatus ? (
+                        <input
+                          autoFocus
+                          type="text"
+                          value={settings.status || ""}
+                          onChange={(e) => updateSettings({ status: e.target.value })}
+                          onBlur={() => setIsEditingStatus(false)}
+                          onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
+                          placeholder="Set status..."
+                          className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                        />
+                      ) : (
+                        <div
+                          onClick={() => setIsEditingStatus(true)}
+                          className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
                             }`}
-                          >
-                            <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span> 
-                            <span className="truncate">{settings.status || "Set status"}</span>
-                          </div>
-                       )}
+                        >
+                          <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span>
+                          <span className="truncate">{settings.status || "Set status"}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="h-px bg-card-border/50 my-2" />
 
                   <div className="space-y-1">
-                    <button 
+                    <button
                       onClick={() => openSettings("profile")}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
                     >
