@@ -15,7 +15,7 @@ import ThemeToggle from "./components/ThemeToggle";
  */
 export default function SignIn() {
   const router = useRouter();
-  const { googleSignIn, authError: globalAuthError } = useAuth();
+  const { googleSignIn, demoSignIn, authError: globalAuthError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -227,6 +227,24 @@ export default function SignIn() {
                 Continue with Google
               </>
             )}
+          </button>
+
+          {/* Demo Mode Button */}
+          <button
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await demoSignIn();
+              } catch (e: any) {
+                setError(e.message || "Failed to start demo");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={googleLoading || loading}
+            className="w-full py-3.5 mt-3 rounded-xl text-base font-semibold border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+          >
+            Try Demo Mode
           </button>
 
           {/* Sign Up Link */}

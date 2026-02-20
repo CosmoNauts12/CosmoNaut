@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useSettings } from "./SettingsProvider";
 import { executeRequest, CosmoResponse } from "./RequestEngine";
 import { useCollections } from "./CollectionsProvider";
+import { useAuth } from "./AuthProvider";
+import UpgradeModal from "./UpgradeModal";
 import { SavedRequest, KVItem, AuthState } from "@/app/lib/collections";
 import { ParamsTab, AuthTab, HeadersTab, BodyTab } from "./RequestBuilderTabs";
 
@@ -34,6 +36,7 @@ export default function RequestPanel({
 }) {
   const { settings } = useSettings();
   const { collections, saveRequest, updateRequest, createCollection, addToHistory } = useCollections();
+  const { isDemo } = useAuth();
   const [method, setMethod] = useState(activeRequest.method);
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
   const [activeTab, setActiveTab] = useState("params");
@@ -45,6 +48,7 @@ export default function RequestPanel({
   const [body, setBody] = useState("");
 
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [saveName, setSaveName] = useState(activeRequest.name);
   const [targetCollectionId, setTargetCollectionId] = useState("");
 
@@ -101,6 +105,15 @@ export default function RequestPanel({
    * 5. Logs results to history.
    */
   const handleSend = async () => {
+    if (isDemo) {
+      const count = parseInt(localStorage.getItem('demo_request_count') || '0', 10);
+      if (count >= 2) {
+        setShowUpgradeModal(true);
+        return;
+      }
+      localStorage.setItem('demo_request_count', (count + 1).toString());
+    }
+
     onExecuting(true);
     let targetUrl = cleanUrl(url);
 
@@ -368,6 +381,12 @@ export default function RequestPanel({
         {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} />}
         {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} />}
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+      />
     </div>
   );
 }

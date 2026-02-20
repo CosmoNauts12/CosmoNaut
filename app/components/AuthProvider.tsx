@@ -17,6 +17,10 @@ interface AuthContextType {
   logout: () => Promise<void>;
   /** Function to initiate Google Sign-In via Tauri backend */
   googleSignIn: () => Promise<void>;
+  /** Function to initiate a demo session */
+  demoSignIn: () => Promise<void>;
+  /** Boolean indicating if the current session is a demo */
+  isDemo: boolean;
   /** Error message from authentication attempts */
   authError: string | null;
 }
@@ -46,6 +50,7 @@ export function useAuth() {
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -68,7 +73,26 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       console.log("AuthProvider: Session state recovered:", u?.email || "none");
+      
+      const isDemoSession = localStorage.getItem("is_demo") === "true";
+      if (isDemoSession) {
+        console.log("AuthProvider: Demo session active");
+        setUser({
+          uid: "demo-user",
+          email: "explorer@cosmonaut.local",
+          displayName: "Demo Explorer",
+          photoURL: null,
+        } as User);
+        setIsDemo(true);
+        setLoading(false);
+        if (window.location.pathname === "/" || window.location.pathname === "/signup") {
+          router.push("/dashboard");
+        }
+        return;
+      }
+
       setUser(u);
+      setIsDemo(false);
 
       const isSigningUp = localStorage.getItem("is_signing_up") === "true";
       if (isSigningUp) {
@@ -160,6 +184,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
    * Signs out the user via Firebase and redirects to the landing page.
    */
   const logout = async () => {
+    localStorage.removeItem("is_demo");
+    setIsDemo(false);
+    
     // If Tauri app, also clear keychain
     if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
       try {
@@ -189,8 +216,25 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Initiates a demo session
+   */
+  const demoSignIn = async () => {
+    setLoading(true);
+    localStorage.setItem("is_demo", "true");
+    setIsDemo(true);
+    setUser({
+      uid: "demo-user",
+      email: "explorer@cosmonaut.local",
+      displayName: "Demo Explorer",
+      photoURL: null,
+    } as User);
+    setLoading(false);
+    router.push("/dashboard");
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout, googleSignIn, authError }}>
+    <AuthContext.Provider value={{ user, loading, logout, googleSignIn, demoSignIn, isDemo, authError }}>
       {loading ? <LoadingSplash /> : children}
     </AuthContext.Provider>
   );
