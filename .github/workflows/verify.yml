@@ -3,7 +3,7 @@ on:
   pull_request:
     branches:
       - main
-      - test
+
   push:
     branches:
       - main
