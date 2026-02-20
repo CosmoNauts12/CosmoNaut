@@ -241,21 +241,18 @@ export default function Dashboard() {
           {/* CosmoNaut Resources */}
           <div className="mt-8 px-2 space-y-2">
             {[
-              { label: 'What is CosmoNaut', href: '/about.html' },
-              { label: 'How to Publish', href: '/about.html' },
-              { label: 'Learning Center', href: '/about.html' },
-              { label: 'Support Center', href: '/about.html' },
-              { label: 'CosmoNaut Enterprise', href: '/about.html' }
+              { label: 'What is CosmoNaut', href: 'https://cosmonaut-website.vercel.app/' },
+              { label: 'How to Publish', href: 'https://cosmonaut-website.vercel.app/' },
+              { label: 'Learning Center', href: 'https://cosmonaut-website.vercel.app/' },
+              { label: 'Support Center', href: 'https://cosmonaut-website.vercel.app/' },
+              { label: 'CosmoNaut Enterprise', href: 'https://cosmonaut-website.vercel.app/' }
             ].map((link, i) => (
               <button
                 key={i}
                 onClick={async () => {
                   try {
                     const { open } = await import('@tauri-apps/plugin-shell');
-                    const url = link.href.startsWith('/')
-                      ? window.location.origin + link.href
-                      : link.href;
-                    await open(url);
+                    await open(link.href);
                   } catch (e) {
                     console.error("Failed to open link:", e);
                     window.open(link.href, '_blank', 'noopener,noreferrer');
