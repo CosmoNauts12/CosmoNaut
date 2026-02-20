@@ -351,7 +351,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       <div className="space-y-1">
                         <div className="px-2 flex items-center gap-2 mb-1">
                           <div className="w-1 h-1 rounded-full bg-rose-500" />
-                          <span className="text-[8px] font-black text-rose-500/70 uppercase tracking-tighter">Failed Requests</span>
+                          <span className="text-[12px] font-black text-rose-500/80 uppercase tracking-tight">Failed Requests</span>
                         </div>
                         {requestHistory.filter(item => item.error || item.status >= 400).map((item) => (
                           <HistoryItemRow key={item.id} item={item} onSelect={onSelectRequest} />
@@ -364,7 +364,7 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                       <div className="space-y-1">
                         <div className="px-2 flex items-center gap-2 mb-1">
                           <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                          <span className="text-[8px] font-black text-emerald-500/70 uppercase tracking-tighter">Successful Requests</span>
+                          <span className="text-[12px] font-black text-emerald-500/80 uppercase tracking-tight">Successful Requests</span>
                         </div>
                         {requestHistory.filter(item => !item.error && item.status < 400).map((item) => (
                           <HistoryItemRow key={item.id} item={item} onSelect={onSelectRequest} />
@@ -429,25 +429,25 @@ function HistoryItemRow({
       })}
       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 text-left transition-all group"
     >
-      <span className={`w-8 text-[9px] font-black text-right ${item.method === 'GET' ? 'text-emerald-500' :
+      <span className={`w-12 text-[12px] font-black text-left ${item.method === 'GET' ? 'text-emerald-500' :
         item.method === 'POST' ? 'text-amber-500' :
           item.method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
         }`}>
         {item.method}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-foreground/80 truncate">{item.url}</p>
-        <p className="text-[9px] text-muted font-medium">
+        <p className="text-[12px] font-bold text-foreground/90 truncate">{item.url}</p>
+        <p className="text-[12px] text-muted font-bold tracking-tight">
           {formattedDate} • {formattedTime}
         </p>
       </div>
       <div className="flex items-center gap-2">
         {item.error ? (
           <div title={typeof item.error === 'string' ? item.error : 'Request Error'}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
           </div>
         ) : (
-          <span className={`text-[9px] font-black ${item.status < 400 ? 'text-emerald-500' : 'text-rose-500'}`}>
+          <span className={`text-[12px] font-black ${item.status < 400 ? 'text-emerald-500' : 'text-rose-500'}`}>
             {item.status}
           </span>
         )}

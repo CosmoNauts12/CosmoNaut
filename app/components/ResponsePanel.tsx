@@ -199,7 +199,7 @@ export default function ResponsePanel({
             {isDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
-                <div className="absolute top-full left-0 mt-1 w-36 glass-panel rounded-xl border border-card-border/50 shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-36 bg-white dark:bg-[#0a0f18] rounded-xl border border-card-border shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100">
                   {formats.map((f) => (
                     <button
                       key={f.id}
@@ -208,7 +208,7 @@ export default function ResponsePanel({
                         setIsDropdownOpen(false);
                         setActiveTab("pretty");
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-white/5 hover:text-foreground'}`}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-foreground/5 hover:text-foreground'}`}
                     >
                       <span className={format === f.id ? 'text-primary' : 'text-muted opacity-50'}>{f.icon}</span>
                       {f.name}
@@ -257,7 +257,7 @@ export default function ResponsePanel({
         {activeTab === 'pretty' && (
           <div className="h-full overflow-y-auto p-4 font-mono text-[11px] leading-relaxed selection:bg-primary/20">
             <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
-              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-200/90' : format === 'javascript' ? 'text-blue-200/90' : 'text-emerald-200/90'} whitespace-pre-wrap`}>
+              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-700 dark:text-amber-200/90' : format === 'javascript' ? 'text-blue-700 dark:text-blue-200/90' : 'text-emerald-700 dark:text-emerald-200/90'} whitespace-pre-wrap`}>
                 {formattedBody}
               </pre>
             </div>
