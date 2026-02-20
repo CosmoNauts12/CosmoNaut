@@ -17,6 +17,7 @@ import {
     Bar
 } from 'recharts';
 import { useCollections, HistoryItem } from './CollectionsProvider';
+import { useTheme } from './ThemeContext';
 
 // --- Sub-Components ---
 
@@ -96,8 +97,16 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
 
 export default function AnalyticsDashboard() {
     const { history, workspaces, activeWorkspaceId, setActiveWorkspaceId } = useCollections();
+    const { theme } = useTheme();
+    const isLight = theme === 'light';
     const [searchTerm, setSearchTerm] = useState('');
     const [period, setPeriod] = useState('All Time');
+
+    // Theme-aware colors
+    const textColor = isLight ? '#1f2937' : 'rgba(255,255,255,0.4)';
+    const gridColor = isLight ? '#e5e7eb' : 'rgba(255,255,255,0.05)';
+    const tooltipBg = '#ffffff';
+    const tooltipText = '#111827';
 
     // Aggregate Real Data
     const analytics = useMemo(() => {
@@ -130,9 +139,9 @@ export default function AnalyticsDashboard() {
             : 0;
 
         const statusCodeData = [
-            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#10b981' },
-            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#f59e0b' },
-            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#f43f5e' },
+            { name: '200 OK', value: statusMap['2xx'] || 0, color: '#22c55e' },
+            { name: '400 BAD REQUEST', value: statusMap['4xx'] || 0, color: '#ef4444' },
+            { name: '500 SERVER ERROR', value: statusMap['5xx'] || 0, color: '#facc15' },
         ];
 
         // HTTP Methods distribution
@@ -289,20 +298,22 @@ export default function AnalyticsDashboard() {
                                         </Pie>
                                         <Tooltip
                                             contentStyle={{
-                                                borderRadius: '16px',
-                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                borderRadius: '12px',
+                                                backgroundColor: tooltipBg,
                                                 border: 'none',
-                                                color: '#fff',
-                                                fontSize: '10px',
+                                                color: tooltipText,
+                                                fontSize: '12px',
                                                 fontWeight: 'bold',
-                                                textTransform: 'uppercase'
+                                                textTransform: 'uppercase',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                                             }}
+                                            itemStyle={{ color: tooltipText }}
                                         />
                                         <Legend
                                             verticalAlign="bottom"
                                             align="center"
                                             iconType="circle"
-                                            formatter={(value) => <span className="text-[10px] font-black text-muted uppercase tracking-wider">{value}</span>}
+                                            formatter={(value) => <span style={{ color: textColor }} className="text-[10px] font-black uppercase tracking-wider">{value}</span>}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -321,38 +332,43 @@ export default function AnalyticsDashboard() {
                                     <AreaChart data={analytics.trendData}>
                                         <defs>
                                             <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                                <stop offset="5%" stopColor={isLight ? "#2563eb" : "#3b82f6"} stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor={isLight ? "#2563eb" : "#3b82f6"} stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                                         <XAxis
                                             dataKey="time"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                            tick={{ fill: textColor, fontSize: 10, fontWeight: 900 }}
                                         />
                                         <YAxis
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                            tick={{ fill: textColor, fontSize: 10, fontWeight: 900 }}
                                         />
                                         <Tooltip
                                             contentStyle={{
-                                                borderRadius: '16px',
-                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                borderRadius: '12px',
+                                                backgroundColor: tooltipBg,
                                                 border: 'none',
-                                                color: '#fff',
-                                                fontSize: '11px'
+                                                color: tooltipText,
+                                                fontSize: '13px',
+                                                fontWeight: 'bold',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                                             }}
+                                            itemStyle={{ color: tooltipText }}
                                         />
                                         <Area
                                             type="monotone"
                                             dataKey="latency"
-                                            stroke="#3b82f6"
-                                            strokeWidth={3}
+                                            stroke={isLight ? "#2563eb" : "#3b82f6"}
+                                            strokeWidth={4}
                                             fillOpacity={1}
                                             fill="url(#colorLatency)"
+                                            dot={{ r: 4, strokeWidth: 2, fill: isLight ? "#fff" : "#1e293b" }}
+                                            activeDot={{ r: 6, strokeWidth: 0 }}
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -364,30 +380,33 @@ export default function AnalyticsDashboard() {
                             <h3 className="text-xs font-black mb-6 text-foreground uppercase tracking-widest">Method Frequency</h3>
                             <div className="flex-1">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={analytics.methodData}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                    <BarChart data={analytics.methodData} barSize={40} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                                         <XAxis
                                             dataKey="name"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                            tick={{ fill: textColor, fontSize: 10, fontWeight: 900 }}
                                         />
                                         <YAxis
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900 }}
+                                            tick={{ fill: textColor, fontSize: 10, fontWeight: 900 }}
                                         />
                                         <Tooltip
-                                            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                            cursor={{ fill: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }}
                                             contentStyle={{
-                                                borderRadius: '16px',
-                                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                                borderRadius: '12px',
+                                                backgroundColor: tooltipBg,
                                                 border: 'none',
-                                                color: '#fff',
-                                                fontSize: '10px'
+                                                color: tooltipText,
+                                                fontSize: '12px',
+                                                fontWeight: 'bold',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                                             }}
+                                            itemStyle={{ color: tooltipText }}
                                         />
-                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                        <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                                             {analytics.methodData.map((entry: any, index: number) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                             ))}
@@ -486,15 +505,15 @@ export default function AnalyticsDashboard() {
                                         <td className="px-8 py-6">
                                             <div className="flex justify-center flex-col items-center gap-2">
                                                 <div className="relative">
-                                                    <div className={`w-3 h-3 rounded-full blur-[2px] animate-pulse absolute inset-0 ${item.health === 'green' ? 'bg-emerald-400' :
-                                                        item.health === 'yellow' ? 'bg-amber-400' : 'bg-rose-400'
+                                                    <div className={`w-3 h-3 rounded-full blur-[2px] animate-pulse absolute inset-0 ${item.health === 'green' ? 'bg-[#22c55e]' :
+                                                        item.health === 'yellow' ? 'bg-[#facc15]' : 'bg-[#ef4444]'
                                                         }`} />
-                                                    <div className={`w-3 h-3 rounded-full relative z-10 border border-white/20 shadow-lg ${item.health === 'green' ? 'bg-emerald-500' :
-                                                        item.health === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'
+                                                    <div className={`w-3 h-3 rounded-full relative z-10 border border-white/20 shadow-lg ${item.health === 'green' ? 'bg-[#22c55e]' :
+                                                        item.health === 'yellow' ? 'bg-[#facc15]' : 'bg-[#ef4444]'
                                                         }`} />
                                                 </div>
-                                                <span className={`text-[8px] font-black uppercase tracking-widest ${item.health === 'green' ? 'text-emerald-500' :
-                                                    item.health === 'yellow' ? 'text-amber-500' : 'text-rose-500'
+                                                <span className={`text-[8px] font-black uppercase tracking-widest ${item.health === 'green' ? 'text-[#22c55e]' :
+                                                    item.health === 'yellow' ? 'text-[#facc15]/80' : 'text-[#ef4444]'
                                                     }`}>
                                                     {item.health === 'green' ? 'Nominal' : item.health === 'yellow' ? 'Unstable' : 'Critical'}
                                                 </span>
