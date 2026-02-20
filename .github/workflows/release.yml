@@ -5,9 +5,30 @@ on:
       - 'v*'
     branches:
       - main
+      - test
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+      - name: Install dependencies
+        run: bun install
+      - name: Run frontend tests
+        run: bun run test
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies (ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev build-essential curl wget file libssl-dev pkg-config
+      - name: Run backend tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
   release:
+    needs: test
     permissions:
       contents: write
     strategy:
