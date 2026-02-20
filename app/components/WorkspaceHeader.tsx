@@ -408,7 +408,7 @@ export default function WorkspaceHeader() {
         {/* Divider before Invite */}
         <div className="h-4 w-px bg-card-border mx-1" />
 
-        <button id="tour-invite-btn" onClick={() => setIsInviteOpen(true)} className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5">
+        <button id="tour-invite-btn" onClick={() => setIsInviteOpen(true)} className="px-3 py-1.5 glass-btn-primary rounded-xl text-[11px] flex items-center gap-1.5 active:scale-95 shadow-lg shadow-primary/20">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
           Invite
         </button>
