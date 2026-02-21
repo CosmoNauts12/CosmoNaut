@@ -368,7 +368,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                                     <button
                                         onClick={() => setRole("read")}
                                         className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all ${role === "read"
-                                            ? "bg-primary text-white border-transparent shadow-[0_4px_14px_0_rgba(2,132,199,0.39)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.23)] hover:brightness-110"
+                                            ? "glass-btn-primary border-transparent shadow-lg shadow-primary/20"
                                             : "bg-white text-slate-500 border-slate-200 hover:border-primary/50"
                                             }`}
                                     >
@@ -377,7 +377,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                                     <button
                                         onClick={() => setRole("write")}
                                         className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all ${role === "write"
-                                            ? "bg-primary text-white border-transparent shadow-[0_4px_14px_0_rgba(2,132,199,0.39)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.23)] hover:brightness-110"
+                                            ? "glass-btn-primary border-transparent shadow-lg shadow-primary/20"
                                             : "bg-white text-slate-500 border-slate-200 hover:border-primary/50"
                                             }`}
                                     >
@@ -389,7 +389,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                             <button
                                 onClick={handleInvite}
                                 disabled={isSending}
-                                className="w-full py-3 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:brightness-110 disabled:opacity-50 transition-all shadow-[0_4px_14px_0_rgba(2,132,199,0.39)]"
+                                className="w-full py-3 glass-btn-primary rounded-xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 active:scale-[0.98] shadow-lg shadow-primary/20"
                             >
                                 {isSending ? "Sending Invitation..." : "Send Invitation"}
                             </button>

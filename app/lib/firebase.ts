@@ -13,7 +13,10 @@ import {
     signInWithCredential,
     GoogleAuthProvider,
     confirmPasswordReset,
-    verifyPasswordResetCode
+    verifyPasswordResetCode,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 } from "firebase/auth";
 
 /**
@@ -114,7 +117,10 @@ export {
     onAuthStateChanged,
     updateProfile,
     signInWithCredential,
-    GoogleAuthProvider
+    GoogleAuthProvider,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 };
 export type { User };
 

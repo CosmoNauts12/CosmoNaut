@@ -54,3 +54,12 @@ build_log.txt
 .vscode
 .idea
 *.jks
+
+
+# mac system
+.DS_Store?
+._*
+
+# firebase secrets
+serviceAccountKey.json
+firebase-adminsdk*.json

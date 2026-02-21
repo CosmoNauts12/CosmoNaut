@@ -7,8 +7,8 @@
     "build": "bunx next build",
     "start": "bunx next start",
     "lint": "bunx eslint",
-    "test": "vitest run",
-    "tauri": "bunx tauri"
+    "tauri": "bunx tauri",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.10.1",

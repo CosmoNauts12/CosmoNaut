@@ -20,6 +20,46 @@ export default function SignUp() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Password strength states
+  const [strength, setStrength] = useState(0);
+  const [metCriteria, setMetCriteria] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
+
+  const checkStrength = (pass: string) => {
+    const checks = {
+      length: pass.length >= 8,
+      uppercase: /[A-Z]/.test(pass),
+      lowercase: /[a-z]/.test(pass),
+      number: /[0-9]/.test(pass),
+      special: /[^A-Za-z0-9]/.test(pass)
+    };
+    setMetCriteria(checks);
+    const score = Object.values(checks).filter(Boolean).length;
+    setStrength(score);
+  };
+
+  useEffect(() => {
+    checkStrength(password);
+  }, [password]);
+
+  const getStrengthLabel = () => {
+    if (strength === 0) return { label: "Empty", color: "bg-gray-500/20", text: "text-gray-500" };
+    if (strength <= 2) return { label: "Weak", color: "bg-red-500", text: "text-red-500" };
+    if (strength <= 4) return { label: "Fair", color: "bg-yellow-500", text: "text-yellow-500" };
+    return { label: "Strong", color: "bg-emerald-500", text: "text-emerald-500" };
+  };
+
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
+
 
   // No local redirect logic needed here as AuthProvider handles it globally
 
@@ -33,8 +73,8 @@ export default function SignUp() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    if (strength < 5) {
+      setError("Please meet all password strength requirements");
       return;
     }
 
@@ -44,7 +84,7 @@ export default function SignUp() {
       localStorage.setItem("is_signing_up", "true");
 
       const userCredential = await signUpWithEmail(email, password);
-      
+
       // Save the user's name to their Firebase profile
       if (userCredential.user) {
         await updateProfile(userCredential.user, {
@@ -116,10 +156,10 @@ export default function SignUp() {
 
           <form onSubmit={handleSignUp}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-              {/* Name Field */}
               <div>
-                <label className="block text-sm glass-label mb-2">Name</label>
+                <label htmlFor="signup-name" className="block text-sm glass-label mb-2">Name</label>
                 <input
+                  id="signup-name"
                   type="text"
                   placeholder="Your full name"
                   value={name}
@@ -129,10 +169,10 @@ export default function SignUp() {
                 />
               </div>
 
-              {/* Email Field */}
               <div>
-                <label className="block text-sm glass-label mb-2">Email</label>
+                <label htmlFor="signup-email" className="block text-sm glass-label mb-2">Email</label>
                 <input
+                  id="signup-email"
                   type="email"
                   placeholder="Email Address"
                   value={email}
@@ -142,32 +182,115 @@ export default function SignUp() {
                 />
               </div>
 
-              {/* Password Field */}
-              <div>
-                <label className="block text-sm glass-label mb-2">Password</label>
-                <input
-                  type="password"
-                  placeholder="Password (min 8 chars)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  className="glass-input w-full px-4 py-3.5 rounded-xl text-base"
-                  required
-                />
+              <div className="relative">
+                <label htmlFor="signup-password" className="block text-sm glass-label mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    id="signup-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (min 8 chars)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setIsPasswordFocused(true)}
+                    onBlur={() => setIsPasswordFocused(false)}
+                    autoComplete="new-password"
+
+                    className="glass-input w-full px-4 py-3.5 pr-12 rounded-xl text-base"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-glass-muted hover:text-primary transition-colors p-1"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+
+                {/* Password Strength Meter & Checklist */}
+                {(password.length > 0 || isPasswordFocused) && (
+                  <div className="mt-3 space-y-3">
+
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-glass-muted">Strength: <span className={getStrengthLabel().text}>{getStrengthLabel().label}</span></span>
+                      <span className="text-xs text-glass-muted">{strength}/5</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((idx) => (
+                        <div
+                          key={idx}
+                          className={`h-full flex-1 transition-all duration-300 ${idx <= strength ? getStrengthLabel().color : "bg-white/5"}`}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className={`flex items-center gap-2 text-[11px] ${metCriteria.length ? "text-emerald-500" : "text-glass-muted opacity-60"}`}>
+                        <div className={`w-1 h-1 rounded-full ${metCriteria.length ? "bg-emerald-500" : "bg-white/20"}`} />
+                        At least 8 characters
+                      </div>
+                      <div className={`flex items-center gap-2 text-[11px] ${metCriteria.uppercase ? "text-emerald-500" : "text-glass-muted opacity-60"}`}>
+                        <div className={`w-1 h-1 rounded-full ${metCriteria.uppercase ? "bg-emerald-500" : "bg-white/20"}`} />
+                        Uppercase letter
+                      </div>
+                      <div className={`flex items-center gap-2 text-[11px] ${metCriteria.lowercase ? "text-emerald-500" : "text-glass-muted opacity-60"}`}>
+                        <div className={`w-1 h-1 rounded-full ${metCriteria.lowercase ? "bg-emerald-500" : "bg-white/20"}`} />
+                        Lowercase letter
+                      </div>
+                      <div className={`flex items-center gap-2 text-[11px] ${metCriteria.number ? "text-emerald-500" : "text-glass-muted opacity-60"}`}>
+                        <div className={`w-1 h-1 rounded-full ${metCriteria.number ? "bg-emerald-500" : "bg-white/20"}`} />
+                        Contains a number
+                      </div>
+                      <div className={`flex items-center gap-2 text-[11px] ${metCriteria.special ? "text-emerald-500" : "text-glass-muted opacity-60"}`}>
+                        <div className={`w-1 h-1 rounded-full ${metCriteria.special ? "bg-emerald-500" : "bg-white/20"}`} />
+                        Special character
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Confirm Password Field */}
-              <div>
-                <label className="block text-sm glass-label mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  placeholder="Confirm password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  className="glass-input w-full px-4 py-3.5 rounded-xl text-base"
-                  required
-                />
+              <div className="relative">
+                <label htmlFor="signup-confirm-password" className="block text-sm glass-label mb-2">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    id="signup-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    className="glass-input w-full px-4 py-3.5 pr-12 rounded-xl text-base"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-glass-muted hover:text-primary transition-colors p-1"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
