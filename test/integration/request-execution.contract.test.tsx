@@ -12,7 +12,6 @@ import {
   expect,
   vi,
   beforeEach,
-  afterEach,
 } from "vitest";
 
 import RequestPanel from "@/app/components/RequestPanel";
@@ -21,6 +20,7 @@ import * as engine from "@/app/components/RequestEngine";
 import type { CosmoResponse } from "@/app/components/RequestEngine";
 
 /*NEXT NAVIGATION MOCK*/
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -29,22 +29,16 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-/*RESET*/
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
-/*MOCK PROVIDERS*/
+/*CONTEXT MOCKS*/
 
 const addToHistoryMock = vi.fn();
 
-vi.mock("@/app/components/SettingsProvider", () => ({
-  useSettings: () => ({ settings: {} }),
-}));
-
 vi.mock("@/app/components/AuthProvider", () => ({
   useAuth: () => ({ isDemo: false }),
+}));
+
+vi.mock("@/app/components/SettingsProvider", () => ({
+  useSettings: () => ({ settings: {} }),
 }));
 
 vi.mock("@/app/components/CollectionsProvider", () => ({
@@ -65,30 +59,32 @@ const executeRequestMock = vi.spyOn(
   "executeRequest"
 );
 
+/*ACTIVE REQUEST*/
+
+const activeRequest = {
+  id: "1",
+  name: "Contract Test",
+  method: "POST",
+  url: "https://api.test.com/users",
+  params: [],
+  headers: [],
+  body: "",
+  auth: { type: "none" },
+};
+
 /*TEST HARNESS*/
 
-function TestWrapper() {
+function App() {
   const [response, setResponse] =
     useState<CosmoResponse | null>(null);
   const [executing, setExecuting] = useState(false);
-
-  const activeRequest = {
-    id: "1",
-    name: "Test Request",
-    method: "GET",
-    url: "",
-    params: [],
-    headers: [],
-    body: "",
-    auth: { type: "none" },
-  };
 
   return (
     <>
       <RequestPanel
         activeRequest={activeRequest}
-        onResponse={(res) => setResponse(res)}
-        onExecuting={(val) => setExecuting(val)}
+        onResponse={setResponse}
+        onExecuting={setExecuting}
       />
 
       <ResponsePanel
@@ -101,67 +97,84 @@ function TestWrapper() {
 
 /*TEST*/
 
-describe("Integration: request flow", () => {
+describe("Integration: Full request execution contract", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+
     executeRequestMock.mockResolvedValue({
       status: 200,
-      body: JSON.stringify({ message: "success" }),
-      headers: {},
+      body: JSON.stringify({ success: true }),
+      headers: {
+        "content-type": "application/json",
+      },
       duration_ms: 120,
     });
   });
 
-  afterEach(() => {
-    executeRequestMock.mockRestore();
-  });
+  test("normalizes → calls engine → renders response → persists history", async () => {
+    render(<App />);
 
-  test("user sends request → engine runs → response renders → history saved", async () => {
-    render(<TestWrapper />);
+    /* switch to body tab */
+    fireEvent.click(
+      screen.getByText(/body/i)
+    );
 
-    /* enter URL */
+    const requestBody = { name: "Aravind" };
+
     fireEvent.change(
-      screen.getByPlaceholderText(/enter request url/i),
+      screen.getByPlaceholderText(
+        '{ "key": "value" }'
+      ),
       {
         target: {
-          value:
-            "jsonplaceholder.typicode.com/posts/1",
+          value: JSON.stringify(requestBody),
         },
       }
     );
 
-    /* click SEND */
+    /* send request */
     fireEvent.click(
-      screen.getByRole("button", { name: /send/i })
+      screen.getByRole("button", {
+        name: /send/i,
+      })
     );
 
     /* engine called */
     await waitFor(() =>
-      expect(executeRequestMock).toHaveBeenCalledTimes(
-        1
-      )
+      expect(
+        executeRequestMock
+      ).toHaveBeenCalledTimes(1)
     );
 
-    /* status visible */
-    await waitFor(() =>
-      expect(
-        screen.getByText(/200/i)
-      ).toBeInTheDocument()
+    const payload =
+      executeRequestMock.mock.calls[0][0];
+
+    /* ENGINE CONTRACT */
+
+    expect(payload.method).toBe("POST");
+    expect(payload.url).toContain(
+      "api.test.com"
+    );
+    expect(payload.body).toBe(
+      JSON.stringify(requestBody)
     );
 
-    /* response body visible */
+    /* RESPONSE RENDERED */
+
     await waitFor(() =>
       expect(
-        screen.getByText((text) =>
-          text.includes("success")
+        screen.getByText((t) =>
+          t.includes("success")
         )
       ).toBeInTheDocument()
     );
 
-    /* history side effect */
+    /* HISTORY SIDE EFFECT */
+
     await waitFor(() =>
-      expect(addToHistoryMock).toHaveBeenCalledTimes(
-        1
-      )
+      expect(
+        addToHistoryMock
+      ).toHaveBeenCalledTimes(1)
     );
   });
 });
