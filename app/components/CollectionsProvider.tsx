@@ -397,6 +397,11 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       timestamp: Date.now()
     };
 
+    // Firestore does not support undefined values
+    if (newItem.error === undefined) {
+      delete newItem.error;
+    }
+
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "history", newItem.id), newItem);
     } catch (error) {
