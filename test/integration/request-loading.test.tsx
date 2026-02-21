@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import "@testing-library/jest-dom/vitest";
 import {
   render,
@@ -12,8 +11,8 @@ import {
   expect,
   vi,
   beforeEach,
-  afterEach,
 } from "vitest";
+import React, { useState } from "react";
 
 import RequestPanel from "@/app/components/RequestPanel";
 import ResponsePanel from "@/app/components/ResponsePanel";
@@ -21,6 +20,7 @@ import * as engine from "@/app/components/RequestEngine";
 import type { CosmoResponse } from "@/app/components/RequestEngine";
 
 /*NEXT NAVIGATION MOCK*/
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -29,22 +29,16 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-/*RESET*/
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
-/*MOCK PROVIDERS*/
+/*CONTEXT MOCKS*/
 
 const addToHistoryMock = vi.fn();
 
-vi.mock("@/app/components/SettingsProvider", () => ({
-  useSettings: () => ({ settings: {} }),
-}));
-
 vi.mock("@/app/components/AuthProvider", () => ({
   useAuth: () => ({ isDemo: false }),
+}));
+
+vi.mock("@/app/components/SettingsProvider", () => ({
+  useSettings: () => ({ settings: {} }),
 }));
 
 vi.mock("@/app/components/CollectionsProvider", () => ({
@@ -67,28 +61,26 @@ const executeRequestMock = vi.spyOn(
 
 /*TEST HARNESS*/
 
-function TestWrapper() {
+function TestHarness() {
   const [response, setResponse] =
     useState<CosmoResponse | null>(null);
   const [executing, setExecuting] = useState(false);
 
-  const activeRequest = {
-    id: "1",
-    name: "Test Request",
-    method: "GET",
-    url: "",
-    params: [],
-    headers: [],
-    body: "",
-    auth: { type: "none" },
-  };
-
   return (
     <>
       <RequestPanel
-        activeRequest={activeRequest}
-        onResponse={(res) => setResponse(res)}
-        onExecuting={(val) => setExecuting(val)}
+        activeRequest={{
+          id: "1",
+          name: "Test Request",
+          method: "GET",
+          url: "https://api.test.com",
+          params: [],
+          headers: [],
+          body: "",
+          auth: { type: "none" },
+        }}
+        onResponse={setResponse}
+        onExecuting={setExecuting}
       />
 
       <ResponsePanel
@@ -101,67 +93,69 @@ function TestWrapper() {
 
 /*TEST*/
 
-describe("Integration: request flow", () => {
+describe("Integration: Request loading lifecycle", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+
     executeRequestMock.mockResolvedValue({
       status: 200,
-      body: JSON.stringify({ message: "success" }),
+      body: JSON.stringify({ ok: true }),
       headers: {},
-      duration_ms: 120,
+      duration_ms: 150,
     });
   });
 
-  afterEach(() => {
-    executeRequestMock.mockRestore();
-  });
+  test("Send → loading → response → history persisted → engine contract", async () => {
+    render(<TestHarness />);
 
-  test("user sends request → engine runs → response renders → history saved", async () => {
-    render(<TestWrapper />);
-
-    /* enter URL */
-    fireEvent.change(
-      screen.getByPlaceholderText(/enter request url/i),
-      {
-        target: {
-          value:
-            "jsonplaceholder.typicode.com/posts/1",
-        },
-      }
-    );
-
-    /* click SEND */
     fireEvent.click(
       screen.getByRole("button", { name: /send/i })
     );
 
+    /* loading appears */
+    expect(
+      screen.getByText(/analyzing signal/i)
+    ).toBeInTheDocument();
+
     /* engine called */
     await waitFor(() =>
-      expect(executeRequestMock).toHaveBeenCalledTimes(
-        1
-      )
+      expect(
+        executeRequestMock
+      ).toHaveBeenCalledTimes(1)
     );
 
-    /* status visible */
+    const payload =
+      executeRequestMock.mock.calls[0][0];
+
+    /* response status */
     await waitFor(() =>
       expect(
         screen.getByText(/200/i)
       ).toBeInTheDocument()
     );
 
-    /* response body visible */
+    /* response body */
     await waitFor(() =>
       expect(
-        screen.getByText((text) =>
-          text.includes("success")
+        screen.getByText((t) =>
+          t.includes('"ok": true')
         )
       ).toBeInTheDocument()
     );
 
-    /* history side effect */
+    /* history persisted */
     await waitFor(() =>
-      expect(addToHistoryMock).toHaveBeenCalledTimes(
-        1
-      )
+      expect(
+        addToHistoryMock
+      ).toHaveBeenCalledTimes(1)
+    );
+
+    /* engine contract */
+    expect(payload).toEqual(
+      expect.objectContaining({
+        method: "GET",
+        url: expect.stringContaining("https://"),
+      })
     );
   });
 });
