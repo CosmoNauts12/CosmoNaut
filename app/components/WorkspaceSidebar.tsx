@@ -47,9 +47,9 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     deleteRequest,
     renameRequest,
     createWorkspace,
-    deleteWorkspace,
     renameWorkspace,
-    clearHistory
+    clearHistory,
+    currentRole
   } = useCollections();
 
   const [activeActivity, setActiveActivity] = useState('collections');
@@ -227,13 +227,15 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               {activeActivity}
             </h2>
             <div className="flex gap-1">
-              <button
-                onClick={handleCreateCollection}
-                className="p-1 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
-                title="New Collection"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </button>
+              {currentRole !== 'read' && (
+                <button
+                  onClick={handleCreateCollection}
+                  className="p-1 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
+                  title="New Collection"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+              )}
               <button className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[12px] font-bold uppercase tracking-wider">
                 Import
               </button>
@@ -268,20 +270,24 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                     <span className="truncate">{collection.name}</span>
                   </button>
                   <div className="absolute right-1 hidden group-hover:flex gap-1">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleRenameCollection(collection.id, collection.name); }}
-                      className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
-                      title="Rename"
-                    >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteCollection(collection.id, collection.name); }}
-                      className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
-                      title="Delete"
-                    >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
+                    {currentRole !== 'read' && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRenameCollection(collection.id, collection.name); }}
+                          className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
+                          title="Rename"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteCollection(collection.id, collection.name); }}
+                          className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
+                          title="Delete"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -303,20 +309,24 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                         </button>
 
                         <div className="absolute right-1 hidden group-hover:flex gap-1">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleRenameRequest(request.id, collection.id, request.name); }}
-                            className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
-                            title="Rename"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDeleteRequest(request.id, collection.id, request.name); }}
-                            className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
-                            title="Delete"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                          </button>
+                          {currentRole !== 'read' && (
+                            <>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRenameRequest(request.id, collection.id, request.name); }}
+                                className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
+                                title="Rename"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteRequest(request.id, collection.id, request.name); }}
+                                className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
+                                title="Delete"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -332,12 +342,14 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
               <div className="space-y-4">
                 <div className="flex justify-between items-center px-2">
                   <span className="text-[9px] font-black text-muted uppercase tracking-widest">Recent Activity</span>
-                  <button
-                    onClick={clearHistory}
-                    className="text-[9px] font-black text-muted hover:text-rose-500 uppercase tracking-widest transition-colors"
-                  >
-                    Clear All
-                  </button>
+                  {currentRole !== 'read' && (
+                    <button
+                      onClick={clearHistory}
+                      className="text-[9px] font-black text-muted hover:text-rose-500 uppercase tracking-widest transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  )}
                 </div>
 
                 {requestHistory.length === 0 ? (

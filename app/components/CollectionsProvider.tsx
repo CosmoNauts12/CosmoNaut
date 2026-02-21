@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { Collection, SavedRequest, saveCollectionsToDisk, loadCollectionsFromDisk } from "@/app/lib/collections";
 import { Workspace } from "@/app/lib/workspaces";
 import { db } from "../lib/firebase";
@@ -20,6 +20,7 @@ interface CollectionsContextType {
   history: HistoryItem[];              // Request history
   activeWorkspaceId: string;           // Currently selected workspace ID
   loading: boolean;                    // Loading state for data fetching
+  currentRole: "owner" | "write" | "read"; // Role of the user in the active workspace
 
   // Workspace Actions
   setActiveWorkspaceId: (id: string) => void;
@@ -85,6 +86,13 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     let ownedWorkspaces: Workspace[] = [];
     let collabWorkspaces: Workspace[] = [];
 
+    const getRoleForWorkspace = (wId: string): "owner" | "write" | "read" => {
+      if (ownedWorkspaces.some(w => w.id === wId)) return "owner";
+      const collab = collabWorkspaces.find(w => w.id === wId);
+      if (collab && (collab as any).role) return (collab as any).role as "write" | "read";
+      return "read"; // fallback
+    };
+
     const combineAndSet = () => {
       const combined = [...ownedWorkspaces, ...collabWorkspaces];
 
@@ -130,11 +138,13 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       // In a very large app, we would cache or batch this.
       try {
         const fetchedCollabs = await Promise.all(
-          workspaceIds.map(async (id) => {
+          snapshot.docs.map(async (docSnapshot) => {
+            const id = docSnapshot.data().projectId;
+            const role = docSnapshot.data().role;
             const wDoc = await getDoc(doc(db, "workspaces", id));
             // Add ownerId manually so facepile knows who the owner is even if not them
             if (wDoc.exists()) {
-              return { id: wDoc.id, name: wDoc.data().name, ownerId: wDoc.data().ownerId, isCollab: true } as any;
+              return { id: wDoc.id, name: wDoc.data().name, ownerId: wDoc.data().ownerId, isCollab: true, role } as any;
             }
             return null;
           })
@@ -202,6 +212,14 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     };
   }, [user, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
 
+  const currentRole = useMemo(() => {
+    if (activeWorkspaceId === "default") return "owner";
+    const w = workspaces.find(ws => ws.id === activeWorkspaceId);
+    if (!w) return "owner";
+    if ((w as any).isOwner) return "owner";
+    return (w as any).role || "read";
+  }, [activeWorkspaceId, workspaces]);
+
   /**
    * Creates a new workspace and sets it as active.
    */
@@ -226,6 +244,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Deletes a workspace and switches to another if necessary.
    */
   const deleteWorkspace = async (id: string) => {
+    if (currentRole === "read") return;
     try {
       await deleteDoc(doc(db, "workspaces", id));
       if (activeWorkspaceId === id) {
@@ -242,6 +261,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Renames an existing workspace.
    */
   const renameWorkspace = async (id: string, name: string) => {
+    if (currentRole === "read") return;
     try {
       await setDoc(doc(db, "workspaces", id), { name }, { merge: true });
     } catch (e) {
@@ -253,7 +273,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Creates a new empty collection in the active workspace.
    */
   const createCollection = async (name: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return "";
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
     const id = `c_${Date.now()}`;
 
     try {
@@ -272,7 +292,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Saves a new request to a specific collection.
    */
   const saveRequest = async (requestData: Omit<SavedRequest, 'id'>, collectionId: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     const id = `r_${Date.now()}`;
     const newRequest = { ...requestData, id };
 
@@ -292,7 +312,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Updates an existing request within a collection.
    */
   const updateRequest = async (request: SavedRequest, collectionId: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -310,7 +330,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Deletes a request from a collection.
    */
   const deleteRequest = async (requestId: string, collectionId: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -328,7 +348,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Renames a request within a collection.
    */
   const renameRequest = async (requestId: string, collectionId: string, newName: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -346,7 +366,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Deletes a collection and all its requests.
    */
   const deleteCollection = async (collectionId: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     try {
       await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId));
     } catch (e) {
@@ -358,7 +378,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Renames a collection.
    */
   const renameCollection = async (collectionId: string, newName: string) => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), { name: newName }, { merge: true });
     } catch (e) {
@@ -388,7 +408,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    * Clears the history for the active workspace.
    */
   const clearHistory = async () => {
-    if (!activeWorkspaceId || activeWorkspaceId === "default") return;
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
     try {
       const historyCol = collection(db, "workspaces", activeWorkspaceId, "history");
       // Since it's client-side without batch limits usually hit here (max 50), looping is fine for clear.
@@ -407,6 +427,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       workspaces,
       activeWorkspaceId,
       loading,
+      currentRole,
       setActiveWorkspaceId,
       saveRequest,
       updateRequest,
