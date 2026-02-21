@@ -35,7 +35,7 @@ export default function RequestPanel({
   onExecuting: (executing: boolean) => void;
 }) {
   const { settings } = useSettings();
-  const { collections, saveRequest, updateRequest, createCollection, addToHistory } = useCollections();
+  const { collections, saveRequest, updateRequest, createCollection, addToHistory, currentRole } = useCollections();
   const { isDemo } = useAuth();
   const [method, setMethod] = useState(activeRequest.method);
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts/1");
@@ -243,10 +243,11 @@ export default function RequestPanel({
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
+              disabled={currentRole === 'read'}
               className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
                 method === 'POST' ? 'text-amber-500' :
                   method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
-                }`}
+                } ${currentRole === 'read' ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {methods.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
@@ -259,41 +260,50 @@ export default function RequestPanel({
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            disabled={currentRole === 'read'}
             placeholder="Enter request URL"
-            className="flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+            className={`flex-1 h-11 px-4 rounded-xl border border-card-border/50 bg-card-bg text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all shadow-inner ${currentRole === 'read' ? 'opacity-50 cursor-not-allowed' : 'placeholder:text-muted/50'}`}
           />
 
           {'url' in activeRequest ? (
             <>
-              <button
-                onClick={handleSave}
-                className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                Update
-              </button>
-              <button
-                onClick={() => {
-                  setTargetCollectionId(activeRequest.collectionId);
-                  setSaveName(`${activeRequest.name} (Copy)`);
-                  setShowSaveModal(true);
-                }}
-                className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
-              >
-                Save As
-              </button>
+              {currentRole !== 'read' && (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Update
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTargetCollectionId(activeRequest.collectionId);
+                      setSaveName(`${activeRequest.name} (Copy)`);
+                      setShowSaveModal(true);
+                    }}
+                    className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-foreground transition-all"
+                  >
+                    Save As
+                  </button>
+                </>
+              )}
             </>
           ) : (
-            <button
-              onClick={() => {
-                if (collections.length > 0) setTargetCollectionId(collections[0].id);
-                setShowSaveModal(true);
-              }}
-              className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all flex items-center gap-2"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-              Save
-            </button>
+            <>
+              {currentRole !== 'read' && (
+                <button
+                  onClick={() => {
+                    if (collections.length > 0) setTargetCollectionId(collections[0].id);
+                    setShowSaveModal(true);
+                  }}
+                  className="h-11 px-6 rounded-xl border border-card-border/50 bg-card-bg text-muted text-xs font-black uppercase tracking-widest hover:text-primary hover:border-primary/50 transition-all flex items-center gap-2"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                  Save
+                </button>
+              )}
+            </>
           )}
 
           <button
@@ -376,10 +386,10 @@ export default function RequestPanel({
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
-        {activeTab === 'params' && <ParamsTab params={params} setParams={setParams} />}
-        {activeTab === 'auth' && <AuthTab auth={auth} setAuth={setAuth} />}
-        {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} />}
-        {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} />}
+        {activeTab === 'params' && <ParamsTab params={params} setParams={setParams} readOnly={currentRole === 'read'} />}
+        {activeTab === 'auth' && <AuthTab auth={auth} setAuth={setAuth} readOnly={currentRole === 'read'} />}
+        {activeTab === 'headers' && <HeadersTab headers={headers} setHeaders={setHeaders} auth={auth} readOnly={currentRole === 'read'} />}
+        {activeTab === 'body' && <BodyTab body={body} setBody={setBody} method={method} readOnly={currentRole === 'read'} />}
       </div>
 
       {/* Upgrade Modal */}

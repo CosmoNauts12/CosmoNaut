@@ -33,7 +33,7 @@ const deleteKV = (list: KVItem[], index: number) => {
  * Component for managing URL query parameters.
  * Provides a dynamic grid for editing key-value pairs.
  */
-export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: (p: KVItem[]) => void }) {
+export function ParamsTab({ params, setParams, readOnly }: { params: KVItem[], setParams: (p: KVItem[]) => void, readOnly?: boolean }) {
   return (
     <div className="w-full space-y-2 p-2">
       <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted/50 mb-2">
@@ -47,27 +47,33 @@ export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: 
           <input
             type="checkbox"
             checked={item.enabled}
+            disabled={readOnly}
             onChange={(e) => setParams(updateKV(params, idx, { enabled: e.target.checked }))}
             className="w-3 h-3 rounded bg-card-bg border-card-border accent-primary"
           />
           <input
             placeholder="Key"
             value={item.key}
+            disabled={readOnly}
             onChange={(e) => setParams(updateKV(params, idx, { key: e.target.value }))}
-            className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
+            className={`bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           <input
             placeholder="Value"
             value={item.value}
+            disabled={readOnly}
             onChange={(e) => setParams(updateKV(params, idx, { value: e.target.value }))}
-            className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
+            className={`bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
-          <button
-            onClick={() => setParams(deleteKV(params, idx))}
-            className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
-          >
-            ×
-          </button>
+          {(!readOnly && idx !== params.length - 1) && (
+            <button
+              onClick={() => setParams(deleteKV(params, idx))}
+              className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
+            >
+              ×
+            </button>
+          )}
+          {(readOnly || idx === params.length - 1) && <span />}
         </div>
       ))}
     </div>
@@ -81,15 +87,16 @@ export function ParamsTab({ params, setParams }: { params: KVItem[], setParams: 
  * - Supports 'Bearer Token' and 'Basic Auth'.
  * - Updates the auth state which feeds into generated headers.
  */
-export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthState) => void }) {
+export function AuthTab({ auth, setAuth, readOnly }: { auth: AuthState, setAuth: (a: AuthState) => void, readOnly?: boolean }) {
   return (
     <div className="w-full max-w-md mx-auto space-y-6 p-4">
       <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-muted">Auth Type</label>
         <select
           value={auth.type}
+          disabled={readOnly}
           onChange={(e) => setAuth({ ...auth, type: e.target.value as any })}
-          className="w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs font-bold focus:border-primary/50 outline-none"
+          className={`w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs font-bold focus:border-primary/50 outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <option value="none">No Auth</option>
           <option value="bearer">Bearer Token</option>
@@ -104,8 +111,9 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
             type="password"
             placeholder="Enter Bearer Token"
             value={auth.bearerToken || ''}
+            disabled={readOnly}
             onChange={(e) => setAuth({ ...auth, bearerToken: e.target.value })}
-            className="w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none"
+            className={`w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
         </div>
       )}
@@ -117,8 +125,9 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
             <input
               placeholder="Username"
               value={auth.username || ''}
+              disabled={readOnly}
               onChange={(e) => setAuth({ ...auth, username: e.target.value })}
-              className="w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none"
+              className={`w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
           </div>
           <div className="space-y-2">
@@ -127,8 +136,9 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
               type="password"
               placeholder="Password"
               value={auth.password || ''}
+              disabled={readOnly}
               onChange={(e) => setAuth({ ...auth, password: e.target.value })}
-              className="w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none"
+              className={`w-full h-10 px-4 rounded-xl border border-card-border/50 bg-card-bg text-xs focus:border-primary/50 outline-none ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
           </div>
         </div>
@@ -146,7 +156,7 @@ export function AuthTab({ auth, setAuth }: { auth: AuthState, setAuth: (a: AuthS
  * - Displays auto-generated Auth headers (read-only).
  * - Allows custom header management.
  */
-export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], setHeaders: (h: KVItem[]) => void, auth: AuthState }) {
+export function HeadersTab({ headers, setHeaders, auth, readOnly }: { headers: KVItem[], setHeaders: (h: KVItem[]) => void, auth: AuthState, readOnly?: boolean }) {
   return (
     <div className="w-full space-y-2 p-2">
       <div className="grid grid-cols-[30px_1fr_1fr_40px] gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted/50 mb-2">
@@ -173,27 +183,33 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
           <input
             type="checkbox"
             checked={item.enabled}
+            disabled={readOnly}
             onChange={(e) => setHeaders(updateKV(headers, idx, { enabled: e.target.checked }))}
             className="w-3 h-3 rounded bg-card-bg border-card-border accent-primary"
           />
           <input
             placeholder="Key"
             value={item.key}
+            disabled={readOnly}
             onChange={(e) => setHeaders(updateKV(headers, idx, { key: e.target.value }))}
-            className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
+            className={`bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           <input
             placeholder="Value"
             value={item.value}
+            disabled={readOnly}
             onChange={(e) => setHeaders(updateKV(headers, idx, { value: e.target.value }))}
-            className="bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all"
+            className={`bg-transparent border-b border-card-border/30 px-2 py-1 text-xs focus:border-primary/50 outline-none transition-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
-          <button
-            onClick={() => setHeaders(deleteKV(headers, idx))}
-            className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
-          >
-            ×
-          </button>
+          {(!readOnly && idx !== headers.length - 1) && (
+            <button
+              onClick={() => setHeaders(deleteKV(headers, idx))}
+              className="opacity-0 group-hover:opacity-100 text-rose-500 hover:scale-110 transition-all text-sm"
+            >
+              ×
+            </button>
+          )}
+          {(readOnly || idx === headers.length - 1) && <span />}
         </div>
       ))}
     </div>
@@ -207,7 +223,7 @@ export function HeadersTab({ headers, setHeaders, auth }: { headers: KVItem[], s
  * - Only active for non-GET requests.
  * - Includes a "Beautify" button to format JSON.
  */
-export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: string) => void, method: string }) {
+export function BodyTab({ body, setBody, method, readOnly }: { body: string, setBody: (b: string) => void, method: string, readOnly?: boolean }) {
   if (method === 'GET') {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-50">
@@ -242,9 +258,10 @@ export function BodyTab({ body, setBody, method }: { body: string, setBody: (b: 
       </div>
       <textarea
         value={body}
+        disabled={readOnly}
         onChange={(e) => setBody(e.target.value)}
         placeholder='{ "key": "value" }'
-        className="flex-1 w-full p-4 bg-black/10 rounded-2xl border border-card-border/30 text-xs font-mono focus:border-primary/50 outline-none resize-none scrollbar-hide"
+        className={`flex-1 w-full p-4 bg-black/10 rounded-2xl border border-card-border/30 text-xs font-mono focus:border-primary/50 outline-none resize-none scrollbar-hide ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
       />
     </div>
   );
