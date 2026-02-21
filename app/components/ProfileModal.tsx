@@ -247,8 +247,8 @@ export default function ProfileModal() {
                           { id: 'number', label: 'Number' },
                           { id: 'special', label: 'Symbol' }
                         ].map(item => (
-                          <div key={item.id} className={`flex items-center gap-1.5 text-[9px] font-bold transition-opacity ${metCriteria[item.id as keyof typeof metCriteria] ? "text-emerald-400" : "text-muted opacity-40"}`}>
-                            <div className={`w-1 h-1 rounded-full ${metCriteria[item.id as keyof typeof metCriteria] ? "bg-emerald-400" : "bg-white/20"}`} />
+                          <div key={item.id} className={`flex items-center gap-1.5 text-[9px] font-bold transition-opacity ${metCriteria[item.id as keyof typeof metCriteria] ? "text-emerald-500" : "text-muted opacity-40"}`}>
+                            <div className={`w-1 h-1 rounded-full ${metCriteria[item.id as keyof typeof metCriteria] ? "bg-emerald-500" : "bg-white/20"}`} />
                             {item.label}
                           </div>
                         ))}
