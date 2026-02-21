@@ -244,8 +244,8 @@ export default function RequestPanel({
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
               className={`glass-select h-11 px-4 rounded-xl font-black text-xs appearance-none focus:border-primary/50 ${method === 'GET' ? 'text-emerald-500' :
-                  method === 'POST' ? 'text-amber-500' :
-                    method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
+                method === 'POST' ? 'text-amber-500' :
+                  method === 'PUT' ? 'text-blue-500' : 'text-rose-500'
                 }`}
             >
               {methods.map(m => <option key={m} value={m}>{m}</option>)}
@@ -383,9 +383,9 @@ export default function RequestPanel({
       </div>
 
       {/* Upgrade Modal */}
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)} 
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
       />
     </div>
   );

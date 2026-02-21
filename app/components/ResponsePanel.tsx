@@ -79,35 +79,51 @@ export default function ResponsePanel({
   isExecuting: boolean;
 }) {
   const [activeTab, setActiveTab] = useState("pretty");
-  // const [visualMode, setVisualMode] = useState("graph");
+  const [format, setFormat] = useState<"json" | "xml" | "html" | "javascript" | "raw">("json");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const formats = [
+    { id: 'json', name: 'JSON', icon: <span className="text-[10px] w-4 font-bold">{ }</span> },
+    { id: 'xml', name: 'XML', icon: <span className="text-[10px] w-4 font-bold">&lt;/&gt;</span> },
+    { id: 'html', name: 'HTML', icon: <span className="text-[10px] w-4 font-bold">&lt;!&gt;</span> },
+    { id: 'javascript', name: 'JavaScript', icon: <span className="text-[10px] w-4 font-bold">JS</span> },
+    { id: 'raw', name: 'Raw', icon: <span className="text-[10px] w-4 font-bold">TXT</span> },
+  ];
 
   /**
-   * Memoized formatted body. Attempts to parse as JSON for pretty-printing,
-   * falls back to raw text if parsing fails.
+   * Memoized formatted body based on selected format.
    */
   const formattedBody = useMemo(() => {
     if (!response) return null;
-    try {
-      return JSON.stringify(JSON.parse(response.body), null, 2);
-    } catch (e) {
-      return response.body;
+    const body = response.body;
+
+    if (format === 'json') {
+      try {
+        return JSON.stringify(JSON.parse(body), null, 2);
+      } catch (e) {
+        return body;
+      }
     }
-  }, [response]);
+
+    // For XML/HTML/JS, we just return the body for now, but in a real app
+    // we might use a library like 'prettier' or a specific highlighter.
+    return body;
+  }, [response, format]);
 
   if (isExecuting) {
     return (
-      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Executing Mission...</p>
+      <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary animate-pulse">Analyzing Signal...</p>
       </div>
     );
   }
 
   if (!response) {
     return (
-      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border items-center justify-center opacity-30">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted">Awaiting Data Pipeline</p>
+      <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border items-center justify-center opacity-30">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4 animate-float"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">Awaiting Data Pipeline</p>
       </div>
     );
   }
@@ -117,62 +133,158 @@ export default function ResponsePanel({
     const details = ERROR_DETAILS[error_type.toUpperCase() as keyof typeof ERROR_DETAILS] || ERROR_DETAILS.UNKNOWN_ERROR;
 
     return (
-      <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-md border-t border-card-border items-center justify-center p-8 text-center scrollbar-hide">
+      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-xl border-t border-card-border items-center justify-center p-8 text-center overflow-y-auto">
         {details.icon}
-        <h3 className="text-lg font-black uppercase tracking-widest text-foreground mb-2">{details.title}</h3>
-        <p className="text-xs text-muted font-bold leading-relaxed max-w-md mb-6">{details.desc}</p>
+        <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-3">{details.title}</h3>
+        <p className="text-xs text-muted font-bold leading-relaxed max-w-sm mb-8">{details.desc}</p>
 
-        <div className="w-full max-w-lg liquid-glass p-4 rounded-xl border-card-border/50 text-left bg-black/10">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-2">Technical Insight</p>
-          <code className="text-[10px] text-rose-500/80 font-mono break-all">{message}</code>
+        <div className="w-full max-w-md liquid-glass p-5 rounded-2xl border border-rose-500/20 text-left bg-rose-500/5 shadow-lg shadow-rose-500/10">
+          <p className="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+            Error Log
+          </p>
+          <code className="text-[10px] text-rose-500/90 font-mono break-all leading-relaxed">{message}</code>
         </div>
       </div>
     );
   }
 
+  const getStatusLabel = (code: number) => {
+    const labels: Record<number, string> = {
+      200: 'OK',
+      201: 'Created',
+      204: 'No Content',
+      400: 'Bad Request',
+      401: 'Unauthorized',
+      403: 'Forbidden',
+      404: 'Not Found',
+      500: 'Server Error'
+    };
+    return labels[code] || '';
+  };
+
   return (
-    <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-md border-t border-card-border overflow-hidden">
+    <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border overflow-hidden">
       {/* Response Header */}
-      <div className="h-10 px-4 border-b border-card-border/50 flex items-center justify-between bg-black/5 dark:bg-white/5">
-        <div className="flex gap-4">
-          <button
-            onClick={() => setActiveTab("pretty")}
-            className={`text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pretty' ? 'text-primary' : 'text-muted'}`}
-          >
-            Body
-          </button>
-          <button
-            onClick={() => setActiveTab("visualize")}
-            className={`text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'visualize' ? 'text-primary' : 'text-muted'}`}
-          >
-            Visualize
-          </button>
+      <div className="h-12 px-4 border-b border-card-border/50 flex items-center justify-between bg-black/10 dark:bg-white/5">
+        <div className="flex items-center gap-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab("pretty")}
+              className={`px-3 py-1.5 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'pretty' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+            >
+              Body
+            </button>
+            <button
+              onClick={() => setActiveTab("visualize")}
+              className={`px-3 py-1.5 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'visualize' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+            >
+              Preview
+            </button>
+          </div>
+
+          <div className="w-[1px] h-4 bg-muted/20" />
+
+          {/* Format Selector Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 text-[12px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-white/10"
+            >
+              <span className="text-primary/70">{formats.find(f => f.id === format)?.icon}</span>
+              <span className="uppercase tracking-wider">{formats.find(f => f.id === format)?.name}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+
+            {isDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
+                <div className="absolute top-full left-0 mt-1 w-36 bg-white dark:bg-[#0a0f18] rounded-xl border border-card-border shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100">
+                  {formats.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => {
+                        setFormat(f.id as any);
+                        setIsDropdownOpen(false);
+                        setActiveTab("pretty");
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-foreground/5 hover:text-foreground'}`}
+                    >
+                      <span className={format === f.id ? 'text-primary' : 'text-muted opacity-50'}>{f.icon}</span>
+                      {f.name}
+                      {format === f.id && <div className="ml-auto w-1 h-1 rounded-full bg-primary" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex gap-4 text-[10px] font-bold">
-          <span className={`${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            Status: <span className="text-foreground">{response.status}</span>
-          </span>
-          <span className="text-muted">Time: <span className="text-foreground">{response.duration_ms} ms</span></span>
-          <span className="text-muted">Size: <span className="text-foreground">{(response.body.length / 1024).toFixed(2)} KB</span></span>
+        <div className="flex items-center gap-6">
+          <div className="flex gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Status</span>
+              <span className={`text-[12px] font-black ${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {response.status} {getStatusLabel(response.status)}
+              </span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Time</span>
+              <span className="text-[12px] font-black text-foreground/80">{response.duration_ms} ms</span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Size</span>
+              <span className="text-[12px] font-black text-foreground/80">
+                {response.body.length < 1024
+                  ? `${response.body.length} B`
+                  : `${(response.body.length / 1024).toFixed(2)} KB`}
+              </span>
+            </div>
+          </div>
+
+          <div className="w-[1px] h-4 bg-muted/20" />
+
+          <button className="flex items-center gap-2 group">
+            <span className="text-[11px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save Response</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          </button>
         </div>
       </div>
 
       {/* Body Content */}
-      <div className="flex-1 overflow-y-auto p-4 font-mono text-xs">
+      <div className="flex-1 overflow-hidden relative group/content">
         {activeTab === 'pretty' && (
-          <div className="liquid-glass p-6 rounded-2xl border-card-border/50 shadow-inner overflow-x-auto min-h-full">
-            <pre className="text-primary/90 whitespace-pre-wrap">
-              {formattedBody}
-            </pre>
+          <div className="h-full overflow-y-auto p-4 font-mono text-[13px] font-medium leading-relaxed selection:bg-primary/20">
+            <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
+              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-950 dark:text-amber-200/90' : format === 'javascript' ? 'text-blue-950 dark:text-blue-200/90' : 'text-emerald-950 dark:text-emerald-200/90'} whitespace-pre-wrap`}>
+                {formattedBody}
+              </pre>
+            </div>
           </div>
         )}
 
         {activeTab === 'visualize' && (
-          <div className="h-full flex flex-col items-center justify-center opacity-50">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted">Visualization requires specific data mission protocols</p>
+          <div className="h-full flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-pulse">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <h4 className="text-[12px] font-black uppercase tracking-[0.2em] text-foreground mb-2">Neural Visualizer Offline</h4>
+            <p className="text-[10px] text-muted font-bold tracking-wide max-w-xs leading-relaxed">
+              This response data requires a specific schema for 3D topological visualization. Switch to Body for raw telemetry.
+            </p>
           </div>
         )}
+
+        {/* Floating Action Buttons */}
+        <div className="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300">
+          <button className="p-2.5 rounded-xl glass-panel border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl" title="Copy to Clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+          <button className="p-2.5 rounded-xl glass-panel border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl" title="Search in Response">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
       </div>
     </div>
   );
