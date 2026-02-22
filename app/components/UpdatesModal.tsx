@@ -21,13 +21,17 @@ interface Invitation {
 }
 
 export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
-    const { user } = useAuth();
+    const { user, isDemo } = useAuth();
     const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Listen for real-time updates to invitations
     useEffect(() => {
-        if (!user?.email) return;
+        if (!user?.email || isDemo) {
+            setInvitations([]);
+            setLoading(false);
+            return;
+        }
 
         const q = query(
             collection(db, "invitations"),

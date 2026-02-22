@@ -105,15 +105,6 @@ export default function RequestPanel({
    * 5. Logs results to history.
    */
   const handleSend = async () => {
-    if (isDemo) {
-      const count = parseInt(localStorage.getItem('demo_request_count') || '0', 10);
-      if (count >= 2) {
-        setShowUpgradeModal(true);
-        return;
-      }
-      localStorage.setItem('demo_request_count', (count + 1).toString());
-    }
-
     onExecuting(true);
     let targetUrl = cleanUrl(url);
 
@@ -165,7 +156,14 @@ export default function RequestPanel({
         url: targetUrl,
         headers: finalHeaders,
         body: finalBody,
-      });
+      }, isDemo ? 'demo' : 'authenticated');
+
+      if (response.error && response.error.error_type === 'DemoLimitReached') {
+        setShowUpgradeModal(true);
+        onExecuting(false);
+        return;
+      }
+
       onResponse(response);
 
       // Persist to History

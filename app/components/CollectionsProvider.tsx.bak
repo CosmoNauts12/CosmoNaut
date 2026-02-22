@@ -65,7 +65,7 @@ const CollectionsContext = createContext<CollectionsContextType | undefined>(und
  * Handles disk persistence and reactive updates across the application.
  */
 export function CollectionsProvider({ children }: { children: React.ReactNode }) {
-  const { user, isDemo } = useAuth();
+  const { user } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>("default");
@@ -78,18 +78,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     if (!user) {
       setWorkspaces([]);
       setActiveWorkspaceId("default");
-      return;
-    }
-
-    if (isDemo) {
-      setWorkspaces([{
-        id: "demo-workspace",
-        name: "Demo Workspace",
-        ownerId: "demo-user",
-        isOwner: true
-      } as any]);
-      setActiveWorkspaceId("demo-workspace");
-      setLoading(false);
       return;
     }
 
@@ -174,19 +162,12 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       unsubOwned();
       unsubCollab();
     };
-  }, [user, isDemo]);
+  }, [user]);
 
   // Load Collections when Workspace changes (Real-time Firestore Sync)
   useEffect(() => {
     if (!user || !activeWorkspaceId || activeWorkspaceId === "default") {
       setCollections([]);
-      return;
-    }
-
-    if (isDemo) {
-      setCollections([]);
-      setHistory([]);
-      setLoading(false);
       return;
     }
 
@@ -229,7 +210,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       unsubscribe(); // Cleanup collections
       unsubHistory(); // Cleanup history
     };
-  }, [user, isDemo, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
+  }, [user, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
 
   const currentRole = useMemo(() => {
     if (activeWorkspaceId === "default") return "owner";
@@ -245,12 +226,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const createWorkspace = async (name: string) => {
     if (!user) return "";
     const id = `w_${Date.now()}`;
-
-    if (isDemo) {
-      setWorkspaces(prev => [...prev, { id, name, ownerId: "demo-user", isOwner: true } as any]);
-      setActiveWorkspaceId(id);
-      return id;
-    }
 
     try {
       await setDoc(doc(db, "workspaces", id), {
@@ -270,16 +245,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteWorkspace = async (id: string) => {
     if (currentRole === "read") return;
-
-    if (isDemo) {
-      const remaining = workspaces.filter(w => w.id !== id);
-      setWorkspaces(remaining);
-      if (activeWorkspaceId === id) {
-        setActiveWorkspaceId(remaining[0]?.id || "default");
-      }
-      return;
-    }
-
     try {
       await deleteDoc(doc(db, "workspaces", id));
       if (activeWorkspaceId === id) {
@@ -297,12 +262,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameWorkspace = async (id: string, name: string) => {
     if (currentRole === "read") return;
-
-    if (isDemo) {
-      setWorkspaces(prev => prev.map(w => w.id === id ? { ...w, name } as any : w));
-      return;
-    }
-
     try {
       await setDoc(doc(db, "workspaces", id), { name }, { merge: true });
     } catch (e) {
@@ -316,11 +275,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const createCollection = async (name: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
     const id = `c_${Date.now()}`;
-
-    if (isDemo) {
-      setCollections(prev => [...prev, { name, requests: [], id, createdAt: new Date() as any }]);
-      return id;
-    }
 
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", id), {
@@ -342,13 +296,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     const id = `r_${Date.now()}`;
     const newRequest = { ...requestData, id };
 
-    if (isDemo) {
-      setCollections(prev => prev.map(c => 
-        c.id === collectionId ? { ...c, requests: [...c.requests, newRequest] } : c
-      ));
-      return;
-    }
-
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -366,14 +313,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const updateRequest = async (request: SavedRequest, collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setCollections(prev => prev.map(c => 
-        c.id === collectionId ? { ...c, requests: c.requests.map(r => r.id === request.id ? request : r) } : c
-      ));
-      return;
-    }
-
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -392,14 +331,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteRequest = async (requestId: string, collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setCollections(prev => prev.map(c => 
-        c.id === collectionId ? { ...c, requests: c.requests.filter(r => r.id !== requestId) } : c
-      ));
-      return;
-    }
-
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -418,14 +349,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameRequest = async (requestId: string, collectionId: string, newName: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setCollections(prev => prev.map(c => 
-        c.id === collectionId ? { ...c, requests: c.requests.map(r => r.id === requestId ? { ...r, name: newName } : r) } : c
-      ));
-      return;
-    }
-
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -444,12 +367,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteCollection = async (collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setCollections(prev => prev.filter(c => c.id !== collectionId));
-      return;
-    }
-
     try {
       await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId));
     } catch (e) {
@@ -462,12 +379,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameCollection = async (collectionId: string, newName: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setCollections(prev => prev.map(c => c.id === collectionId ? { ...c, name: newName } : c));
-      return;
-    }
-
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), { name: newName }, { merge: true });
     } catch (e) {
@@ -491,11 +402,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       delete newItem.error;
     }
 
-    if (isDemo) {
-      setHistory(prev => [newItem, ...prev].slice(0, 50));
-      return;
-    }
-
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "history", newItem.id), newItem);
     } catch (error) {
@@ -508,12 +414,6 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const clearHistory = async () => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
-
-    if (isDemo) {
-      setHistory([]);
-      return;
-    }
-
     try {
       const historyCol = collection(db, "workspaces", activeWorkspaceId, "history");
       // Since it's client-side without batch limits usually hit here (max 50), looping is fine for clear.

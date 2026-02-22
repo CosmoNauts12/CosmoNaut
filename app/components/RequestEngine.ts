@@ -14,7 +14,7 @@ export interface CosmoRequest {
  * Structured error response for the UI.
  */
 export interface CosmoError {
-    error_type: 'NetworkError' | 'TimeoutError' | 'DnsError' | 'SslError' | 'InvalidUrl' | 'UnknownError';
+    error_type: 'NetworkError' | 'TimeoutError' | 'DnsError' | 'SslError' | 'InvalidUrl' | 'UnknownError' | 'DemoLimitReached';
     message: string;
 }
 
@@ -32,11 +32,33 @@ export interface CosmoResponse {
 /**
  * Bridges the UI with the Tauri Rust backend to execute an HTTP request.
  * @param request Normalized request object.
+ * @param userMode User mode (authenticated or demo)
  * @returns A promise resolving to a CosmoResponse.
  */
-export async function executeRequest(request: CosmoRequest): Promise<CosmoResponse> {
+export async function executeRequest(request: CosmoRequest, userMode: 'authenticated' | 'demo' = 'authenticated'): Promise<CosmoResponse> {
     try {
+        if (userMode === 'demo') {
+            const currentCount = await invoke<number>("get_demo_request_count");
+            if (currentCount >= 2) {
+                return {
+                    status: 0,
+                    body: "",
+                    headers: {},
+                    duration_ms: 0,
+                    error: {
+                        error_type: 'DemoLimitReached',
+                        message: "You have reached the demo limit. Please create an account to unlock unlimited access."
+                    }
+                };
+            }
+        }
+
         const response = await invoke<CosmoResponse>("execute_cosmo_request", { request });
+
+        if (userMode === 'demo' && !response.error) {
+            await invoke<number>("increment_demo_request_count");
+        }
+
         return response;
     } catch (error: unknown) {
         console.error("Execution failed:", error);

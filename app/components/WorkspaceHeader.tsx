@@ -23,7 +23,7 @@ import UpdatesModal from "./UpdatesModal";
  */
 export default function WorkspaceHeader() {
   const { settings, updateSettings, setSettingsOpen, openSettings } = useSettings();
-  const { user, logout } = useAuth();
+  const { user, logout, isDemo } = useAuth();
   const { workspaces, activeWorkspaceId } = useCollections();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -61,7 +61,7 @@ export default function WorkspaceHeader() {
 
   // Listen for real-time updates to pending invitations
   useEffect(() => {
-    if (!user?.email) {
+    if (!user?.email || isDemo) {
       setPendingCount(0);
       return;
     }
@@ -86,6 +86,15 @@ export default function WorkspaceHeader() {
     if (!activeWorkspaceId || activeWorkspaceId === "default") {
       setCollaborators([]);
       setOwnerInfo(null);
+      return;
+    }
+
+    if (isDemo) {
+      setCollaborators([]);
+      setOwnerInfo({
+        displayName: user?.displayName || "Demo Explorer",
+        initial: (user?.displayName || "D").charAt(0).toUpperCase()
+      });
       return;
     }
 
