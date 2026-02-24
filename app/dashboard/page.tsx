@@ -20,6 +20,8 @@ const AnalyticsDashboard = dynamic(() => import("../components/AnalyticsDashboar
   )
 });
 import InviteModal from "../components/InviteModal";
+import FlowsLanding from "../components/Flows/FlowsLanding";
+import FlowLoadingOverlay from "../components/Flows/FlowLoadingOverlay";
 
 /**
  * Dashboard Page
@@ -34,12 +36,13 @@ import InviteModal from "../components/InviteModal";
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen, updateSettings, openSettings } = useSettings();
-  const { createWorkspace } = useCollections();
+  const { createWorkspace, createFlow } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -67,6 +70,24 @@ export default function Dashboard() {
       router.push("/workspace");
     } catch (error) {
       console.error("Dashboard: Failed to create new project", error);
+    }
+  };
+
+  /**
+   * Handles the creation of a new API flow.
+   * Displays a loading state and redirects to the workspace with the new flow active.
+   */
+  const handleCreateFlow = async () => {
+    setIsCreatingFlow(true);
+    try {
+      // Small delay for the "Hang tight" experience requested by user
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const flowId = await createFlow("New Flow");
+      router.push("/workspace");
+      // Note: The workspace will handle opening the flow as it syncs state
+    } catch (error) {
+      console.error("Dashboard: Failed to create flow", error);
+      setIsCreatingFlow(false);
     }
   };
 
@@ -223,6 +244,7 @@ export default function Dashboard() {
           {[
             { id: 'home', label: 'Home', path: '/dashboard' },
             { id: 'workspace', label: 'Workspace', path: '/workspace' },
+            { id: 'flows', label: 'Flows', path: '#' },
             { id: 'reports', label: 'Reports', path: '#' },
             { id: 'settings', label: 'Settings', path: '#' }
           ].map(item => (
@@ -396,7 +418,14 @@ export default function Dashboard() {
             </div>
           ) : activeTab === 'reports' ? (
             <AnalyticsDashboard />
+          ) : activeTab === 'flows' ? (
+            <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center">
+              <FlowsLanding onCreateFlow={handleCreateFlow} />
+            </div>
           ) : null}
+
+          {/* Creation Overlay */}
+          {isCreatingFlow && <FlowLoadingOverlay />}
         </div>
       </main>
 

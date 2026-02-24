@@ -11,9 +11,12 @@ import RequestPanel, { ActiveRequest } from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
-import { CosmoResponse } from "../components/RequestEngine";
-import { SavedRequest } from "../lib/collections";
+import { SavedRequest, Flow } from "../lib/collections";
 import ConfirmModal from "../components/ConfirmModal";
+import FlowBuilder from "../components/Flows/FlowBuilder";
+import AnalyticsDashboard from "../components/AnalyticsDashboard";
+
+export type ActiveTab = (ActiveRequest & { tabType: 'request' }) | (Flow & { tabType: 'flow' });
 
 /**
  * The main workspace interface of CosmoNaut.
@@ -22,17 +25,17 @@ import ConfirmModal from "../components/ConfirmModal";
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings } = useSettings();
-  const { activeWorkspaceId, collections, history } = useCollections();
+  const { activeWorkspaceId, collections, history, flows } = useCollections();
   const router = useRouter();
 
   // Tab Management State
   /** List of currently open request tabs. */
-  const [tabs, setTabs] = useState<ActiveRequest[]>([]);
+  const [tabs, setTabs] = useState<ActiveTab[]>([]);
   /** ID of the tab currently being viewed. Defaults to 'overview'. */
   const [activeTabId, setActiveTabId] = useState<string>("overview");
 
   /** The most recent HTTP response received. */
-  const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
+  const [lastResponse, setLastResponse] = useState<any | null>(null);
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
 
@@ -61,9 +64,20 @@ export default function WorkspacePage() {
     // Check if tab already exists
     const exists = tabs.find(t => t.id === request.id);
     if (!exists) {
-      setTabs(prev => [...prev, request]);
+      setTabs(prev => [...prev, { ...request, tabType: 'request' }]);
     }
     setActiveTabId(request.id);
+  };
+
+  /**
+   * Switches to an existing flow tab or opens a new one.
+   */
+  const handleSelectFlow = (flow: Flow) => {
+    const exists = tabs.find(t => t.id === flow.id);
+    if (!exists) {
+      setTabs(prev => [...prev, { ...flow, tabType: 'flow' }]);
+    }
+    setActiveTabId(flow.id);
   };
 
   /**
@@ -122,7 +136,22 @@ export default function WorkspacePage() {
   // Synchronize tabs with collections during render to avoid cascading renders in useEffect
   const synchronizedTabs = useMemo(() => {
     let changed = false;
-    const nextTabs = tabs.reduce<ActiveRequest[]>((acc, t) => {
+    const nextTabs = tabs.reduce<ActiveTab[]>((acc, t) => {
+      if (t.tabType === 'flow') {
+        const flow = flows.find(f => f.id === t.id);
+        if (!flow) {
+          changed = true;
+          return acc;
+        }
+        if (flow.name !== t.name) {
+          acc.push({ ...flow, tabType: 'flow' });
+          changed = true;
+        } else {
+          acc.push(t);
+        }
+        return acc;
+      }
+
       if (!('collectionId' in t)) {
         acc.push(t);
         return acc;
@@ -179,7 +208,11 @@ export default function WorkspacePage() {
       <WorkspaceHeader />
 
       <div className="flex-1 flex overflow-hidden relative z-10">
-        <WorkspaceSidebar onSelectRequest={handleSelectRequest} />
+        <WorkspaceSidebar
+          onSelectRequest={handleSelectRequest}
+          onSelectFlow={handleSelectFlow}
+          onSelectReport={() => setActiveTabId("reports")}
+        />
 
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
@@ -194,6 +227,15 @@ export default function WorkspacePage() {
               {activeTabId === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
             </div>
 
+            <div
+              onClick={() => setActiveTabId("reports")}
+              className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative transition-all ${activeTabId === 'reports' ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
+                }`}
+            >
+              Reports
+              {activeTabId === 'reports' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+            </div>
+
             {tabs.map((tab) => (
               <div
                 key={tab.id}
@@ -201,9 +243,10 @@ export default function WorkspacePage() {
                 className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${activeTabId === tab.id ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
                   }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${tab.method === 'GET' ? 'bg-emerald-500' :
-                  tab.method === 'POST' ? 'bg-amber-500' :
-                    'bg-blue-500'
+                <span className={`w-1.5 h-1.5 rounded-full ${tab.tabType === 'flow' ? 'bg-primary' :
+                  tab.method === 'GET' ? 'bg-emerald-500' :
+                    tab.method === 'POST' ? 'bg-amber-500' :
+                      'bg-blue-500'
                   }`} />
                 <span className="truncate">{tab.name}</span>
                 <button
@@ -219,7 +262,7 @@ export default function WorkspacePage() {
             <button
               onClick={() => {
                 const id = `new_${Date.now()}`;
-                const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
+                const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
                 setTabs(prev => [...prev, newReq]);
                 setActiveTabId(id);
               }}
@@ -230,8 +273,9 @@ export default function WorkspacePage() {
           </div>
 
           <div id="tour-main-content" className="flex-1 overflow-hidden flex flex-col">
-            {activeTabId === "overview" || !activeRequest ? (
+            {activeTabId === "overview" ? (
               <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
+                {/* ... existing overview content ... */}
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-4 mb-8 text-center md:text-left">
                     <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-primary/30 ring-4 ring-primary/10 mx-auto md:mx-0">
@@ -247,7 +291,7 @@ export default function WorkspacePage() {
                     <div
                       onClick={() => {
                         const id = `new_${Date.now()}`;
-                        const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
+                        const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
                         setTabs(prev => [...prev, newReq]);
                         setActiveTabId(id);
                       }}
@@ -315,18 +359,30 @@ export default function WorkspacePage() {
                   </div>
                 </div>
               </div>
+            ) : activeTabId === "reports" ? (
+              <AnalyticsDashboard />
+            ) : !activeRequest ? (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <p className="text-muted">Select a tab or activity</p>
+              </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                  <RequestPanel
-                    activeRequest={activeRequest}
-                    onResponse={setLastResponse}
-                    onExecuting={setIsExecuting}
-                  />
+                  {activeRequest.tabType === 'flow' ? (
+                    <FlowBuilder flow={activeRequest as Flow} />
+                  ) : (
+                    <RequestPanel
+                      activeRequest={activeRequest as any}
+                      onResponse={setLastResponse}
+                      onExecuting={setIsExecuting}
+                    />
+                  )}
                 </div>
-                <div className="h-[40%] min-h-[200px]">
-                  <ResponsePanel response={lastResponse} isExecuting={isExecuting} />
-                </div>
+                {activeRequest.tabType !== 'flow' && (
+                  <div className="h-[40%] min-h-[200px]">
+                    <ResponsePanel response={lastResponse} isExecuting={isExecuting} />
+                  </div>
+                )}
               </div>
             )}
           </div>

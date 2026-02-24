@@ -7,7 +7,10 @@
  */
 export default function LoadingSplash() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+    <div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 text-center overflow-hidden"
+      suppressHydrationWarning
+    >
       {/* Background with theme support */}
       <div className="absolute inset-0 bg-slate-950">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary-glow)_0%,_transparent_70%)] opacity-50" />

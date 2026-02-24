@@ -23,6 +23,11 @@ const activities = [
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     )
   },
+  {
+    id: 'reports', name: 'Reports', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    )
+  },
 ];
 
 /**
@@ -31,9 +36,17 @@ const activities = [
  * The primary navigation and management area for the workspace.
  * Structure:
  * - Left narrow bar: Activity switcher (Collections, History, Flows).
+ * - Left narrow bar: Activity switcher (Collections, History, Flows).
  * - Right wide bar: Contextual content for the active activity.
  */
-export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void }) {
+export default function WorkspaceSidebar({
+  onSelectRequest,
+  onSelectFlow
+}: {
+  onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void;
+  onSelectFlow?: (flow: any) => void;
+  onSelectReport?: () => void;
+}) {
   const { settings } = useSettings();
   const {
     collections,
@@ -49,7 +62,11 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     createWorkspace,
     renameWorkspace,
     clearHistory,
-    currentRole
+    currentRole,
+    flows,
+    createFlow,
+    renameFlow,
+    deleteFlow
   } = useCollections();
 
   const [activeActivity, setActiveActivity] = useState('collections');
@@ -177,6 +194,47 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
     }
   };
 
+  /**
+   * Prompts user and creates a new flow.
+   */
+  const handleCreateFlow = () => {
+    setPromptModal({
+      isOpen: true,
+      title: "New Flow",
+      placeholder: "Flow Name",
+      onSubmit: (name) => createFlow(name)
+    });
+  };
+
+  /**
+   * Prompts user and renames a specific flow.
+   */
+  const handleRenameFlow = (id: string, currentName: string) => {
+    setPromptModal({
+      isOpen: true,
+      title: "Rename Flow",
+      initialValue: currentName,
+      onSubmit: (name) => renameFlow(id, name)
+    });
+  };
+
+  /**
+   * Deletes a flow, optionally asking for confirmation.
+   */
+  const handleDeleteFlow = async (id: string, name: string) => {
+    if (settings.confirmDelete) {
+      setConfirmModal({
+        isOpen: true,
+        title: "Delete Flow",
+        message: `Are you sure you want to delete flow "${name}"? This action cannot be undone.`,
+        isDestructive: true,
+        onConfirm: () => deleteFlow(id)
+      });
+    } else {
+      await deleteFlow(id);
+    }
+  };
+
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
       {/* Activity Bar (Narrow Left) */}
@@ -184,7 +242,10 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
         {activities.map((activity) => (
           <button
             key={activity.id}
-            onClick={() => setActiveActivity(activity.id)}
+            onClick={() => {
+              setActiveActivity(activity.id);
+              if (activity.id === 'reports') onSelectReport?.();
+            }}
             title={activity.name}
             className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
               ? 'text-primary bg-primary/10'
@@ -383,6 +444,71 @@ export default function WorkspaceSidebar({ onSelectRequest }: { onSelectRequest?
                         ))}
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeActivity === 'flows' && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-2">
+                  <span className="text-[9px] font-black text-muted uppercase tracking-widest">Missions Flow</span>
+                  {currentRole !== 'read' && (
+                    <button
+                      onClick={handleCreateFlow}
+                      className="p-1 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors"
+                      title="New Flow"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                  )}
+                </div>
+
+                {flows.length === 0 ? (
+                  <div className="p-8 text-center bg-foreground/5 rounded-xl border border-dashed border-card-border/50">
+                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest">No Sequences Yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {flows.map(flow => (
+                      <div key={flow.id} className="group relative flex items-center">
+                        <button
+                          onClick={() => onSelectFlow?.(flow)}
+                          className="flex-1 flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 text-left transition-all group/item"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover/item:bg-primary group-hover/item:text-white">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block truncate text-foreground/80 font-bold text-[12px] uppercase tracking-tight">{flow.name}</span>
+                            <span className="block text-[8px] text-muted font-black uppercase tracking-widest">
+                              {flow.blocks?.length || 0} Blocks
+                            </span>
+                          </div>
+                        </button>
+
+                        <div className="absolute right-1 hidden group-hover:flex gap-1">
+                          {currentRole !== 'read' && (
+                            <>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRenameFlow(flow.id, flow.name); }}
+                                className="p-1 hover:bg-foreground/10 text-muted hover:text-foreground rounded transition-all"
+                                title="Rename"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteFlow(flow.id, flow.name); }}
+                                className="p-1 hover:bg-rose-500/10 text-muted hover:text-rose-500 rounded transition-all"
+                                title="Delete"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
