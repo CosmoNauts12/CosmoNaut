@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FlowBlock, KVItem } from "@/app/lib/collections";
 
 const methods = ["GET", "POST", "PUT", "DELETE"];
@@ -16,28 +16,21 @@ export default function FlowBlockUI({
     onUpdateAction,
     onDeleteAction,
     onRunAction,
-    onMoveUpAction,
-    onMoveDownAction,
-    isFirst,
-    isLast,
     isExecuting = false,
-    readOnly = false
+    readOnly = false,
+    onDragStartAction
 }: {
     block: FlowBlock;
     onUpdateAction: (updates: Partial<FlowBlock>) => void;
     onDeleteAction: (blockId: string) => void;
     onRunAction: (block: FlowBlock) => void;
-    onMoveUpAction?: (index: number) => void;
-    onMoveDownAction?: (index: number) => void;
-    isFirst?: boolean;
-    isLast?: boolean;
     isExecuting?: boolean;
     readOnly?: boolean;
+    onDragStartAction?: (e: React.MouseEvent) => void;
 }) {
     const [isExpanded, setIsExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState<'input' | 'output'>('input');
     const [showTriggerMenu, setShowTriggerMenu] = useState(false);
-    const [validationError, setValidationError] = useState<string | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Close menu on outside click
@@ -51,13 +44,7 @@ export default function FlowBlockUI({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        if (!block.url && block.name && block.name !== "Start") {
-            setValidationError("Endpoint URL is required");
-        } else {
-            setValidationError(null);
-        }
-    }, [block.url, block.name]);
+
 
     const handleKVChange = (field: 'params' | 'headers', index: number, updates: Partial<KVItem>) => {
         const newList = [...(field === 'params' ? block.params : block.headers)];
@@ -91,8 +78,12 @@ export default function FlowBlockUI({
                 <div className={`absolute top-0 left-0 bottom-0 w-1.5 bg-[#00A5FF]`} />
 
                 {/* Node Header */}
-                <div className="pl-4 pr-3 py-3 flex items-center justify-between border-b border-white/5 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                    className="pl-4 pr-3 py-3 flex items-center justify-between border-b border-white/5 cursor-grab active:cursor-grabbing"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    onMouseDown={onDragStartAction}
+                >
+                    <div className="flex items-center gap-3 flex-1 min-w-0 pointer-events-none">
                         {triggerOptions.find(opt => opt.name === block.name)?.icon || triggerOptions[0].icon}
                         <input
                             type="text"
@@ -157,9 +148,11 @@ export default function FlowBlockUI({
                             /* Specific "Request" Body Style from Reference Image */
                             <div className="flex flex-col items-end space-y-4 pr-1">
                                 {['Headers', 'Params', 'Body'].map((item) => (
-                                    <div key={item} className="group/item flex items-center gap-3">
+                                    <div key={item} className="group/item flex items-center gap-3 relative">
                                         <span className="text-sm font-medium text-white/90">{item} ( )</span>
-                                        <div className="w-2.5 h-4 bg-white/20 rounded-sm border border-white/10 group-hover/item:bg-white/40 transition-colors" />
+                                        <div className="w-3 h-3 bg-white/20 rounded-full border-2 border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair" />
+                                        {/* Port Glow */}
+                                        <div className="absolute -right-1 w-2 h-2 bg-primary/40 rounded-full blur-sm opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                     </div>
                                 ))}
                             </div>
@@ -168,7 +161,7 @@ export default function FlowBlockUI({
                             <div className="flex flex-col space-y-4">
                                 <div className="space-y-3">
                                     <p className="text-xs font-bold text-white/50">Describe when the flow should run</p>
-                                    <div className="relative group/input">
+                                    <div className="relative group/input" onMouseDown={(e) => e.stopPropagation()}>
                                         <textarea
                                             placeholder="e.g., Run every Monday at 2pm EST"
                                             className="w-full bg-[#121212] border border-white/10 rounded-lg px-4 py-6 text-sm text-white/60 placeholder:text-white/20 outline-none focus:border-white/20 transition-all resize-none h-32"
@@ -178,9 +171,9 @@ export default function FlowBlockUI({
                                         </button>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 self-end mt-4 group/item">
+                                <div className="flex items-center gap-3 self-end mt-4 group/item relative">
                                     <span className="text-sm font-medium text-white/90">Timestamp ( )</span>
-                                    <div className="w-2.5 h-4 bg-white/20 rounded-sm border border-white/10 group-hover/item:bg-white/40 transition-colors" />
+                                    <div className="w-3 h-3 bg-white/20 rounded-full border-2 border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair" />
                                 </div>
                             </div>
                         ) : block.name === 'Start' ? (
@@ -190,9 +183,9 @@ export default function FlowBlockUI({
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                     Add input
                                 </button>
-                                <div className="flex items-center gap-3 self-end mt-4 group/item">
+                                <div className="flex items-center gap-3 self-end mt-4 group/item relative">
                                     <span className="text-sm font-medium text-white/90">Output ( )</span>
-                                    <div className="w-2.5 h-4 bg-white/20 rounded-sm border border-white/10 group-hover/item:bg-white/40 transition-colors" />
+                                    <div className="w-3 h-3 bg-white/20 rounded-full border-2 border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair" />
                                 </div>
                             </div>
                         ) : (
@@ -204,7 +197,7 @@ export default function FlowBlockUI({
                                         Add input
                                     </button>
                                 </div>
-                                <div className="relative">
+                                <div className="relative" onMouseDown={(e) => e.stopPropagation()}>
                                     <input
                                         type="text"
                                         value={block.url}
@@ -214,7 +207,7 @@ export default function FlowBlockUI({
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-3" onMouseDown={(e) => e.stopPropagation()}>
                                     <div className="bg-[#181818] p-3 rounded-lg border border-white/5">
                                         <p className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-2">Params</p>
                                         {block.params.slice(0, 2).map((p, i) => (
@@ -262,14 +255,6 @@ export default function FlowBlockUI({
                         </button>
                     </div>
                 )}
-            </div>
-
-            {/* Curved Connection Handle Port */}
-            <div className="relative w-full flex justify-center h-8">
-                <div className="w-0.5 h-full bg-primary/20" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-[#020617] border-2 border-primary rounded-full flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                </div>
             </div>
         </div>
     );

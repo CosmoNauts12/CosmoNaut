@@ -82,13 +82,13 @@ export class FlowExecutor {
                     duration: result.duration_ms || 0
                 });
 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 summary.failedBlocks++;
                 summary.success = false;
                 this.onEvent?.({
                     type: 'BLOCK_ERROR',
                     blockId: block.id,
-                    error: error.message || 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error'
                 });
                 break;
             }

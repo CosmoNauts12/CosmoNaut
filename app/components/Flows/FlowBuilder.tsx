@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Flow, FlowBlock } from "@/app/lib/collections";
 import FlowBlockUI from "./FlowBlock";
 import FlowChat from "./FlowChat";
@@ -21,6 +21,14 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     const [isExecuting, setIsExecuting] = useState(false);
     const [summary, setSummary] = useState<FlowExecutionSummary | null>(null);
     const [showChat, setShowChat] = useState(false);
+
+    // Canvas State
+    const [viewport, setViewport] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [isPanning, setIsPanning] = useState(false);
+    const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const canvasRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setLocalFlow(flow);
@@ -124,11 +132,78 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         await executor.execute(localFlow, !!isDemo);
     };
 
+    // Canvas Interaction Handlers
+    const handleCanvasMouseDown = (e: React.MouseEvent) => {
+        if (e.button === 1 || (e.button === 0 && e.altKey)) { // Middle click or Alt+Left click to pan
+            setIsPanning(true);
+            e.preventDefault();
+        }
+    };
+
+    const handleCanvasMouseMove = (e: React.MouseEvent) => {
+        if (isPanning) {
+            setViewport(prev => ({
+                x: prev.x + e.movementX,
+                y: prev.y + e.movementY
+            }));
+        } else if (draggedBlockId) {
+            const rect = canvasRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            const x = (e.clientX - rect.left - viewport.x) / zoom - dragOffset.x;
+            const y = (e.clientY - rect.top - viewport.y) / zoom - dragOffset.y;
+
+            handleUpdateBlock(draggedBlockId, { x, y });
+        }
+    };
+
+    const handleCanvasMouseUp = () => {
+        setIsPanning(false);
+        setDraggedBlockId(null);
+    };
+
+    const handleNodeDragStart = (blockId: string, e: React.MouseEvent) => {
+        const block = localFlow.blocks.find(b => b.id === blockId);
+        if (!block) return;
+
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        setDraggedBlockId(blockId);
+        setDragOffset({
+            x: (e.clientX - rect.left) / zoom,
+            y: (e.clientY - rect.top) / zoom
+        });
+        e.stopPropagation();
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (e.ctrlKey) {
+            const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
+            setZoom(prev => Math.min(Math.max(prev * zoomDelta, 0.2), 2));
+            e.preventDefault();
+        } else {
+            setViewport(prev => ({
+                x: prev.x - e.deltaX,
+                y: prev.y - e.deltaY
+            }));
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-[#020617] relative overflow-hidden font-outfit">
             {/* Elegant Background Grid - Canvas Aesthetic */}
             <div className="absolute inset-0 z-0 opacity-[0.2] pointer-events-none"
                 style={{ backgroundImage: `radial-gradient(circle, #38BDF8 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
+
+            <style jsx>{`
+                @keyframes dash {
+                    to {
+                        stroke-dashoffset: -100;
+                    }
+                }
+                .animate-dash {
+                    animation: dash 5s linear infinite;
+                }
+            `}</style>
 
             {/* Header / Title Area */}
             <div className="px-8 py-6 flex items-center justify-between z-10">
@@ -186,68 +261,119 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                 </div>
             )}
 
-            {/* Canvas Area with Vertical Flow */}
-            <div className="flex-1 overflow-y-auto p-8 scrollbar-hide z-10 relative">
-                {localFlow.blocks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-[50vh] text-center animate-in fade-in zoom-in duration-700">
-                        <div className="w-24 h-24 rounded-[2.5rem] bg-white/[0.03] border border-dashed border-white/10 flex items-center justify-center text-white/20 mb-8 transform group-hover:scale-105 transition-transform">
-                            <img src="/astro.png" className="w-16 h-16 opacity-40 grayscale" alt="Empty" />
+            {/* Canvas Area with Absolute Positioning */}
+            <div
+                ref={canvasRef}
+                className="flex-1 relative overflow-hidden select-none"
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
+                onWheel={handleWheel}
+            >
+                <div
+                    className="absolute inset-0 transition-transform duration-75 ease-out"
+                    style={{
+                        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${zoom})`,
+                        transformOrigin: '0 0'
+                    }}
+                >
+                    {localFlow.blocks.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            <div className="w-24 h-24 rounded-[2.5rem] bg-white/[0.03] border border-dashed border-white/10 flex items-center justify-center text-white/20 mb-8">
+                                <img src="/astro.png" className="w-16 h-16 opacity-40 grayscale" alt="Empty" />
+                            </div>
+                            <h3 className="text-lg font-black text-white/80 uppercase tracking-[0.2em] mb-3">Initialize your Mission</h3>
+                            <button
+                                onClick={handleAddBlock}
+                                className="px-10 py-4 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em]"
+                            >
+                                Create First Node
+                            </button>
                         </div>
-                        <h3 className="text-lg font-black text-white/80 uppercase tracking-[0.2em] mb-3">Initialize your Mission</h3>
-                        <p className="text-[11px] text-white/30 font-bold max-w-sm leading-relaxed mb-8 uppercase tracking-tighter">
-                            Sequence your requests to automate complex API interactions. Start by adding your first protocol node.
-                        </p>
-                        <button
-                            onClick={handleAddBlock}
-                            className="px-10 py-4 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
-                        >
-                            Create First Node
-                        </button>
-                    </div>
-                ) : (
-                    <div className="max-w-3xl mx-auto pb-48">
-                        {[...localFlow.blocks].sort((a, b) => a.order - b.order).map((block, index, arr) => (
-                            <div key={block.id} className="relative flex flex-col items-center">
-                                <div className="w-full">
+                    ) : (
+                        <div className="w-full h-full relative">
+                            {/* SVG Connections Layer */}
+                            <svg className="absolute inset-0 pointer-events-none w-[5000px] h-[5000px]">
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-primary/20" />
+                                    </marker>
+                                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
+                                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.5" />
+                                    </linearGradient>
+                                </defs>
+                                {localFlow.blocks.length > 1 && [...localFlow.blocks].sort((a, b) => a.order - b.order).map((block, i, arr) => {
+                                    if (i === arr.length - 1) return null;
+                                    const nextBlock = arr[i + 1];
+
+                                    const startX = (block.x ?? 100) + 450;
+                                    const startY = (block.y ?? (100 + i * 500)) + 60;
+                                    const endX = nextBlock.x ?? 100;
+                                    const endY = (nextBlock.y ?? (100 + (i + 1) * 500)) + 30;
+
+                                    const cp1x = startX + (endX - startX) / 2;
+                                    const cp2x = startX + (endX - startX) / 2;
+
+                                    return (
+                                        <path
+                                            key={`path-${block.id}`}
+                                            d={`M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`}
+                                            stroke="url(#line-gradient)"
+                                            strokeWidth="3"
+                                            fill="none"
+                                            strokeDasharray="8 4"
+                                            className="animate-dash"
+                                        />
+                                    );
+                                })}
+                            </svg>
+
+                            {localFlow.blocks.map((block) => (
+                                <div
+                                    key={block.id}
+                                    className="absolute transition-shadow duration-300"
+                                    style={{
+                                        left: block.x ?? 100,
+                                        top: block.y ?? (100 + block.order * 500),
+                                        zIndex: draggedBlockId === block.id ? 100 : 10,
+                                        filter: draggedBlockId === block.id ? 'drop-shadow(0 20px 30px rgba(0,0,0,0.5))' : 'none'
+                                    }}
+                                >
                                     <FlowBlockUI
                                         block={block}
                                         onUpdateAction={(updates: Partial<FlowBlock>) => handleUpdateBlock(block.id, updates)}
                                         onDeleteAction={(blockId: string) => handleDeleteBlock(blockId)}
                                         onRunAction={(b: FlowBlock) => executor.execute({ ...localFlow, blocks: [b] }, !!isDemo)}
-                                        onMoveUpAction={(index: number) => moveBlock(index, 'up')}
-                                        onMoveDownAction={(index: number) => moveBlock(index, 'down')}
-                                        isFirst={index === 0}
-                                        isLast={index === arr.length - 1}
+                                        onDragStartAction={(e) => handleNodeDragStart(block.id, e)}
                                         isExecuting={isExecuting}
                                         readOnly={currentRole === 'read'}
                                     />
                                 </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                                {index < arr.length - 1 && (
-                                    <div className="py-4 flex flex-col items-center">
-                                        <div className="w-px h-10 bg-gradient-to-b from-primary/40 via-primary/10 to-transparent relative">
-                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-[#020617] border border-white/5 rounded-full flex items-center justify-center">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        <div className="flex justify-center pt-8">
-                            <button
-                                onClick={handleAddBlock}
-                                className="group flex flex-col items-center gap-4 transition-all"
-                            >
-                                <div className="w-16 h-16 rounded-3xl bg-white/[0.03] border border-dashed border-white/10 flex items-center justify-center text-white/20 group-hover:text-primary group-hover:border-primary/50 group-hover:bg-primary/5 transition-all group-hover:scale-110 active:scale-90">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                </div>
-                                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] group-hover:text-primary/60 transition-colors">Append Protocol Node</span>
+                {/* Mini-map and Controls Overlay */}
+                <div className="absolute bottom-10 left-10 z-30 flex flex-col gap-4">
+                    <div className="bg-[#0F172A]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.2))} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <span className="text-[10px] font-black text-white/60 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
+                            <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <div className="w-px h-6 bg-white/10 mx-1" />
+                            <button onClick={() => { setViewport({ x: 0, y: 0 }); setZoom(1); }} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors" title="Reset View">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
                             </button>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Floating Canva-style Control Bar */}

@@ -84,7 +84,9 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   // Load Workspaces on Login (Real-time Firestore Sync)
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWorkspaces([]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveWorkspaceId("default");
       return;
     }
@@ -187,6 +189,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   // Load Collections when Workspace changes (Real-time Firestore Sync)
   useEffect(() => {
     if (!user || !activeWorkspaceId || activeWorkspaceId === "default") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCollections([]);
       return;
     }

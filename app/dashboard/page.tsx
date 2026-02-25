@@ -369,7 +369,7 @@ export default function Dashboard() {
                     </div>
 
                     <p className="text-base text-muted mb-8 max-w-md font-normal leading-relaxed">
-                      Let's streamline your workflow. Whether you're building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
+                      Let&apos;s streamline your workflow. Whether you&apos;re building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
                     </p>
 
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">

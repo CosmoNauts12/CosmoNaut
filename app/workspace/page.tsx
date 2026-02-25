@@ -135,17 +135,14 @@ export default function WorkspacePage() {
    */
   // Synchronize tabs with collections during render to avoid cascading renders in useEffect
   const synchronizedTabs = useMemo(() => {
-    let changed = false;
     const nextTabs = tabs.reduce<ActiveTab[]>((acc, t) => {
       if (t.tabType === 'flow') {
         const flow = flows.find(f => f.id === t.id);
         if (!flow) {
-          changed = true;
           return acc;
         }
         if (flow.name !== t.name) {
           acc.push({ ...flow, tabType: 'flow' });
-          changed = true;
         } else {
           acc.push(t);
         }
@@ -161,13 +158,11 @@ export default function WorkspacePage() {
       const request = collection?.requests.find(r => r.id === t.id);
 
       if (!request) {
-        changed = true;
         return acc;
       }
 
       if (request.name !== t.name || request.method !== t.method) {
         acc.push({ ...t, name: request.name, method: request.method });
-        changed = true;
       } else {
         acc.push(t);
       }
@@ -185,6 +180,7 @@ export default function WorkspacePage() {
   // Update tabs state if they were synchronized (effectively syncing on change)
   useEffect(() => {
     if (JSON.stringify(synchronizedTabs) !== JSON.stringify(tabs)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTabs(synchronizedTabs);
     }
   }, [synchronizedTabs, tabs]);
@@ -282,7 +278,7 @@ export default function WorkspacePage() {
                       {user.displayName?.charAt(0).toUpperCase() || "W"}
                     </div>
                     <div>
-                      <h1 className="text-2xl font-black tracking-tight text-foreground uppercase tracking-[0.1em]">{user.displayName || "User"}'s Space</h1>
+                      <h1 className="text-2xl font-black tracking-tight text-foreground uppercase tracking-[0.1em]">{user.displayName || "User"}&apos;s Space</h1>
                       <p className="text-muted text-[10px] font-black uppercase tracking-widest opacity-50">Commander Access • Last active just now</p>
                     </div>
                   </div>

@@ -31,10 +31,10 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           </div>
 
           <h2 className="text-2xl font-bold text-foreground mb-3">
-            You've reached the demo limit
+            You&apos;ve reached the demo limit
           </h2>
           <p className="text-muted text-sm mb-8 leading-relaxed">
-            You have successfully tested the engine! Sign up for a free account to unlock unlimited requests, collections, dynamic environments, and all of CosmoNaut's premium features.
+            You have successfully tested the engine! Sign up for a free account to unlock unlimited requests, collections, dynamic environments, and all of CosmoNaut&apos;s premium features.
           </p>
 
           <div className="flex flex-col w-full gap-3">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSettings } from "./SettingsProvider";
 import { useCollections, HistoryItem as HistoryItemType } from "./CollectionsProvider";
-import { SavedRequest } from "@/app/lib/collections";
+import { SavedRequest, Flow } from "@/app/lib/collections";
 import PromptModal from "./PromptModal";
 import ConfirmModal from "./ConfirmModal";
 
@@ -41,10 +41,11 @@ const activities = [
  */
 export default function WorkspaceSidebar({
   onSelectRequest,
-  onSelectFlow
+  onSelectFlow,
+  onSelectReport
 }: {
   onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void;
-  onSelectFlow?: (flow: any) => void;
+  onSelectFlow?: (flow: Flow) => void;
   onSelectReport?: () => void;
 }) {
   const { settings } = useSettings();

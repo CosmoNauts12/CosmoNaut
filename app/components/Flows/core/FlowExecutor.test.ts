@@ -38,7 +38,7 @@ describe('FlowExecutor', () => {
     it('executes blocks sequentially and completes on success', async () => {
         const flow = createMockFlow([{}, {}]);
 
-        (RequestEngine.executeRequest as any).mockResolvedValue({
+        vi.mocked(RequestEngine.executeRequest).mockResolvedValue({
             status: 200,
             body: JSON.stringify({ success: true }),
             headers: {},
@@ -62,7 +62,7 @@ describe('FlowExecutor', () => {
         const flow = createMockFlow([{}, {}]);
 
         // First block fails
-        (RequestEngine.executeRequest as any).mockResolvedValueOnce({
+        vi.mocked(RequestEngine.executeRequest).mockResolvedValueOnce({
             status: 500,
             error: { message: 'Server Error' }
         });
@@ -86,11 +86,11 @@ describe('FlowExecutor', () => {
             { id: 'first', order: 0 }
         ]);
 
-        (RequestEngine.executeRequest as any).mockResolvedValue({ status: 200 });
+        vi.mocked(RequestEngine.executeRequest).mockResolvedValue({ status: 200 });
 
         await executor.execute(flow);
 
-        const calls = (RequestEngine.executeRequest as any).mock.calls;
+        const calls = vi.mocked(RequestEngine.executeRequest).mock.calls;
         // Check if first block in the flow was executed first even if it was second in the array
         // The URL is same, so we check the internal ordering logic if needed, 
         // but here we can check the callbacks

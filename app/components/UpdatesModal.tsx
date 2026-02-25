@@ -28,7 +28,9 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
     // Listen for real-time updates to invitations
     useEffect(() => {
         if (!user?.email || isDemo) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setInvitations([]);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
             return;
         }
