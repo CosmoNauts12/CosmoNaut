@@ -189,10 +189,10 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#020617] relative overflow-hidden font-outfit">
+        <div className="flex flex-col h-full bg-background relative overflow-hidden font-outfit transition-colors duration-500">
             {/* Elegant Background Grid - Canvas Aesthetic */}
-            <div className="absolute inset-0 z-0 opacity-[0.2] pointer-events-none"
-                style={{ backgroundImage: `radial-gradient(circle, #38BDF8 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
+            <div className="absolute inset-0 z-0 opacity-[0.1] dark:opacity-[0.2] pointer-events-none"
+                style={{ backgroundImage: `radial-gradient(circle, var(--primary) 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
 
             <style jsx>{`
                 @keyframes dash {
@@ -209,15 +209,15 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             <div className="px-8 py-6 flex items-center justify-between z-10">
                 <div className="flex items-center gap-5">
                     <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-primary to-orange-500 p-[1px]">
-                        <div className="w-full h-full rounded-[1.2rem] bg-[#020617] flex items-center justify-center text-primary">
+                        <div className="w-full h-full rounded-[1.2rem] bg-background flex items-center justify-center text-primary transition-colors duration-500">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                         </div>
                     </div>
                     <div>
-                        <h2 className="text-lg font-black text-white uppercase tracking-[0.1em] leading-tight mb-0.5">{localFlow.name}</h2>
+                        <h2 className="text-lg font-black text-foreground uppercase tracking-[0.1em] leading-tight mb-0.5 transition-colors duration-500">{localFlow.name}</h2>
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] text-primary/60 font-black uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">Active Protocol</span>
-                            <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest">• {localFlow.blocks.length} Steps Defined</span>
+                            <span className="text-[10px] text-foreground/20 dark:text-white/20 font-bold uppercase tracking-widest transition-colors duration-500">• {localFlow.blocks.length} Steps Defined</span>
                         </div>
                     </div>
                 </div>
@@ -225,13 +225,13 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowChat(!showChat)}
-                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all ${showChat ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:border-white/20'}`}
+                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all ${showChat ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-foreground/5 border-card-border text-muted hover:text-foreground hover:border-foreground/20'}`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </button>
-                    <div className="w-px h-8 bg-white/5 mx-2" />
+                    <div className="w-px h-8 bg-foreground/10 mx-2" />
                     <button
-                        className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white/40 uppercase tracking-widest hover:text-white hover:border-white/20 transition-all"
+                        className="px-8 py-3 bg-foreground/5 border border-card-border rounded-2xl text-[10px] font-black text-muted hover:text-foreground hover:border-foreground/20 hover:bg-foreground/10 transition-all uppercase tracking-[0.2em] shadow-lg"
                         onClick={handleAddBlock}
                     >
                         Save Configuration
@@ -378,37 +378,36 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
             {/* Floating Canva-style Control Bar */}
             {localFlow.blocks.length > 0 && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="bg-[#0F172A]/90 backdrop-blur-2xl border border-white/10 p-2 rounded-[2rem] shadow-2xl shadow-black/50 flex items-center gap-2">
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="bg-card-bg/90 backdrop-blur-2xl border border-card-border p-2 rounded-[2rem] shadow-2xl shadow-black/20 flex items-center gap-2">
                         <button
                             onClick={runFlow}
                             disabled={isExecuting}
-                            className={`h-12 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all ${isExecuting ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95'}`}
+                            className={`h-12 px-10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all ${isExecuting ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-[#0081C9] hover:bg-[#00A5FF] text-white shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95'}`}
                         >
                             {isExecuting ? (
                                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             ) : (
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             )}
                             {isExecuting ? 'Executing...' : 'Run Protocol'}
                         </button>
 
-                        <div className="w-px h-8 bg-white/10 mx-1" />
+                        <div className="w-px h-8 bg-foreground/10 mx-1" />
 
                         <button
                             onClick={handleAddBlock}
-                            className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-white/60 hover:text-white transition-all active:scale-90"
+                            className="w-12 h-12 flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 border border-card-border rounded-2xl text-muted hover:text-foreground transition-all active:scale-90"
                             title="Add Node"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
 
                         <button
-                            onClick={() => executor.stop()}
-                            className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-rose-500/20 border border-white/5 rounded-2xl text-white/60 hover:text-rose-400 transition-all active:scale-90"
-                            title="Abort Execution"
+                            className="w-12 h-12 flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 border border-card-border rounded-2xl text-muted hover:text-foreground transition-all active:scale-90"
+                            title="Grid View"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         </button>
                     </div>
                 </div>
@@ -416,16 +415,16 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
             {/* AI Chat Drawer */}
             {showChat && (
-                <div className="absolute top-0 right-0 bottom-0 w-96 bg-[#0F172A] border-l border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/50">
+                <div className="absolute top-0 right-0 bottom-0 w-96 bg-white dark:bg-[#0F172A] border-l border-black/5 dark:border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/20 dark:shadow-black/50">
                     <div className="flex flex-col h-full">
-                        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                        <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                 </div>
-                                <span className="text-xs font-black uppercase tracking-widest text-white/80">Flow Oracle</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-foreground/80 dark:text-white/80 transition-colors duration-500">Flow Oracle</span>
                             </div>
-                            <button onClick={() => setShowChat(false)} className="text-white/20 hover:text-white transition-colors">
+                            <button onClick={() => setShowChat(false)} className="text-muted/20 dark:text-white/20 hover:text-foreground dark:hover:text-white transition-colors">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>

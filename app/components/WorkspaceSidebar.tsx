@@ -10,22 +10,17 @@ import ConfirmModal from "./ConfirmModal";
 const activities = [
   {
     id: 'collections', name: 'Collections', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
     )
   },
   {
     id: 'history', name: 'History', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
     )
   },
   {
     id: 'flows', name: 'Flows', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-    )
-  },
-  {
-    id: 'reports', name: 'Reports', icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     )
   },
 ];
@@ -42,11 +37,11 @@ const activities = [
 export default function WorkspaceSidebar({
   onSelectRequest,
   onSelectFlow,
-  onSelectReport
+  onActivityChange
 }: {
   onSelectRequest?: (request: SavedRequest & { collectionId: string }) => void;
   onSelectFlow?: (flow: Flow) => void;
-  onSelectReport?: () => void;
+  onActivityChange?: (activityId: string) => void;
 }) {
   const { settings } = useSettings();
   const {
@@ -239,23 +234,28 @@ export default function WorkspaceSidebar({
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
       {/* Activity Bar (Narrow Left) */}
-      <div id="tour-activity-bar" className="w-14 flex flex-col items-center py-4 border-r border-card-border/50 gap-2">
+      <div id="tour-activity-bar" className="w-[84px] flex flex-col items-center py-6 border-r border-card-border/50 gap-4">
         {activities.map((activity) => (
           <button
             key={activity.id}
             onClick={() => {
               setActiveActivity(activity.id);
-              if (activity.id === 'reports') onSelectReport?.();
+              onActivityChange?.(activity.id);
             }}
             title={activity.name}
-            className={`p-3 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
-              ? 'text-primary bg-primary/10'
-              : 'text-muted hover:text-foreground hover:bg-foreground/5'
+            className={`w-full flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all duration-200 group relative ${activeActivity === activity.id
+              ? 'text-primary'
+              : 'text-muted hover:text-foreground'
               }`}
           >
-            {activity.icon}
+            <div className={`p-2.5 rounded-xl transition-all duration-200 ${activeActivity === activity.id ? 'bg-primary/10' : 'group-hover:bg-foreground/5'}`}>
+              {activity.icon}
+            </div>
+            <span className={`text-[10px] font-black uppercase tracking-tight text-center leading-none transition-colors ${activeActivity === activity.id ? 'text-primary' : 'text-muted group-hover:text-foreground'}`}>
+              {activity.name}
+            </span>
             {activeActivity === activity.id && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-primary rounded-r-full" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 bg-primary rounded-r-full shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" />
             )}
           </button>
         ))}

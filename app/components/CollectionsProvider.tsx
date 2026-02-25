@@ -510,15 +510,28 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     const id = `f_${Date.now()}`;
     const now = Date.now();
 
+    const defaultBlock: FlowBlock = {
+      id: `b_${now}`,
+      name: "New API Step",
+      method: "GET",
+      url: "",
+      params: [{ key: '', value: '', enabled: true }],
+      headers: [{ key: '', value: '', enabled: true }],
+      body: "",
+      order: 0,
+      x: 100,
+      y: 100
+    };
+
     if (isDemo) {
-      setFlows(prev => [...prev, { id, name, blocks: [], createdAt: now, updatedAt: now }]);
+      setFlows(prev => [...prev, { id, name, blocks: [defaultBlock], createdAt: now, updatedAt: now }]);
       return id;
     }
 
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "flows", id), {
         name,
-        blocks: [],
+        blocks: [defaultBlock],
         createdAt: now,
         updatedAt: now
       });

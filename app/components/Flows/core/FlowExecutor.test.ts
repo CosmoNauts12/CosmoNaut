@@ -1,12 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+/**
+ * vi.hoisted ensures the mock function is created BEFORE modules are imported.
+ * This is required because vi.mock() factories are hoisted to the top of the
+ * file by vitest, running before any import statements. Without vi.hoisted,
+ * vi.mocked(executeRequest).mockResolvedValue is not a function at runtime.
+ */
+const mockExecuteRequest = vi.hoisted(() => vi.fn());
+
+vi.mock('@/app/components/RequestEngine', () => ({
+    executeRequest: mockExecuteRequest
+}));
+
 import { FlowExecutor } from './FlowExecutor';
 import { Flow, FlowBlock } from '@/app/lib/collections';
-import * as RequestEngine from '@/app/components/RequestEngine';
-
-// Mock the RequestEngine
-vi.mock('../components/RequestEngine', () => ({
-    executeRequest: vi.fn()
-}));
 
 describe('FlowExecutor', () => {
     let executor: FlowExecutor;
@@ -38,7 +45,7 @@ describe('FlowExecutor', () => {
     it('executes blocks sequentially and completes on success', async () => {
         const flow = createMockFlow([{}, {}]);
 
-        vi.mocked(RequestEngine.executeRequest).mockResolvedValue({
+        mockExecuteRequest.mockResolvedValue({
             status: 200,
             body: JSON.stringify({ success: true }),
             headers: {},
@@ -49,7 +56,7 @@ describe('FlowExecutor', () => {
 
         expect(summary.success).toBe(true);
         expect(summary.executedBlocks).toBe(2);
-        expect(RequestEngine.executeRequest).toHaveBeenCalledTimes(2);
+        expect(mockExecuteRequest).toHaveBeenCalledTimes(2);
 
         // Verify events
         expect(mockCallback).toHaveBeenCalledWith({ type: 'FLOW_START' });
@@ -62,9 +69,12 @@ describe('FlowExecutor', () => {
         const flow = createMockFlow([{}, {}]);
 
         // First block fails
-        vi.mocked(RequestEngine.executeRequest).mockResolvedValueOnce({
+        mockExecuteRequest.mockResolvedValueOnce({
             status: 500,
-            error: { message: 'Server Error' }
+            error: {
+                error_type: 'UnknownError',
+                message: 'Server Error'
+            } as any
         });
 
         const summary = await executor.execute(flow);
@@ -72,7 +82,7 @@ describe('FlowExecutor', () => {
         expect(summary.success).toBe(false);
         expect(summary.executedBlocks).toBe(1);
         expect(summary.failedBlocks).toBe(1);
-        expect(RequestEngine.executeRequest).toHaveBeenCalledTimes(1);
+        expect(mockExecuteRequest).toHaveBeenCalledTimes(1);
 
         expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({
             type: 'FLOW_STOPPED',
@@ -86,14 +96,16 @@ describe('FlowExecutor', () => {
             { id: 'first', order: 0 }
         ]);
 
-        vi.mocked(RequestEngine.executeRequest).mockResolvedValue({ status: 200 });
+        mockExecuteRequest.mockResolvedValue({
+            status: 200,
+            body: "{}",
+            headers: {},
+            duration_ms: 10
+        });
 
         await executor.execute(flow);
 
-        const calls = vi.mocked(RequestEngine.executeRequest).mock.calls;
-        // Check if first block in the flow was executed first even if it was second in the array
-        // The URL is same, so we check the internal ordering logic if needed, 
-        // but here we can check the callbacks
+        // Check that 'first' (order:0) was executed before 'second' (order:1)
         const blockStartCalls = mockCallback.mock.calls.filter(c => c[0].type === 'BLOCK_START');
         expect(blockStartCalls[0][0].blockId).toBe('first');
         expect(blockStartCalls[1][0].blockId).toBe('second');

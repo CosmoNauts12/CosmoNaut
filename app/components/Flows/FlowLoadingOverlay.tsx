@@ -28,15 +28,16 @@ export default function FlowLoadingOverlay() {
                 </div>
 
                 <div className="text-center">
-                    <h3 className="text-lg font-black text-foreground uppercase tracking-widest mb-2">New flow</h3>
-                    <p className="text-xs text-muted font-bold tracking-tight animate-pulse flex items-center justify-center gap-3">
-                        <span className="opacity-40">Hang tight!</span> We are processing your request...
+                    <h3 className="text-lg font-black text-foreground uppercase tracking-widest mb-2">New Flow</h3>
+                    <p className="text-xs text-muted font-bold tracking-tight flex items-center justify-center gap-1.5 opacity-80">
+                        <span className="text-muted/50">Hang tight!</span> We are processing your request...
                     </p>
                 </div>
 
                 {/* Cinematic Progress Bar */}
-                <div className="w-48 h-1 bg-foreground/5 rounded-full mt-8 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent w-full animate-shimmer" />
+                <div className="w-64 h-1.5 bg-foreground/5 rounded-full mt-10 overflow-hidden relative border border-white/5">
+                    <div className="absolute inset-y-0 left-0 bg-primary w-[65%] animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-full animate-shimmer" />
                 </div>
             </div>
         </div>
