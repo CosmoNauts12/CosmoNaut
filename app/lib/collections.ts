@@ -47,6 +47,43 @@ export interface Collection {
 }
 
 /**
+ * Flow Block Interface
+ * Represents a single API request step within a flow.
+ */
+export interface FlowBlock {
+    id: string;
+    name: string;
+    method: string;
+    url: string;
+    params: KVItem[];
+    headers: KVItem[];
+    body: string;
+    order: number;
+    x?: number;
+    y?: number;
+    // Execution state (not necessarily persisted, but needed for UI)
+    status?: number;
+    duration_ms?: number;
+    isExecuting?: boolean;
+    error?: string;
+    response_data?: any;
+    isValid?: boolean;
+}
+
+/**
+ * Flow Interface
+ * Represents a sequence of API calls.
+ */
+export interface Flow {
+    id: string;
+    name: string;
+    description?: string;
+    blocks: FlowBlock[];
+    createdAt: number;
+    updatedAt: number;
+}
+
+/**
  * Persists collections to the local filesystem via Tauri backend.
  * @param userId - The current user's ID.
  * @param workspaceId - The active workspace ID (scoping).

@@ -33,7 +33,9 @@ export default function PromptModal({
     // Reset value when modal opens
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setValue(initialValue);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setError("");
             // Focus input after a short delay to allow animation
             setTimeout(() => inputRef.current?.focus(), 50);

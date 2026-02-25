@@ -34,7 +34,7 @@ import InviteModal from "../components/InviteModal";
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen, updateSettings, openSettings } = useSettings();
-  const { createWorkspace } = useCollections();
+  const { createWorkspace, createFlow } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -69,6 +69,8 @@ export default function Dashboard() {
       console.error("Dashboard: Failed to create new project", error);
     }
   };
+
+
 
   if (loading) {
     return (
@@ -347,7 +349,7 @@ export default function Dashboard() {
                     </div>
 
                     <p className="text-base text-muted mb-8 max-w-md font-normal leading-relaxed">
-                      Let's streamline your workflow. Whether you're building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
+                      Let&apos;s streamline your workflow. Whether you&apos;re building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
                     </p>
 
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
@@ -397,6 +399,8 @@ export default function Dashboard() {
           ) : activeTab === 'reports' ? (
             <AnalyticsDashboard />
           ) : null}
+
+
         </div>
       </main>
 

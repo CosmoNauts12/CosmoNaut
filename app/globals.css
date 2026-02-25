@@ -17,6 +17,7 @@
   --card-border: rgba(255, 255, 255, 0.5);
   --primary: #0284C7;
   /* Sky 600 */
+  --primary-rgb: 2, 132, 199;
   --primary-glow: rgba(2, 132, 199, 0.3);
   --secondary: #0D9488;
   /* Teal 600 */
@@ -40,6 +41,7 @@
   --card-border: rgba(255, 255, 255, 0.1);
   --primary: #38BDF8;
   /* Sky Blue */
+  --primary-rgb: 56, 189, 248;
   --primary-glow: rgba(56, 189, 248, 0.3);
   --secondary: #2DD4BF;
   /* Mint Teal */
@@ -417,4 +419,19 @@ body {
 
 .pulse-glow {
   animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* ===== Shimmer Animation ===== */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
 }

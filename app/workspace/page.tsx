@@ -11,9 +11,14 @@ import RequestPanel, { ActiveRequest } from "../components/RequestPanel";
 import ResponsePanel from "../components/ResponsePanel";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
-import { CosmoResponse } from "../components/RequestEngine";
-import { SavedRequest } from "../lib/collections";
+import { SavedRequest, Flow } from "../lib/collections";
 import ConfirmModal from "../components/ConfirmModal";
+import PromptModal from "../components/PromptModal";
+import FlowBuilder from "../components/Flows/FlowBuilder";
+import FlowsLanding from "../components/Flows/FlowsLanding";
+import FlowLoadingOverlay from "../components/Flows/FlowLoadingOverlay";
+
+export type ActiveTab = (ActiveRequest & { tabType: 'request' }) | (Flow & { tabType: 'flow' });
 
 /**
  * The main workspace interface of CosmoNaut.
@@ -22,17 +27,17 @@ import ConfirmModal from "../components/ConfirmModal";
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const { settings } = useSettings();
-  const { activeWorkspaceId, collections, history } = useCollections();
+  const { activeWorkspaceId, collections, history, flows } = useCollections();
   const router = useRouter();
 
   // Tab Management State
   /** List of currently open request tabs. */
-  const [tabs, setTabs] = useState<ActiveRequest[]>([]);
+  const [tabs, setTabs] = useState<ActiveTab[]>([]);
   /** ID of the tab currently being viewed. Defaults to 'overview'. */
   const [activeTabId, setActiveTabId] = useState<string>("overview");
 
   /** The most recent HTTP response received. */
-  const [lastResponse, setLastResponse] = useState<CosmoResponse | null>(null);
+  const [lastResponse, setLastResponse] = useState<any | null>(null);
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
 
@@ -45,6 +50,38 @@ export default function WorkspacePage() {
     message: string;
     onConfirm: () => void;
   }>({ isOpen: false, title: "", message: "", onConfirm: () => { } });
+
+  const [isCreatingFlow, setIsCreatingFlow] = useState(false);
+  const [flowNamingPrompt, setFlowNamingPrompt] = useState<{ isOpen: boolean; onSubmit: (name: string) => void }>({ isOpen: false, onSubmit: () => { } });
+
+  const { createFlow } = useCollections();
+
+  const handleCreateFlowInWorkspace = async () => {
+    setIsCreatingFlow(true);
+    try {
+      // Step 1: Decorative Loading (Image 2)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setIsCreatingFlow(false);
+
+      // Step 2: Show Naming Modal (Image 3)
+      setFlowNamingPrompt({
+        isOpen: true,
+        onSubmit: async (name) => {
+          const flowId = await createFlow(name);
+          // Small delay to ensure state sync before opening
+          setTimeout(() => {
+            const flow = flows.find(f => f.id === flowId);
+            if (flow) {
+              handleSelectFlow(flow);
+            }
+          }, 100);
+        }
+      });
+    } catch (error) {
+      console.error("Workspace: Failed to initiate flow creation", error);
+      setIsCreatingFlow(false);
+    }
+  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -61,9 +98,20 @@ export default function WorkspacePage() {
     // Check if tab already exists
     const exists = tabs.find(t => t.id === request.id);
     if (!exists) {
-      setTabs(prev => [...prev, request]);
+      setTabs(prev => [...prev, { ...request, tabType: 'request' }]);
     }
     setActiveTabId(request.id);
+  };
+
+  /**
+   * Switches to an existing flow tab or opens a new one.
+   */
+  const handleSelectFlow = (flow: Flow) => {
+    const exists = tabs.find(t => t.id === flow.id);
+    if (!exists) {
+      setTabs(prev => [...prev, { ...flow, tabType: 'flow' }]);
+    }
+    setActiveTabId(flow.id);
   };
 
   /**
@@ -121,8 +169,20 @@ export default function WorkspacePage() {
    */
   // Synchronize tabs with collections during render to avoid cascading renders in useEffect
   const synchronizedTabs = useMemo(() => {
-    let changed = false;
-    const nextTabs = tabs.reduce<ActiveRequest[]>((acc, t) => {
+    const nextTabs = tabs.reduce<ActiveTab[]>((acc, t) => {
+      if (t.tabType === 'flow') {
+        const flow = flows.find(f => f.id === t.id);
+        if (!flow) {
+          return acc;
+        }
+        if (flow.name !== t.name) {
+          acc.push({ ...flow, tabType: 'flow' });
+        } else {
+          acc.push(t);
+        }
+        return acc;
+      }
+
       if (!('collectionId' in t)) {
         acc.push(t);
         return acc;
@@ -132,13 +192,11 @@ export default function WorkspacePage() {
       const request = collection?.requests.find(r => r.id === t.id);
 
       if (!request) {
-        changed = true;
         return acc;
       }
 
       if (request.name !== t.name || request.method !== t.method) {
         acc.push({ ...t, name: request.name, method: request.method });
-        changed = true;
       } else {
         acc.push(t);
       }
@@ -156,6 +214,7 @@ export default function WorkspacePage() {
   // Update tabs state if they were synchronized (effectively syncing on change)
   useEffect(() => {
     if (JSON.stringify(synchronizedTabs) !== JSON.stringify(tabs)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTabs(synchronizedTabs);
     }
   }, [synchronizedTabs, tabs]);
@@ -179,7 +238,11 @@ export default function WorkspacePage() {
       <WorkspaceHeader />
 
       <div className="flex-1 flex overflow-hidden relative z-10">
-        <WorkspaceSidebar onSelectRequest={handleSelectRequest} />
+        <WorkspaceSidebar
+          onSelectRequest={handleSelectRequest}
+          onSelectFlow={handleSelectFlow}
+          onActivityChange={setActiveActivity}
+        />
 
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
@@ -194,6 +257,8 @@ export default function WorkspacePage() {
               {activeTabId === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
             </div>
 
+
+
             {tabs.map((tab) => (
               <div
                 key={tab.id}
@@ -201,9 +266,10 @@ export default function WorkspacePage() {
                 className={`px-4 h-full flex items-center gap-2 border-r border-card-border text-[10px] font-black uppercase tracking-widest cursor-pointer relative min-w-[140px] transition-all group ${activeTabId === tab.id ? 'bg-foreground/5 text-foreground' : 'text-muted hover:text-foreground hover:bg-foreground/5'
                   }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${tab.method === 'GET' ? 'bg-emerald-500' :
-                  tab.method === 'POST' ? 'bg-amber-500' :
-                    'bg-blue-500'
+                <span className={`w-1.5 h-1.5 rounded-full ${tab.tabType === 'flow' ? 'bg-primary' :
+                  tab.method === 'GET' ? 'bg-emerald-500' :
+                    tab.method === 'POST' ? 'bg-amber-500' :
+                      'bg-blue-500'
                   }`} />
                 <span className="truncate">{tab.name}</span>
                 <button
@@ -219,7 +285,7 @@ export default function WorkspacePage() {
             <button
               onClick={() => {
                 const id = `new_${Date.now()}`;
-                const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
+                const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
                 setTabs(prev => [...prev, newReq]);
                 setActiveTabId(id);
               }}
@@ -230,103 +296,120 @@ export default function WorkspacePage() {
           </div>
 
           <div id="tour-main-content" className="flex-1 overflow-hidden flex flex-col">
-            {activeTabId === "overview" || !activeRequest ? (
-              <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center gap-4 mb-8 text-center md:text-left">
-                    <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-primary/30 ring-4 ring-primary/10 mx-auto md:mx-0">
-                      {user.displayName?.charAt(0).toUpperCase() || "W"}
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-black tracking-tight text-foreground uppercase tracking-[0.1em]">{user.displayName || "User"}'s Space</h1>
-                      <p className="text-muted text-[10px] font-black uppercase tracking-widest opacity-50">Commander Access • Last active just now</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div
-                      onClick={() => {
-                        const id = `new_${Date.now()}`;
-                        const newReq: ActiveRequest = { id, name: 'New Request', method: 'GET' };
-                        setTabs(prev => [...prev, newReq]);
-                        setActiveTabId(id);
-                      }}
-                      className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all group cursor-pointer"
-                    >
-                      <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
-                        <span className="text-primary italic">⚡</span> New Mission
-                      </h3>
-                      <p className="text-[10px] text-muted font-bold leading-relaxed mb-6">
-                        Establish new API protocols. Group related requests and set global variables for your crew.
-                      </p>
-                      <button className="glass-btn-primary px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                        Protocol Setup
-                      </button>
+            {activeTabId === "overview" ? (
+              activeActivity === 'flows' ? (
+                <div className="flex-1 overflow-y-auto">
+                  <FlowsLanding onCreateFlow={handleCreateFlowInWorkspace} />
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
+                  <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center gap-4 mb-8 text-center md:text-left">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-primary/30 ring-4 ring-primary/10 mx-auto md:mx-0">
+                        {user.displayName?.charAt(0).toUpperCase() || "W"}
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-black tracking-tight text-foreground uppercase tracking-[0.1em]">{user.displayName || "User"}&apos;s Space</h1>
+                        <p className="text-muted text-[10px] font-black uppercase tracking-widest opacity-50">Commander Access • Last active just now</p>
+                      </div>
                     </div>
 
-                    <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all flex flex-col">
-                      <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
-                        <span className="text-secondary italic">⟲</span> Recent Missions
-                      </h3>
-                      <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-hide max-h-[200px]">
-                        {history.length > 0 ? (
-                          history.slice(0, 5).map((item) => (
-                            <div
-                              key={item.id}
-                              onClick={() => handleSelectRequest({
-                                id: item.id,
-                                name: item.url.split('/').pop() || item.url,
-                                method: item.method,
-                                url: item.url,
-                                params: item.params,
-                                headers: item.headers,
-                                auth: item.auth,
-                                body: item.body,
-                                collectionId: 'history'
-                              })}
-                              className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/5 border border-card-border/30 hover:border-primary/30 transition-all cursor-pointer group"
-                            >
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black shadow-sm ${item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' :
-                                item.method === 'POST' ? 'bg-amber-500/10 text-amber-500' :
-                                  'bg-blue-500/10 text-blue-500'
-                                }`}>
-                                {item.method}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                      <div
+                        onClick={() => {
+                          const id = `new_${Date.now()}`;
+                          const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
+                          setTabs(prev => [...prev, newReq]);
+                          setActiveTabId(id);
+                        }}
+                        className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all group cursor-pointer"
+                      >
+                        <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
+                          <span className="text-primary italic">⚡</span> New Mission
+                        </h3>
+                        <p className="text-[10px] text-muted font-bold leading-relaxed mb-6">
+                          Establish new API protocols. Group related requests and set global variables for your crew.
+                        </p>
+                        <button className="glass-btn-primary px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                          Protocol Setup
+                        </button>
+                      </div>
+
+                      <div className="liquid-glass p-8 rounded-[2.5rem] border-card-border/50 hover:border-primary/40 transition-all flex flex-col">
+                        <h3 className="text-xs font-black mb-4 text-foreground uppercase tracking-widest flex items-center gap-2">
+                          <span className="text-secondary italic">⟲</span> Recent Missions
+                        </h3>
+                        <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-hide max-h-[200px]">
+                          {history.length > 0 ? (
+                            history.slice(0, 5).map((item) => (
+                              <div
+                                key={item.id}
+                                onClick={() => handleSelectRequest({
+                                  id: item.id,
+                                  name: item.url.split('/').pop() || item.url,
+                                  method: item.method,
+                                  url: item.url,
+                                  params: item.params,
+                                  headers: item.headers,
+                                  auth: item.auth,
+                                  body: item.body,
+                                  collectionId: 'history'
+                                })}
+                                className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/5 border border-card-border/30 hover:border-primary/30 transition-all cursor-pointer group"
+                              >
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black shadow-sm ${item.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' :
+                                  item.method === 'POST' ? 'bg-amber-500/10 text-amber-500' :
+                                    'bg-blue-500/10 text-blue-500'
+                                  }`}>
+                                  {item.method}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[10px] font-black truncate text-foreground/80 uppercase tracking-tight">{item.url.split('://')[1] || item.url}</p>
+                                  <p className="text-[8px] text-muted font-bold uppercase tracking-widest">
+                                    {item.error ? (
+                                      <span className="text-rose-500">{item.error.error_type}</span>
+                                    ) : (
+                                      <span>{item.status} OK • {item.duration_ms}ms</span>
+                                    )}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black truncate text-foreground/80 uppercase tracking-tight">{item.url.split('://')[1] || item.url}</p>
-                                <p className="text-[8px] text-muted font-bold uppercase tracking-widest">
-                                  {item.error ? (
-                                    <span className="text-rose-500">{item.error.error_type}</span>
-                                  ) : (
-                                    <span>{item.status} OK • {item.duration_ms}ms</span>
-                                  )}
-                                </p>
-                              </div>
+                            ))
+                          ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center py-8 text-center opacity-40">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                              <p className="text-[9px] font-black uppercase tracking-widest">No missions logged</p>
                             </div>
-                          ))
-                        ) : (
-                          <div className="flex-1 flex flex-col items-center justify-center py-8 text-center opacity-40">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                            <p className="text-[9px] font-black uppercase tracking-widest">No missions logged</p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              )
+
+            ) : !activeRequest ? (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <p className="text-muted">Select a tab or activity</p>
               </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                  <RequestPanel
-                    activeRequest={activeRequest}
-                    onResponse={setLastResponse}
-                    onExecuting={setIsExecuting}
-                  />
+                  {activeRequest.tabType === 'flow' ? (
+                    <FlowBuilder flow={activeRequest as Flow} />
+                  ) : (
+                    <RequestPanel
+                      activeRequest={activeRequest as any}
+                      onResponse={setLastResponse}
+                      onExecuting={setIsExecuting}
+                    />
+                  )}
                 </div>
-                <div className="h-[40%] min-h-[200px]">
-                  <ResponsePanel response={lastResponse} isExecuting={isExecuting} />
-                </div>
+                {activeRequest.tabType !== 'flow' && (
+                  <div className="h-[40%] min-h-[200px]">
+                    <ResponsePanel response={lastResponse} isExecuting={isExecuting} />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -355,6 +438,16 @@ export default function WorkspacePage() {
         title={confirmModal.title}
         message={confirmModal.message}
       />
+
+      <PromptModal
+        isOpen={flowNamingPrompt.isOpen}
+        onClose={() => setFlowNamingPrompt({ ...flowNamingPrompt, isOpen: false })}
+        onSubmit={flowNamingPrompt.onSubmit}
+        title="NEW FLOW"
+        placeholder="Flow Name"
+      />
+
+      {isCreatingFlow && <FlowLoadingOverlay />}
     </div>
   );
 }

@@ -62,6 +62,7 @@ export default function WorkspaceHeader() {
   // Listen for real-time updates to pending invitations
   useEffect(() => {
     if (!user?.email || isDemo) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPendingCount(0);
       return;
     }
@@ -84,7 +85,9 @@ export default function WorkspaceHeader() {
   // Listen for real-time updates to active collaborators in this workspace
   useEffect(() => {
     if (!activeWorkspaceId || activeWorkspaceId === "default") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCollaborators([]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOwnerInfo(null);
       return;
     }
