@@ -46,6 +46,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     status: event.response.status,
                     duration_ms: event.duration,
                     response_data: event.response.body,
+                    response_headers: event.response.headers,
                     error: event.response.error ? event.response.error.message : undefined
                 });
                 break;
@@ -190,9 +191,28 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden font-outfit transition-colors duration-500">
-            {/* Elegant Background Grid - Canvas Aesthetic */}
-            <div className="absolute inset-0 z-0 opacity-[0.1] dark:opacity-[0.2] pointer-events-none"
-                style={{ backgroundImage: `radial-gradient(circle, var(--primary) 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
+            {/* Full-Page Split Decorative Grid - Pans with Canvas */}
+            <div className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500 overflow-hidden bg-background">
+                {/* Fixed Background container that doesn't transform so it always fills the screen */}
+                <div className="absolute inset-0">
+                    {/* Top-Left Triangle: Blue Dots */}
+                    <div className="absolute inset-0 opacity-[0.45] dark:opacity-[0.25]"
+                        style={{
+                            backgroundImage: `radial-gradient(circle, #0ea5e9 2.5px, transparent 2.5px)`,
+                            backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
+                            backgroundPosition: `${viewport.x}px ${viewport.y}px`,
+                            clipPath: 'polygon(0 0, 100% 0, 0 100%)'
+                        }} />
+                    {/* Bottom-Right Triangle: Light Green Dots */}
+                    <div className="absolute inset-0 opacity-[0.45] dark:opacity-[0.25]"
+                        style={{
+                            backgroundImage: `radial-gradient(circle, #10b981 2.5px, transparent 2.5px)`,
+                            backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
+                            backgroundPosition: `${viewport.x}px ${viewport.y}px`,
+                            clipPath: 'polygon(100% 100%, 100% 0, 0 100%)'
+                        }} />
+                </div>
+            </div>
 
             <style jsx>{`
                 @keyframes dash {
@@ -206,10 +226,10 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             `}</style>
 
             {/* Header / Title Area */}
-            <div className="px-8 py-6 flex items-center justify-between z-10">
+            <div className="px-8 py-6 flex items-center justify-between z-10 bg-background/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-500">
                 <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-primary to-orange-500 p-[1px]">
-                        <div className="w-full h-full rounded-[1.2rem] bg-background flex items-center justify-center text-primary transition-colors duration-500">
+                    <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-primary to-orange-500 p-[1px] shadow-lg shadow-primary/20">
+                        <div className="w-full h-full rounded-[1.2rem] bg-white dark:bg-[#020617] flex items-center justify-center text-primary transition-colors duration-500">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                         </div>
                     </div>
@@ -225,13 +245,13 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowChat(!showChat)}
-                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all ${showChat ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-foreground/5 border-card-border text-muted hover:text-foreground hover:border-foreground/20'}`}
+                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all duration-300 ${showChat ? 'bg-gradient-to-br from-primary to-cyan-500 border-primary/50 text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-[#0c1a2e] border-black/5 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 shadow-sm'}`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </button>
-                    <div className="w-px h-8 bg-foreground/10 mx-2" />
+                    <div className="w-px h-8 bg-black/5 dark:bg-white/10 mx-2" />
                     <button
-                        className="px-8 py-3 bg-foreground/5 border border-card-border rounded-2xl text-[10px] font-black text-muted hover:text-foreground hover:border-foreground/20 hover:bg-foreground/10 transition-all uppercase tracking-[0.2em] shadow-lg"
+                        className="px-8 py-3 bg-white dark:bg-[#0c1a2e] border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:border-cyan-500/30 hover:bg-slate-50 dark:hover:bg-[#112240] hover:shadow-lg hover:shadow-cyan-500/10 shadow-sm transition-all duration-300 uppercase tracking-[0.2em]"
                         onClick={handleAddBlock}
                     >
                         Save Configuration
@@ -240,31 +260,33 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             </div>
 
             {/* Execution Summary Notification */}
-            {summary && (
-                <div className="px-8 z-20 animate-in slide-in-from-top-4 duration-500">
-                    <div className={`p-4 rounded-[1.5rem] border flex items-center justify-between backdrop-blur-xl ${summary.success ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
-                        <div className="flex items-center gap-4">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${summary.success ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-                                {summary.success ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+            {
+                summary && (
+                    <div className="px-8 py-4 z-20 animate-in slide-in-from-top-4 duration-500 bg-background/50 backdrop-blur-sm border-b border-black/5 dark:border-white/5">
+                        <div className={`p-4 rounded-[1.5rem] border flex items-center justify-between backdrop-blur-xl ${summary.success ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${summary.success ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
+                                    {summary.success ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black uppercase tracking-widest">Protocol Execution Complete</p>
+                                    <p className="text-[10px] font-bold opacity-80 uppercase tracking-tighter">
+                                        {summary.executedBlocks}/{summary.totalBlocks} Blocks Processed • {summary.totalDurationMs}ms Latency
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[11px] font-black uppercase tracking-widest">Protocol Execution Complete</p>
-                                <p className="text-[10px] font-bold opacity-80 uppercase tracking-tighter">
-                                    {summary.executedBlocks}/{summary.totalBlocks} Blocks Processed • {summary.totalDurationMs}ms Latency
-                                </p>
-                            </div>
+                            <button onClick={() => setSummary(null)} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
                         </div>
-                        <button onClick={() => setSummary(null)} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Canvas Area with Absolute Positioning */}
             <div
                 ref={canvasRef}
-                className="flex-1 relative overflow-hidden select-none"
+                className="flex-1 relative overflow-hidden select-none z-1"
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
@@ -294,14 +316,14 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     ) : (
                         <div className="w-full h-full relative">
                             {/* SVG Connections Layer */}
-                            <svg className="absolute inset-0 pointer-events-none w-[5000px] h-[5000px]">
+                            <svg className="absolute inset-0 pointer-events-none w-[10000px] h-[10000px] overflow-visible">
                                 <defs>
-                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-primary/20" />
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-primary/60" />
                                     </marker>
-                                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
-                                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.5" />
+                                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.6" />
+                                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.9" />
                                     </linearGradient>
                                 </defs>
                                 {localFlow.blocks.length > 1 && [...localFlow.blocks].sort((a, b) => a.order - b.order).map((block, i, arr) => {
@@ -321,10 +343,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                                             key={`path-${block.id}`}
                                             d={`M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`}
                                             stroke="url(#line-gradient)"
-                                            strokeWidth="3"
+                                            strokeWidth="6"
                                             fill="none"
-                                            strokeDasharray="8 4"
+                                            strokeDasharray="12 8"
                                             className="animate-dash"
+                                            style={{ filter: 'drop-shadow(0 0 10px rgba(14, 165, 233, 0.4))' }}
                                         />
                                     );
                                 })}
@@ -358,17 +381,17 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
                 {/* Mini-map and Controls Overlay */}
                 <div className="absolute bottom-10 left-10 z-30 flex flex-col gap-4">
-                    <div className="bg-[#0F172A]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl">
+                    <div className="bg-white/90 dark:bg-[#0a1628]/90 backdrop-blur-xl border border-black/5 dark:border-cyan-500/10 rounded-2xl p-4 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-colors duration-500">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.2))} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors">
+                            <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.2))} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </button>
-                            <span className="text-[10px] font-black text-white/60 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
-                            <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors">
+                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
+                            <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </button>
-                            <div className="w-px h-6 bg-white/10 mx-1" />
-                            <button onClick={() => { setViewport({ x: 0, y: 0 }); setZoom(1); }} className="p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors" title="Reset View">
+                            <div className="w-px h-6 bg-black/5 dark:bg-cyan-500/15 mx-1" />
+                            <button onClick={() => { setViewport({ x: 0, y: 0 }); setZoom(1); }} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors" title="Reset View">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
                             </button>
                         </div>
@@ -377,63 +400,67 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             </div>
 
             {/* Floating Canva-style Control Bar */}
-            {localFlow.blocks.length > 0 && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="bg-card-bg/90 backdrop-blur-2xl border border-card-border p-2 rounded-[2rem] shadow-2xl shadow-black/20 flex items-center gap-2">
-                        <button
-                            onClick={runFlow}
-                            disabled={isExecuting}
-                            className={`h-12 px-10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all ${isExecuting ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-[#0081C9] hover:bg-[#00A5FF] text-white shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95'}`}
-                        >
-                            {isExecuting ? (
-                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                            )}
-                            {isExecuting ? 'Executing...' : 'Run Protocol'}
-                        </button>
+            {
+                localFlow.blocks.length > 0 && (
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
+                        <div className="bg-white/90 dark:bg-[#0a1628]/90 backdrop-blur-2xl border border-black/5 dark:border-cyan-500/10 p-2 rounded-[2rem] shadow-2xl shadow-black/10 dark:shadow-black/30 flex items-center gap-2 transition-colors duration-500">
+                            <button
+                                onClick={runFlow}
+                                disabled={isExecuting}
+                                className={`h-12 px-10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all duration-300 ${isExecuting ? 'bg-slate-200 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-[#0066CC] via-[#0088EE] to-[#00AAFF] text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 active:scale-95'}`}
+                            >
+                                {isExecuting ? (
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                )}
+                                {isExecuting ? 'Executing...' : 'Run Protocol'}
+                            </button>
 
-                        <div className="w-px h-8 bg-foreground/10 mx-1" />
+                            <div className="w-px h-8 bg-black/5 dark:bg-cyan-500/15 mx-1" />
 
-                        <button
-                            onClick={handleAddBlock}
-                            className="w-12 h-12 flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 border border-card-border rounded-2xl text-muted hover:text-foreground transition-all active:scale-90"
-                            title="Add Node"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        </button>
+                            <button
+                                onClick={handleAddBlock}
+                                className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#0c1a2e] hover:bg-slate-50 dark:hover:bg-[#112240] border border-black/5 dark:border-white/10 hover:border-cyan-500/30 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 active:scale-90 shadow-sm dark:shadow-none"
+                                title="Add Node"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
 
-                        <button
-                            className="w-12 h-12 flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 border border-card-border rounded-2xl text-muted hover:text-foreground transition-all active:scale-90"
-                            title="Grid View"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* AI Chat Drawer */}
-            {showChat && (
-                <div className="absolute top-0 right-0 bottom-0 w-96 bg-white dark:bg-[#0F172A] border-l border-black/5 dark:border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/20 dark:shadow-black/50">
-                    <div className="flex flex-col h-full">
-                        <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                </div>
-                                <span className="text-xs font-black uppercase tracking-widest text-foreground/80 dark:text-white/80 transition-colors duration-500">Flow Oracle</span>
-                            </div>
-                            <button onClick={() => setShowChat(false)} className="text-muted/20 dark:text-white/20 hover:text-foreground dark:hover:text-white transition-colors">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <button
+                                className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#0c1a2e] hover:bg-slate-50 dark:hover:bg-[#112240] border border-black/5 dark:border-white/10 hover:border-cyan-500/30 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 active:scale-90 shadow-sm dark:shadow-none"
+                                title="Grid View"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                             </button>
                         </div>
-                        <div className="flex-1 overflow-hidden">
-                            <FlowChat flow={localFlow} />
+                    </div>
+                )
+            }
+
+            {/* AI Chat Drawer */}
+            {
+                showChat && (
+                    <div className="absolute top-0 right-0 bottom-0 w-96 bg-white dark:bg-[#0F172A] border-l border-black/5 dark:border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/20 dark:shadow-black/50">
+                        <div className="flex flex-col h-full">
+                            <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest text-foreground/80 dark:text-white/80 transition-colors duration-500">Flow Oracle</span>
+                                </div>
+                                <button onClick={() => setShowChat(false)} className="text-muted/20 dark:text-white/20 hover:text-foreground dark:hover:text-white transition-colors">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <FlowChat flow={localFlow} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
