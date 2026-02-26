@@ -13,8 +13,8 @@
   /* Very Pale Sky */
   --foreground: #0F172A;
   /* Slate 900 */
-  --card-bg: rgba(255, 255, 255, 0.7);
-  --card-border: rgba(255, 255, 255, 0.5);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-border: rgba(0, 0, 0, 0.08);
   --primary: #0284C7;
   /* Sky 600 */
   --primary-rgb: 2, 132, 199;

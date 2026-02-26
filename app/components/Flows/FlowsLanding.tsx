@@ -28,7 +28,7 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                     </div>
                 ) : (
                     <img
-                        src="/astro.png"
+                        src="/robot.png"
                         alt="Create first Flow"
                         className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] transition-all duration-500"
                     />
