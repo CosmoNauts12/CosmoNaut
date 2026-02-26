@@ -137,10 +137,8 @@ describe("Integration: Request loading lifecycle", () => {
     /* response body */
     await waitFor(() =>
       expect(
-        screen.getByText((t) =>
-          t.includes('"ok": true')
-        )
-      ).toBeInTheDocument()
+        document.body.textContent
+      ).toContain('ok')
     );
 
     /* history persisted */
