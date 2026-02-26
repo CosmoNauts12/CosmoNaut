@@ -25,7 +25,7 @@ tauri = { version = "2.10.0", features = [] }
 tauri-plugin-log = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-opener = "2"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "gzip", "deflate", "brotli"] }
 chrono = "0.4"
 tokio = { version = "1", features = ["full"] }
 # Google OAuth dependencies
@@ -38,6 +38,7 @@ keyring = "2.3"
 url = "2.5"
 lazy_static = "1.4"
 urlencoding = "2.1"
+uuid = { version = "1.0", features = ["v4"] }
 
 [dev-dependencies]
 mockito = "1.7.2"

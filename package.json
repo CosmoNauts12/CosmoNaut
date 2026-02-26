@@ -16,9 +16,11 @@
     "@tauri-apps/plugin-shell": "^2.3.5",
     "firebase": "^12.8.0",
     "firebase-admin": "^13.6.1",
+    "konva": "^10.2.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-konva": "^19.2.2",
     "recharts": "^3.7.0",
     "resend": "^6.9.2"
   },

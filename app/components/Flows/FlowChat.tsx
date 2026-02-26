@@ -27,23 +27,40 @@ export default function FlowChat({ flow, embedded = false }: { flow: Flow, embed
             let response = "";
             const lowerInput = currentInput.toLowerCase();
 
-            if (lowerInput.includes("fix") || lowerInput.includes("error")) {
+            // Keywords related to flows
+            const isFlowRelated = lowerInput.includes("flow") ||
+                lowerInput.includes("step") ||
+                lowerInput.includes("block") ||
+                lowerInput.includes("sequence") ||
+                lowerInput.includes("fix") ||
+                lowerInput.includes("error") ||
+                lowerInput.includes("add") ||
+                lowerInput.includes("next") ||
+                lowerInput.includes("help") ||
+                lowerInput.includes("can you do") ||
+                lowerInput.includes("what can you") ||
+                lowerInput.includes("protocol") ||
+                lowerInput.includes("mission");
+
+            if (!isFlowRelated && !lowerInput.includes("hello") && !lowerInput.includes("hi") && !lowerInput.includes("how are")) {
+                response = "I can help you in flows only. Please ask something related to your protocol or sequence.";
+            } else if (lowerInput.includes("fix") || lowerInput.includes("error")) {
                 const errorBlock = flow.blocks.find(b => b.error);
                 if (errorBlock) {
                     response = `I see an error in step ${errorBlock.order + 1} ("${errorBlock.name}"). It returned ${errorBlock.status}. This usually means the endpoint requires additional authentication or the parameters are malformed. Should I try to fix it?`;
                 } else {
                     response = "All steps seem to be configured correctly. Try running the flow to identify any runtime issues.";
                 }
-            } else if (lowerInput.includes("add") || lowerInput.includes("next")) {
+            } else if (lowerInput.includes("add") || lowerInput.includes("next") || lowerInput.includes("new")) {
                 response = "To add a new step, click the (+) button at the bottom of the canvas. I can also generate a step if you tell me which API you want to call.";
             } else if (lowerInput.includes("how are you") || lowerInput.includes("how are u") || lowerInput.includes("hello") || lowerInput.includes("hi")) {
-                response = "Systems are nominal. I'm monitoring your mission protocol and ready to assist. How is the sequence looking on your end?";
+                response = "Systems are nominal. I'm monitoring your mission protocol and ready to assist with your flow. How is the sequence looking on your end?";
             } else if (lowerInput.includes("help") || lowerInput.includes("can you do") || lowerInput.includes("what can you")) {
-                response = "I'm your Mission Control specialist. I can help you debug errors, suggest headers, or even generate entire sequences based on your description. What's the next objective?";
+                response = "I'm your Mission Control specialist. I can help you debug errors, suggest headers, or even generate entire sequences based on your description. What's your next flow-related objective?";
             } else if (lowerInput === "yes" || lowerInput === "ok" || lowerInput === "sure") {
-                response = "Acknowledged. Proceeding with the protocol. Let me know if you need specific adjustments.";
+                response = "Acknowledged. Proceeding with the protocol. Let me know if you need specific adjustments to your flow.";
             } else {
-                response = "I've logged that. I'm standing by to help with debugging, header suggestions, or sequence generation whenever you're ready.";
+                response = "I'm standing by to help with debugging, flow suggestions, or sequence generation whenever you're ready.";
             }
 
             setMessages(prev => [...prev, { role: 'ai', content: response }]);

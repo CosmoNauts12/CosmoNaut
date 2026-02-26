@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { CosmoResponse } from "./RequestEngine";
+import JsonHighlighter from "./JsonHighlighter";
 
 /**
  * Component for displaying HTTP response data.
@@ -81,6 +82,7 @@ export default function ResponsePanel({
   const [activeTab, setActiveTab] = useState("pretty");
   const [format, setFormat] = useState<"json" | "xml" | "html" | "javascript" | "raw">("json");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   const formats = [
     { id: 'json', name: 'JSON', icon: <span className="text-[10px] w-4 font-bold">{ }</span> },
@@ -90,6 +92,25 @@ export default function ResponsePanel({
     { id: 'raw', name: 'Raw', icon: <span className="text-[10px] w-4 font-bold">TXT</span> },
   ];
 
+  // Auto-detect format from response headers
+  useEffect(() => {
+    if (!response) return;
+
+    const contentType = response.headers['content-type'] || response.headers['Content-Type'] || '';
+
+    if (contentType.includes('application/json')) {
+      setFormat('json');
+    } else if (contentType.includes('application/xml') || contentType.includes('text/xml')) {
+      setFormat('xml');
+    } else if (contentType.includes('text/html')) {
+      setFormat('html');
+    } else if (contentType.includes('application/javascript') || contentType.includes('text/javascript')) {
+      setFormat('javascript');
+    } else {
+      setFormat('raw');
+    }
+  }, [response]);
+
   /**
    * Memoized formatted body based on selected format.
    */
@@ -97,6 +118,8 @@ export default function ResponsePanel({
     if (!response) return null;
     const body = response.body;
 
+    // Only pretty-print if the format is JSON. For everything else (XML, RAW, JS), 
+    // we show the raw server content as per the user's "Perfect" Image 1.
     if (format === 'json') {
       try {
         return JSON.stringify(JSON.parse(body), null, 2);
@@ -105,8 +128,6 @@ export default function ResponsePanel({
       }
     }
 
-    // For XML/HTML/JS, we just return the body for now, but in a real app
-    // we might use a library like 'prettier' or a specific highlighter.
     return body;
   }, [response, format]);
 
@@ -164,7 +185,7 @@ export default function ResponsePanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border overflow-hidden">
+    <div className={`flex flex-col h-full bg-card-bg/5 backdrop-blur-3xl border-t border-card-border overflow-hidden transition-all duration-300 ${isMaximized ? 'panel-maximize bg-background/95' : ''}`}>
       {/* Response Header */}
       <div className="h-12 px-4 border-b border-card-border/50 flex items-center justify-between bg-black/10 dark:bg-white/5">
         <div className="flex items-center gap-4">
@@ -245,21 +266,57 @@ export default function ResponsePanel({
 
           <div className="w-[1px] h-4 bg-muted/20" />
 
-          <button className="flex items-center gap-2 group">
-            <span className="text-[11px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save Response</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-          </button>
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 group">
+              <span className="text-[11px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            </button>
+
+            <div className="w-[1px] h-4 bg-muted/20" />
+
+            <button
+              onClick={() => setIsMaximized(!isMaximized)}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-primary transition-all group"
+              title={isMaximized ? "Contract" : "Expand"}
+            >
+              {isMaximized ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M8 3v5H3M16 3v5h5M8 21v-5H3M16 21v-5h5" /></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
 
       {/* Body Content */}
       <div className="flex-1 overflow-hidden relative group/content">
         {activeTab === 'pretty' && (
           <div className="h-full overflow-y-auto p-4 font-mono text-[13px] font-medium leading-relaxed selection:bg-primary/20">
             <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
-              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-950 dark:text-amber-200/90' : format === 'javascript' ? 'text-blue-950 dark:text-blue-200/90' : 'text-emerald-950 dark:text-emerald-200/90'} whitespace-pre-wrap`}>
-                {formattedBody}
-              </pre>
+              <div className="flex gap-6 min-h-full">
+                {/* Line Numbers */}
+                <div className="flex flex-col text-right select-none opacity-30 text-[11px] pt-1 font-mono">
+                  {(formattedBody || "").split('\n').map((_, i) => (
+                    <div key={i} className="h-[1.5em] leading-relaxed">{i + 1}</div>
+                  ))}
+                </div>
+
+                {/* Code Content */}
+                <div className="flex-1 overflow-x-auto">
+                  {format === 'json' ? (
+                    <JsonHighlighter json={formattedBody || ""} />
+                  ) : (
+                    <pre className={`transition-all duration-300 leading-relaxed font-mono ${format === 'javascript' ? 'text-blue-600 dark:text-amber-400' :
+                      format === 'xml' ? 'text-blue-600 dark:text-emerald-400' :
+                        'text-black dark:text-white'
+                      } whitespace-pre-wrap break-all overflow-visible`}>
+                      {formattedBody}
+                    </pre>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -277,7 +334,7 @@ export default function ResponsePanel({
         )}
 
         {/* Floating Action Buttons */}
-        <div className="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-8 right-8 flex gap-2 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300">
           <button className="p-2.5 rounded-xl glass-panel border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl" title="Copy to Clipboard">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>

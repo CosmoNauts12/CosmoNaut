@@ -29,31 +29,96 @@
 
   --title-color: #0F172A;
   --glass-shimmer: rgba(255, 255, 255, 0.6);
+  --json-key: #D97706;
+  --json-val: #0284C7;
+  --json-bool: #0D9488;
+  --json-null: #BE123C;
 }
 
 .dark {
   /* Dark Mode Palette - Aurora Blue-Mint (User Provided) */
   --background: #020617;
-  /* Deep Slate */
   --foreground: #E5F6FF;
-  /* Pale Blue Text */
   --card-bg: rgba(20, 40, 60, 0.45);
   --card-border: rgba(255, 255, 255, 0.1);
   --primary: #38BDF8;
-  /* Sky Blue */
   --primary-rgb: 56, 189, 248;
   --primary-glow: rgba(56, 189, 248, 0.3);
   --secondary: #2DD4BF;
-  /* Mint Teal */
   --muted: #94A3B8;
-  /* Slate 400 */
   --input-bg: rgba(15, 23, 42, 0.6);
   --input-border: rgba(255, 255, 255, 0.15);
   --input-text: #E5F6FF;
-
   --title-color: #ffffff;
   --glass-shimmer: rgba(255, 255, 255, 0.1);
 }
+
+/* Base Highlighting (Light Mode - Exact Postman) */
+.json-key,
+.json-protocol,
+.json-url {
+  color: #EF4444;
+  /* Postman Light: Reddish-Orange Key/Protocol/URL */
+}
+
+.json-val {
+  color: #0284C7;
+  /* Postman Light: Blue Value */
+}
+
+.json-bool {
+  color: #0D9488;
+}
+
+.json-null {
+  color: #BE123C;
+}
+
+.json-url {
+  color: #0284C7;
+  /* Postman Light: URL matches Value (Blue) */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Dark Mode Overrides (Exact Postman) */
+.dark .json-key,
+.dark .json-protocol {
+  color: #38BDF8;
+  /* Postman Dark: Cyan Key */
+}
+
+.dark .json-val {
+  color: #F59E0B;
+  /* Postman Dark: Orange Value */
+}
+
+.dark .json-bool {
+  color: #2DD4BF;
+}
+
+.dark .json-null {
+  color: #FB7185;
+}
+
+.dark .json-url {
+  color: #F59E0B;
+  /* Postman Dark: URL matches Value (Orange) */
+}
+
+/* Maximize Animation Utility */
+.panel-maximize {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
 
 /* Tailwind theme bridge */
 @theme inline {

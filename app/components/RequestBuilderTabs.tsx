@@ -233,16 +233,52 @@ export function BodyTab({ body, setBody, method, readOnly }: { body: string, set
     );
   }
 
-  /**
-   * Attempts to parse and re-stringify the body to format it.
-   * Prompts the user on error.
-   */
   const handleBeautify = () => {
     try {
       setBody(JSON.stringify(JSON.parse(body), null, 2));
     } catch (e) {
       alert("Invalid JSON payload");
     }
+  };
+
+  const highlightJSON = (text: string) => {
+    if (!text) return "";
+
+    // Simple HTML escaping
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    return escaped.replace(
+      /(".*?"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      (match) => {
+        let cls = "json-bool";
+        if (match.startsWith('"')) {
+          const isKey = /:\s*$/.test(match);
+          if (isKey) {
+            cls = "json-key";
+          } else {
+            const content = match.slice(1, -1);
+            const isApiRelated =
+              /^(https?|wss?|ftp|file)(\:\/\/)?$/i.test(content) ||
+              /^https?:\/\//i.test(content) ||
+              /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i.test(content);
+
+            if (isApiRelated) {
+              cls = "json-key";
+            } else {
+              cls = "json-val";
+            }
+          }
+        } else if (/true|false/.test(match)) {
+          cls = "json-bool";
+        } else if (/null/.test(match)) {
+          cls = "json-null";
+        }
+        return `<span class="${cls}">${match}</span>`;
+      }
+    );
   };
 
   return (
@@ -256,13 +292,22 @@ export function BodyTab({ body, setBody, method, readOnly }: { body: string, set
           Beautify
         </button>
       </div>
-      <textarea
-        value={body}
-        disabled={readOnly}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder='{ "key": "value" }'
-        className={`flex-1 w-full p-4 bg-black/10 rounded-2xl border border-card-border/30 text-xs font-mono focus:border-primary/50 outline-none resize-none scrollbar-hide ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-      />
+      <div className="flex-1 relative font-mono text-xs">
+        {/* Highlighted Overlay */}
+        <div
+          className="absolute inset-0 p-4 pointer-events-none whitespace-pre-wrap break-all overflow-hidden bg-black/10 rounded-2xl border border-transparent"
+          dangerouslySetInnerHTML={{ __html: highlightJSON(body) + "\n" }}
+        />
+        {/* Actual Input */}
+        <textarea
+          value={body}
+          disabled={readOnly}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder='{ "key": "value" }'
+          spellCheck={false}
+          className={`absolute inset-0 w-full h-full p-4 bg-transparent text-transparent caret-white rounded-2xl border border-card-border/30 focus:border-primary/50 outline-none resize-none scrollbar-hide whitespace-pre-wrap break-all ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+        />
+      </div>
     </div>
   );
 }

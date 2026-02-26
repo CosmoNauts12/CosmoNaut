@@ -292,7 +292,7 @@ export default function AnalyticsDashboard() {
                                             paddingAngle={8}
                                             dataKey="value"
                                         >
-                                            {analytics.statusCodeData.map((entry, index) => (entry.value > 0 &&
+                                            {analytics.statusCodeData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                                             ))}
                                         </Pie>

@@ -54,7 +54,7 @@ pub struct CosmoResponse {
 #[tauri::command]
 async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
     let client = reqwest::Client::builder()
-        .user_agent("Cosmonaut/1.0 (Desktop API Client)")
+        .user_agent("PostmanRuntime/7.51.1")
         .build()
         .map_err(|e| CosmoError {
             error_type: CosmoErrorType::UnknownError,
@@ -89,6 +89,10 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
             rb = rb.header(key, value);
         }
     }
+
+    // Simulate Postman-like headers for better parity with echo services
+    rb = rb.header("Postman-Token", uuid::Uuid::new_v4().to_string());
+    rb = rb.header("Cookie", "_cfuvid=o5ucpJF5xrEOX5trFB_SC3j7w0qyxz.FbUhS3pmwJbU-1772091317183-0.0.1.1-604800000; sails.sid=s%3A3oQVzosKGKYatJ8YhHx6DvH6G-lhBNkv.udU%2BkTakQMuL8%2Bkmrd6uxzuL0QSlLr4rH1mvukl6rJ4");
 
     if let Some(body) = request.body {
         rb = rb.body(body);
