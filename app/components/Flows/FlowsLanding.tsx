@@ -20,8 +20,8 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                 <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors" />
 
                 <img
-                    src="/astro.png"
-                    alt="Create first Flow"
+                    src="/robot.png"
+                    alt="Robot Mascot - Create first Flow"
                     className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
                 />
 

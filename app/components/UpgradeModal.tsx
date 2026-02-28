@@ -27,7 +27,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-glow overflow-hidden">
-            <img src="/logo.svg" alt="Astronaut Logo" className="w-12 h-12" />
+            <img src="/logo.svg" alt="Robot Mascot Logo" className="w-12 h-12" />
           </div>
 
           <h2 className="text-2xl font-bold text-foreground mb-3">

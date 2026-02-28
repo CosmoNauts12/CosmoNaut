@@ -312,8 +312,27 @@ export default function AnalyticsDashboard() {
                                         <Legend
                                             verticalAlign="bottom"
                                             align="center"
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ color: textColor }} className="text-[10px] font-black uppercase tracking-wider">{value}</span>}
+                                            content={() => (
+                                                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-2">
+                                                    {analytics.statusCodeData.map((entry) => (
+                                                        <div key={entry.name} className="flex items-center gap-1.5">
+                                                            <span className="relative flex w-2.5 h-2.5 shrink-0">
+                                                                {entry.value > 0 && (
+                                                                    <span
+                                                                        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+                                                                        style={{ backgroundColor: entry.color }}
+                                                                    />
+                                                                )}
+                                                                <span
+                                                                    className="relative inline-flex rounded-full w-2.5 h-2.5"
+                                                                    style={{ backgroundColor: entry.value > 0 ? entry.color : '#6b7280' }}
+                                                                />
+                                                            </span>
+                                                            <span style={{ color: textColor }} className="text-[10px] font-black uppercase tracking-wider">{entry.name}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>

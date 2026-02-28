@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 /**
- * Component for displaying an animated, floating astronaut image.
+ * Component for displaying an animated, floating robot mascot image.
  * Includes a background glow effect and decorative drop shadows.
  * Primarily used on the sign-in page for thematic appeal.
  */
@@ -12,8 +12,8 @@ export default function Astronaut() {
       <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full"></div>
 
       <Image
-        src="/astronaut.png"
-        alt="Astronaut"
+        src="/robot.png"
+        alt="Robot Mascot"
         width={750}
         height={750}
         className="relative drop-shadow-2xl"
