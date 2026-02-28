@@ -1,16 +1,163 @@
-"use client";
-
 import { useState, useMemo } from "react";
 import { CosmoResponse } from "./RequestEngine";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { useTheme } from "./ThemeContext";
+
+/**
+ * Custom Postman Dark Theme for Prism
+ */
+const postmanDark: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: '#D4D4D4',
+    fontSize: '13px',
+    lineHeight: '1.5',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '4',
+    OTabSize: '4',
+    tabSize: '4',
+    WebkitHyphens: 'none',
+    border: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    background: 'transparent',
+  },
+  'pre[class*="language-"]': {
+    color: '#D4D4D4',
+    fontSize: '13px',
+    lineHeight: '1.5',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '4',
+    OTabSize: '4',
+    tabSize: '4',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    background: 'transparent',
+    margin: '0',
+    padding: '0',
+    overflow: 'visible',
+  },
+  comment: { color: '#6A9955' },
+  prolog: { color: '#6A9955' },
+  doctype: { color: '#6A9955' },
+  cdata: { color: '#6A9955' },
+  punctuation: { color: '#D4D4D4' },
+  property: { color: '#9CDCFE' },
+  tag: { color: '#569CD6' },
+  boolean: { color: '#569CD6' },
+  number: { color: '#B5CEA8' },
+  constant: { color: '#4FC1FF' },
+  symbol: { color: '#B5CEA8' },
+  deleted: { color: '#CE9178' },
+  selector: { color: '#D7BA7D' },
+  'attr-name': { color: '#9CDCFE' },
+  string: { color: '#CE9178' },
+  char: { color: '#CE9178' },
+  builtin: { color: '#CE9178' },
+  inserted: { color: '#B5CEA8' },
+  operator: { color: '#D4D4D4' },
+  entity: { color: '#D4D4D4', cursor: 'help' },
+  url: { color: '#D4D4D4', textDecoration: 'underline' },
+  variable: { color: '#9CDCFE' },
+  atrule: { color: '#C586C0' },
+  'attr-value': { color: '#CE9178' },
+  function: { color: '#DCDCAA' },
+  keyword: { color: '#C586C0' },
+  regex: { color: '#D16969' },
+  important: { color: '#569CD6', fontWeight: 'bold' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
+};
+
+/**
+ * Custom Postman Light Theme for Prism
+ */
+const postmanLight: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: '#333333',
+    fontSize: '13px',
+    lineHeight: '1.5',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '4',
+    OTabSize: '4',
+    tabSize: '4',
+    WebkitHyphens: 'none',
+    border: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    background: 'transparent',
+  },
+  'pre[class*="language-"]': {
+    color: '#333333',
+    fontSize: '13px',
+    lineHeight: '1.5',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '4',
+    OTabSize: '4',
+    tabSize: '4',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    background: 'transparent',
+    margin: '0',
+    padding: '0',
+    overflow: 'visible',
+  },
+  comment: { color: '#939393' },
+  prolog: { color: '#939393' },
+  doctype: { color: '#939393' },
+  cdata: { color: '#939393' },
+  punctuation: { color: '#333333' },
+  property: { color: '#A65D03' },
+  tag: { color: '#22863A' },
+  boolean: { color: '#005CC5' },
+  number: { color: '#22863A' },
+  constant: { color: '#005CC5' },
+  symbol: { color: '#22863A' },
+  deleted: { color: '#D73A49' },
+  selector: { color: '#6F42C1' },
+  'attr-name': { color: '#6F42C1' },
+  string: { color: '#0366D6' },
+  char: { color: '#0366D6' },
+  builtin: { color: '#0366D6' },
+  inserted: { color: '#22863A' },
+  operator: { color: '#D73A49' },
+  entity: { color: '#333333', cursor: 'help' },
+  url: { color: '#0366D6', textDecoration: 'underline' },
+  variable: { color: '#E36209' },
+  atrule: { color: '#D73A49' },
+  'attr-value': { color: '#0366D6' },
+  function: { color: '#6F42C1' },
+  keyword: { color: '#D73A49' },
+  regex: { color: '#032F62' },
+  important: { color: '#005CC5', fontWeight: 'bold' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
+};
 
 /**
  * Component for displaying HTTP response data.
- * Features automatic JSON formatting, error classification, and timing metadata.
- * 
- * @param response The response object from the engine, or null if no request sent.
- * @param isExecuting Boolean reflecting the current execution state.
  */
-
 /**
  * Map of error types to user-friendly titles, descriptions, and icons.
  */
@@ -71,6 +218,7 @@ const ERROR_DETAILS = {
   }
 };
 
+
 export default function ResponsePanel({
   response,
   isExecuting
@@ -78,7 +226,8 @@ export default function ResponsePanel({
   response: CosmoResponse | null;
   isExecuting: boolean;
 }) {
-  const [activeTab, setActiveTab] = useState("pretty");
+  const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState<"pretty" | "visualize">("pretty");
   const [format, setFormat] = useState<"json" | "xml" | "html" | "javascript" | "raw">("json");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -90,24 +239,92 @@ export default function ResponsePanel({
     { id: 'raw', name: 'Raw', icon: <span className="text-[10px] w-4 font-bold">TXT</span> },
   ];
 
-  /**
-   * Memoized formatted body based on selected format.
-   */
   const formattedBody = useMemo(() => {
-    if (!response) return null;
-    const body = response.body;
+    if (!response?.body) return "";
 
-    if (format === 'json') {
-      try {
-        return JSON.stringify(JSON.parse(body), null, 2);
-      } catch (e) {
-        return body;
-      }
+    // RAW: return the exact server response untouched
+    if (format === "raw") {
+      return response.body;
     }
 
-    // For XML/HTML/JS, we just return the body for now, but in a real app
-    // we might use a library like 'prettier' or a specific highlighter.
-    return body;
+    // For JSON, XML, HTML, JS: parse body and inject metadata
+    const postmanToken = response.headers["postman-token"] || response.headers["Postman-Token"];
+    const cookie = response.headers["cookie"] || response.headers["Cookie"] || response.headers["set-cookie"] || response.headers["Set-Cookie"];
+
+    let bodyObj: Record<string, unknown> | null = null;
+    try {
+      bodyObj = JSON.parse(response.body);
+    } catch {
+      // Not JSON — return body as-is for all formats
+      return response.body;
+    }
+
+    // Inject metadata headers into the parsed object
+    if (bodyObj && typeof bodyObj === 'object') {
+      if (!bodyObj.headers || typeof bodyObj.headers !== 'object') {
+        bodyObj.headers = {};
+      }
+      const headers = bodyObj.headers as Record<string, unknown>;
+      if (postmanToken) headers["postman-token"] = postmanToken;
+      if (cookie) headers["cookie"] = cookie;
+    }
+
+    // JSON Tab: pretty-printed multiline
+    if (format === "json") {
+      return JSON.stringify(bodyObj, null, 2);
+    }
+
+    // HTML Tab: compact JSON with cookie value split at semicolons into real lines
+    if (format === "html") {
+      const compact = JSON.stringify(bodyObj);
+      // Find "cookie":"..." and replace "; " with ";\n" to create real line breaks
+      const cookieKey = '"cookie":"';
+      const cookieIdx = compact.indexOf(cookieKey);
+      if (cookieIdx !== -1) {
+        const valueStart = cookieIdx + cookieKey.length;
+        // Walk to find end of cookie string value (unescaped closing quote)
+        let valueEnd = valueStart;
+        while (valueEnd < compact.length) {
+          if (compact[valueEnd] === '\\') { valueEnd += 2; continue; }
+          if (compact[valueEnd] === '"') break;
+          valueEnd++;
+        }
+        const before = compact.slice(0, valueStart);
+        const cookieValue = compact.slice(valueStart, valueEnd).replace(/; /g, ';\n');
+        const after = compact.slice(valueEnd);
+        return before + cookieValue + after;
+      }
+      return compact;
+    }
+
+    // JavaScript Tab: JS object literal style with spaces around structural tokens
+    if (format === "javascript") {
+      const compact = JSON.stringify(bodyObj);
+      let result = '';
+      let inString = false;
+      for (let i = 0; i < compact.length; i++) {
+        const ch = compact[i];
+        if (inString) {
+          result += ch;
+          if (ch === '\\' && i + 1 < compact.length) {
+            result += compact[++i]; // safely skip escaped char (e.g. \", \\, \n)
+          } else if (ch === '"') {
+            inString = false;
+          }
+        } else {
+          if (ch === '"') { inString = true; result += ch; }
+          else if (ch === '{') result += '{ ';
+          else if (ch === '}') result += ' }';
+          else if (ch === ':') result += ': ';
+          else if (ch === ',') result += ', ';
+          else result += ch;
+        }
+      }
+      return result;
+    }
+
+    // XML Tab: compact single-line (word-wrapped by the display)
+    return JSON.stringify(bodyObj);
   }, [response, format]);
 
   if (isExecuting) {
@@ -121,29 +338,32 @@ export default function ResponsePanel({
 
   if (!response) {
     return (
-      <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border items-center justify-center opacity-30">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4 animate-float"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted">Awaiting Data Pipeline</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-card-bg/5 backdrop-blur-xl border-t border-card-border">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-pulse group">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary group-hover:rotate-12 transition-transform duration-500"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+        </div>
+        <h4 className="text-[12px] font-black uppercase tracking-[0.3em] text-foreground mb-3">Telemetry Synchronized</h4>
+        <p className="text-[10px] text-muted font-bold tracking-wide max-w-xs leading-relaxed">
+          The request terminal is active. Awaiting mission parameters to execute neural handshake.
+        </p>
       </div>
     );
   }
 
   if (response.error) {
-    const { error_type, message } = response.error;
-    const details = ERROR_DETAILS[error_type.toUpperCase() as keyof typeof ERROR_DETAILS] || ERROR_DETAILS.UNKNOWN_ERROR;
-
+    const errorType = response.error.error_type;
+    // Map backend CamelCase to frontend SCREAMING_SNAKE_CASE if needed, or normalize
+    const normalizedType = errorType.replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '') as keyof typeof ERROR_DETAILS;
+    const details = ERROR_DETAILS[normalizedType] || ERROR_DETAILS.UNKNOWN_ERROR;
     return (
-      <div className="flex flex-col h-full bg-card-bg/10 backdrop-blur-xl border-t border-card-border items-center justify-center p-8 text-center overflow-y-auto">
-        {details.icon}
-        <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-3">{details.title}</h3>
-        <p className="text-xs text-muted font-bold leading-relaxed max-w-sm mb-8">{details.desc}</p>
-
-        <div className="w-full max-w-md liquid-glass p-5 rounded-2xl border border-rose-500/20 text-left bg-rose-500/5 shadow-lg shadow-rose-500/10">
-          <p className="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            Error Log
-          </p>
-          <code className="text-[10px] text-rose-500/90 font-mono break-all leading-relaxed">{message}</code>
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-card-bg/5 backdrop-blur-xl border-t border-card-border overflow-y-auto">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center">
+          {details.icon}
+          <h4 className="text-[13px] font-black uppercase tracking-[0.2em] text-foreground mb-3">{details.title}</h4>
+          <p className="text-[11px] text-muted font-medium max-w-md leading-relaxed mb-8">{details.desc}</p>
+          <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/10 text-left max-w-lg w-full">
+            <p className="text-[10px] font-mono text-rose-500/80 break-all">{response.error.message}</p>
+          </div>
         </div>
       </div>
     );
@@ -151,14 +371,7 @@ export default function ResponsePanel({
 
   const getStatusLabel = (code: number) => {
     const labels: Record<number, string> = {
-      200: 'OK',
-      201: 'Created',
-      204: 'No Content',
-      400: 'Bad Request',
-      401: 'Unauthorized',
-      403: 'Forbidden',
-      404: 'Not Found',
-      500: 'Server Error'
+      200: 'OK', 201: 'Created', 204: 'No Content', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 500: 'Server Error'
     };
     return labels[code] || '';
   };
@@ -166,40 +379,40 @@ export default function ResponsePanel({
   return (
     <div className="flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border overflow-hidden">
       {/* Response Header */}
-      <div className="h-12 px-4 border-b border-card-border/50 flex items-center justify-between bg-black/10 dark:bg-white/5">
+      <div className={`h-12 px-4 border-b border-card-border/50 flex items-center justify-between z-20 ${theme === 'dark' ? 'bg-black/20' : 'bg-white/40'} backdrop-blur-md`}>
         <div className="flex items-center gap-4">
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
               onClick={() => setActiveTab("pretty")}
-              className={`px-3 py-1.5 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'pretty' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+              className={`px-3 py-1.5 rounded-md text-[11px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'pretty' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
             >
               Body
             </button>
             <button
               onClick={() => setActiveTab("visualize")}
-              className={`px-3 py-1.5 rounded-md text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'visualize' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
+              className={`px-3 py-1.5 rounded-md text-[11px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'visualize' ? 'text-primary bg-primary/10' : 'text-muted hover:text-foreground'}`}
             >
               Preview
             </button>
           </div>
 
-          <div className="w-[1px] h-4 bg-muted/20" />
+          <div className="w-[1px] h-4 bg-muted/20 mx-2" />
 
           {/* Format Selector Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 text-[12px] font-bold text-foreground/80 transition-colors border border-transparent hover:border-white/10"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[11px] font-black uppercase tracking-widest text-foreground/80 transition-colors border border-transparent"
             >
               <span className="text-primary/70">{formats.find(f => f.id === format)?.icon}</span>
-              <span className="uppercase tracking-wider">{formats.find(f => f.id === format)?.name}</span>
+              <span>{formats.find(f => f.id === format)?.name}</span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
 
             {isDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
-                <div className="absolute top-full left-0 mt-1 w-36 bg-white dark:bg-[#0a0f18] rounded-xl border border-card-border shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100">
+                <div className={`absolute top-full left-0 mt-1 w-36 rounded-xl border border-card-border shadow-2xl p-1 z-20 animate-in fade-in zoom-in-95 duration-100 ${theme === 'dark' ? 'bg-[#0f172a] text-white' : 'bg-white text-black'}`}>
                   {formats.map((f) => (
                     <button
                       key={f.id}
@@ -208,7 +421,7 @@ export default function ResponsePanel({
                         setIsDropdownOpen(false);
                         setActiveTab("pretty");
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-foreground/5 hover:text-foreground'}`}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold uppercase transition-all ${format === f.id ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-foreground/5 hover:text-foreground'}`}
                     >
                       <span className={format === f.id ? 'text-primary' : 'text-muted opacity-50'}>{f.icon}</span>
                       {f.name}
@@ -224,18 +437,18 @@ export default function ResponsePanel({
         <div className="flex items-center gap-6">
           <div className="flex gap-4">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Status</span>
-              <span className={`text-[12px] font-black ${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <span className="text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70">Status</span>
+              <span className={`text-[11px] font-black ${response.status >= 200 && response.status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {response.status} {getStatusLabel(response.status)}
               </span>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Time</span>
-              <span className="text-[12px] font-black text-foreground/80">{response.duration_ms} ms</span>
+              <span className="text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70">Time</span>
+              <span className="text-[11px] font-black text-emerald-500">{response.duration_ms} ms</span>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted uppercase tracking-tighter leading-none mb-1">Size</span>
-              <span className="text-[12px] font-black text-foreground/80">
+              <span className="text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70">Size</span>
+              <span className="text-[11px] font-black text-emerald-500">
                 {response.body.length < 1024
                   ? `${response.body.length} B`
                   : `${(response.body.length / 1024).toFixed(2)} KB`}
@@ -246,8 +459,12 @@ export default function ResponsePanel({
           <div className="w-[1px] h-4 bg-muted/20" />
 
           <button className="flex items-center gap-2 group">
-            <span className="text-[11px] font-black text-muted group-hover:text-primary uppercase tracking-widest transition-colors">Save Response</span>
+            <span className="text-[10px] font-black text-muted group-hover:text-primary uppercase tracking-[0.1em] transition-colors">Save</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          </button>
+
+          <button className="p-1 hover:text-primary transition-colors opacity-60 hover:opacity-100">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 3 6 6-12 12H3v-6L15 3z"></path><path d="m9 7 8 8"></path></svg>
           </button>
         </div>
       </div>
@@ -255,37 +472,110 @@ export default function ResponsePanel({
       {/* Body Content */}
       <div className="flex-1 overflow-hidden relative group/content">
         {activeTab === 'pretty' && (
-          <div className="h-full overflow-y-auto p-4 font-mono text-[13px] font-medium leading-relaxed selection:bg-primary/20">
-            <div className="liquid-glass p-8 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto min-h-full bg-black/10 dark:bg-white/2">
-              <pre className={`transition-all duration-300 ${format === 'json' ? 'text-amber-950 dark:text-amber-200/90' : format === 'javascript' ? 'text-blue-950 dark:text-blue-200/90' : 'text-emerald-950 dark:text-emerald-200/90'} whitespace-pre-wrap`}>
+          <div className={`h-full overflow-y-auto selection:bg-primary/30 ${theme === 'dark' ? 'bg-card-bg/5' : 'bg-white'}`}>
+            {(format === 'xml' || format === 'html' || format === 'javascript' || format === 'raw') ? (
+              /* Per-line row layout: each logical line gets its own number + content row */
+              <div className="h-full overflow-y-auto" style={{
+                fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, "Courier New", monospace',
+                fontSize: '13px',
+                padding: '1.5rem 0',
+              }}>
+                {formattedBody.split('\n').map((line, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', minHeight: '1.6em' }}>
+                    {/* Line number */}
+                    <div style={{
+                      minWidth: '3.5em',
+                      paddingRight: '1em',
+                      textAlign: 'right',
+                      color: theme === 'dark' ? '#858585' : '#999999',
+                      fontSize: '11px',
+                      lineHeight: '1.6',
+                      opacity: 0.6,
+                      userSelect: 'none',
+                      flexShrink: 0,
+                    }}>
+                      {i + 1}
+                    </div>
+                    {/* Line content — can word-wrap within this row */}
+                    <pre style={{
+                      margin: 0,
+                      paddingRight: '1.5rem',
+                      backgroundColor: 'transparent',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
+                      overflowWrap: 'anywhere',
+                      lineHeight: '1.6',
+                      flex: 1,
+                      color: format === 'javascript'
+                        ? (theme === 'dark' ? '#fbbf24' : '#2563eb')
+                        : format === 'html'
+                          ? (theme === 'dark' ? '#4ade80' : '#2563eb')
+                          : format === 'xml'
+                            ? (theme === 'dark' ? '#fb923c' : '#2563eb')
+                            : undefined // raw — default text color
+                    }}>
+                      <code>{line}</code>
+                    </pre>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <SyntaxHighlighter
+                key={format}
+                language={format}
+                style={theme === 'dark' ? postmanDark : postmanLight}
+                showLineNumbers={true}
+                wrapLines={true}
+                wrapLongLines={true}
+                lineNumberStyle={{
+                  minWidth: '3.5em',
+                  paddingRight: '1.5em',
+                  color: theme === 'dark' ? '#858585' : '#999999',
+                  textAlign: 'right',
+                  userSelect: 'none',
+                  fontSize: '11px',
+                  opacity: 0.6
+                }}
+                customStyle={{
+                  margin: 0,
+                  padding: '1.5rem',
+                  backgroundColor: 'transparent',
+                  fontSize: '13px',
+                  fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, "Courier New", monospace',
+                }}
+              >
                 {formattedBody}
-              </pre>
-            </div>
+              </SyntaxHighlighter>
+            )}
           </div>
         )}
 
         {activeTab === 'visualize' && (
-          <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-pulse">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-card-bg/5 backdrop-blur-xl">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-8 relative group">
+              <div className="absolute inset-0 bg-primary/20 blur-2xl group-hover:blur-3xl transition-all duration-500 rounded-full" />
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary relative z-10 group-hover:scale-110 transition-transform duration-500"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             </div>
-            <h4 className="text-[12px] font-black uppercase tracking-[0.2em] text-foreground mb-2">Neural Visualizer Offline</h4>
-            <p className="text-[10px] text-muted font-bold tracking-wide max-w-xs leading-relaxed">
-              This response data requires a specific schema for 3D topological visualization. Switch to Body for raw telemetry.
+            <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-foreground mb-4">Neural Visualization Ready</h4>
+            <p className="text-[11px] text-muted font-bold tracking-wide max-w-sm leading-relaxed mb-8">
+              Visual telemetry rendering engine is online. Connect a data source to generate real-time interface projections.
             </p>
+            <button className="px-8 py-3 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/20 transition-all duration-300">
+              Initialize Handshake
+            </button>
           </div>
         )}
 
         {/* Floating Action Buttons */}
-        <div className="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300">
-          <button className="p-2.5 rounded-xl glass-panel border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl" title="Copy to Clipboard">
+        <div className="absolute bottom-6 right-8 flex gap-2 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300 z-10">
+          <button className={`p-2.5 rounded-xl backdrop-blur-md border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl ${theme === 'dark' ? 'bg-black/40' : 'bg-white/80'}`} title="Copy to Clipboard">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>
-          <button className="p-2.5 rounded-xl glass-panel border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl" title="Search in Response">
+          <button className={`p-2.5 rounded-xl backdrop-blur-md border border-white/10 text-muted hover:text-primary hover:border-primary/50 transition-all shadow-xl ${theme === 'dark' ? 'bg-black/40' : 'bg-white/80'}`} title="Search in Response">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

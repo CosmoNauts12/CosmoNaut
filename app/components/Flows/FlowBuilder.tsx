@@ -303,7 +303,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     {localFlow.blocks.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             <div className="w-24 h-24 rounded-[2.5rem] bg-white/[0.03] border border-dashed border-white/10 flex items-center justify-center text-white/20 mb-8">
-                                <img src="/astro.png" className="w-16 h-16 opacity-40 grayscale" alt="Empty" />
+                                <img src="/robot.png" className="w-16 h-16 opacity-40 grayscale" alt="Robot Mascot Empty State" />
                             </div>
                             <h3 className="text-lg font-black text-white/80 uppercase tracking-[0.2em] mb-3">Initialize your Mission</h3>
                             <button

@@ -196,15 +196,34 @@ export default function WorkspaceHeader() {
                 className="fixed inset-0 z-40 bg-transparent"
                 onClick={() => setDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-12 w-64 liquid-glass rounded-2xl border border-card-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50" />
+              <div className="absolute right-0 top-12 w-64 rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50
+                dark:bg-[#050f12] dark:border dark:border-emerald-500/20 dark:shadow-[0_0_40px_rgba(16,185,129,0.12),0_20px_60px_rgba(0,0,0,0.6)]
+                bg-white/90 border border-sky-200/60 shadow-[0_0_40px_rgba(14,165,233,0.10),0_20px_60px_rgba(0,0,0,0.10)]
+                backdrop-blur-xl">
+
+                {/* Premium gradient header strip */}
+                <div className="h-1 w-full dark:bg-gradient-to-r dark:from-emerald-500 dark:via-cyan-400 dark:to-teal-500 bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400" />
+
+                {/* Subtle inner glow */}
+                <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)] bg-[radial-gradient(ellipse_at_top_right,rgba(14,165,233,0.07),transparent_60%)] pointer-events-none" />
+
                 <div className="relative z-10 p-5">
+                  {/* User info */}
                   <div className="mb-4">
-                    <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Signed in as</p>
-                    <p className="font-bold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-black text-white shrink-0
+                        dark:bg-gradient-to-br dark:from-emerald-400 dark:to-cyan-500 dark:ring-2 dark:ring-emerald-500/30
+                        bg-gradient-to-br from-sky-400 to-teal-400 ring-2 ring-sky-400/30 shadow-lg">
+                        {user?.displayName?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] dark:text-emerald-400/60 text-sky-500/70 font-black uppercase tracking-widest leading-none mb-0.5">Signed in as</p>
+                        <p className="font-bold text-sm dark:text-white text-slate-800 truncate">{user?.displayName || "Explorer"}</p>
+                      </div>
+                    </div>
 
                     {/* Status Display/Edit */}
-                    <div className="mt-2">
+                    <div className="mt-1">
                       {isEditingStatus ? (
                         <input
                           autoFocus
@@ -214,13 +233,15 @@ export default function WorkspaceHeader() {
                           onBlur={() => setIsEditingStatus(false)}
                           onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
                           placeholder="Set status..."
-                          className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full dark:bg-emerald-950/40 bg-sky-50 dark:border-emerald-500/30 border-sky-300/50 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-700 focus:outline-none dark:focus:ring-1 dark:focus:ring-emerald-500/50 focus:ring-1 focus:ring-sky-400/50"
                         />
                       ) : (
                         <div
                           onClick={() => setIsEditingStatus(true)}
-                          className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
-                            }`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] cursor-pointer transition-all group
+                            dark:bg-emerald-950/30 dark:border dark:border-emerald-500/20 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-950/50
+                            bg-sky-50/80 border border-sky-200/60 hover:border-sky-400/50 hover:bg-sky-100/60
+                            ${settings.status ? 'dark:text-white text-slate-700' : 'dark:text-emerald-400/60 text-sky-400 '}`}
                         >
                           <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span>
                           <span className="truncate">{settings.status || "Set status"}</span>
@@ -229,31 +250,47 @@ export default function WorkspaceHeader() {
                     </div>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2" />
+                  {/* Divider */}
+                  <div className="h-px dark:bg-gradient-to-r dark:from-transparent dark:via-emerald-500/20 dark:to-transparent bg-gradient-to-r from-transparent via-sky-300/40 to-transparent my-2" />
 
-                  <div className="space-y-1">
+                  {/* Menu Items */}
+                  <div className="space-y-0.5">
                     <button
                       onClick={() => openSettings("profile")}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all group flex items-center gap-2.5
+                        dark:text-slate-300 dark:hover:text-white dark:hover:bg-emerald-500/10
+                        text-slate-600 hover:text-slate-900 hover:bg-sky-50"
                     >
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center dark:bg-emerald-500/10 bg-sky-100 group-hover:scale-110 transition-transform shrink-0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="dark:text-emerald-400 text-sky-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                      </span>
                       Profile Settings
                     </button>
-                    <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                    <button className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all group flex items-center gap-2.5
+                        dark:text-slate-300 dark:hover:text-white dark:hover:bg-cyan-500/10
+                        text-slate-600 hover:text-slate-900 hover:bg-sky-50">
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center dark:bg-cyan-500/10 bg-sky-100 group-hover:scale-110 transition-transform shrink-0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="dark:text-cyan-400 text-sky-400"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                      </span>
                       Resource Center
                     </button>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2" />
+                  {/* Divider */}
+                  <div className="h-px dark:bg-gradient-to-r dark:from-transparent dark:via-emerald-500/20 dark:to-transparent bg-gradient-to-r from-transparent via-sky-300/40 to-transparent my-2" />
 
+                  {/* Sign out */}
                   <button
                     onClick={() => logout()}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-all group"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-all group"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                      <polyline points="16 17 21 12 16 7"></polyline>
-                      <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
+                    <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-rose-500/10 group-hover:scale-110 transition-transform shrink-0">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                    </span>
                     Sign out
                   </button>
                 </div>

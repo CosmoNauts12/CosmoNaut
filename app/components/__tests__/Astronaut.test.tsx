@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 describe('Astronaut', () => {
     it('renders astronaut image', () => {
         render(<Astronaut />);
-        const image = screen.getByRole('img', { name: /astronaut/i });
+        const image = screen.getByRole('img', { name: /robot mascot/i });
         expect(image).toBeInTheDocument();
     });
 });
