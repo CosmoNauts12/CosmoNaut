@@ -163,9 +163,9 @@ describe("Integration: Full request execution contract", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText((t) =>
+        screen.getAllByText((t) =>
           t.includes("success")
-        )
+        )[0]
       ).toBeInTheDocument()
     );
 

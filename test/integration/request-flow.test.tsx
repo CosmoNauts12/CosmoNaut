@@ -151,9 +151,9 @@ describe("Integration: request flow", () => {
     /* response body visible */
     await waitFor(() =>
       expect(
-        screen.getByText((text) =>
+        screen.getAllByText((text) =>
           text.includes("success")
-        )
+        )[0]
       ).toBeInTheDocument()
     );
 

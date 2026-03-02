@@ -101,7 +101,7 @@ describe("Integration: Engine error contract", () => {
     /* error shown */
     await waitFor(() =>
       expect(
-        screen.getByText(/network error/i)
+        screen.getAllByText(/network error/i)[0]
       ).toBeInTheDocument()
     );
 
