@@ -520,32 +520,43 @@ export default function ResponsePanel({
                 ))}
               </div>
             ) : (
-              <SyntaxHighlighter
-                key={format}
-                language={format}
-                style={theme === 'dark' ? postmanDark : postmanLight}
-                showLineNumbers={true}
-                wrapLines={true}
-                wrapLongLines={true}
-                lineNumberStyle={{
-                  minWidth: '3.5em',
-                  paddingRight: '1.5em',
-                  color: theme === 'dark' ? '#858585' : '#999999',
-                  textAlign: 'right',
-                  userSelect: 'none',
-                  fontSize: '11px',
-                  opacity: 0.6
-                }}
-                customStyle={{
-                  margin: 0,
-                  padding: '1.5rem',
-                  backgroundColor: 'transparent',
-                  fontSize: '13px',
-                  fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, "Courier New", monospace',
-                }}
-              >
-                {formattedBody}
-              </SyntaxHighlighter>
+              <>
+                {/* Hidden plain-text mirror — used by tests to find full JSON strings.
+                    SyntaxHighlighter splits text into spans, which breaks getByText. */}
+                <pre
+                  data-testid="response-body"
+                  aria-hidden="true"
+                  style={{ display: 'none' }}
+                >
+                  {formattedBody}
+                </pre>
+                <SyntaxHighlighter
+                  key={format}
+                  language={format}
+                  style={theme === 'dark' ? postmanDark : postmanLight}
+                  showLineNumbers={true}
+                  wrapLines={true}
+                  wrapLongLines={true}
+                  lineNumberStyle={{
+                    minWidth: '3.5em',
+                    paddingRight: '1.5em',
+                    color: theme === 'dark' ? '#858585' : '#999999',
+                    textAlign: 'right',
+                    userSelect: 'none',
+                    fontSize: '11px',
+                    opacity: 0.6
+                  }}
+                  customStyle={{
+                    margin: 0,
+                    padding: '1.5rem',
+                    backgroundColor: 'transparent',
+                    fontSize: '13px',
+                    fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, "Courier New", monospace',
+                  }}
+                >
+                  {formattedBody}
+                </SyntaxHighlighter>
+              </>
             )}
           </div>
         )}
