@@ -98,10 +98,10 @@ export default function FlowBlockUI({
                     <div className="flex items-center gap-2 relative" onClick={(e) => e.stopPropagation()} ref={menuRef}>
                         <button
                             onClick={() => setShowTriggerMenu(!showTriggerMenu)}
-                            className="text-[9px] font-black text-muted hover:text-foreground dark:text-white/40 dark:hover:text-white flex items-center gap-1.5 bg-foreground/5 dark:bg-white/5 px-2.5 py-1.5 rounded-lg border border-transparent dark:border-white/5 transition-colors group uppercase tracking-widest"
+                            className="text-[9px] font-black text-muted/80 hover:text-foreground dark:text-white/40 dark:hover:text-white flex items-center gap-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-2.5 py-1.5 rounded-lg border border-transparent dark:border-white/5 hover:border-black/10 dark:hover:border-white/20 transition-all duration-200 active:scale-95 group uppercase tracking-widest"
                         >
                             Change trigger
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={`transition-transform ${showTriggerMenu ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={`transition-transform duration-300 ${showTriggerMenu ? 'rotate-180 text-foreground dark:text-white' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </button>
 
                         {/* Trigger Selection Menu */}
@@ -114,15 +114,15 @@ export default function FlowBlockUI({
                                             onUpdateAction({ name: option.name });
                                             setShowTriggerMenu(false);
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold transition-colors hover:bg-white/5 group/opt"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:bg-white/5 hover:pl-4 group/opt active:scale-[0.98]"
                                     >
-                                        <span className={`w-4 flex justify-center ${block.name === option.name ? 'text-white' : 'text-transparent'}`}>
+                                        <span className={`w-4 flex justify-center transition-colors ${block.name === option.name ? 'text-white' : 'text-transparent'}`}>
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                         </span>
-                                        <span className={`flex-shrink-0 ${block.name === option.name ? 'text-white' : 'text-white/40 group-hover/opt:text-white/60'}`}>
+                                        <span className={`flex-shrink-0 transition-colors ${block.name === option.name ? 'text-white' : 'text-white/40 group-hover/opt:text-white/80'}`}>
                                             {option.icon}
                                         </span>
-                                        <span className={block.name === option.name ? 'text-white' : 'text-white/60 group-hover/opt:text-white'}>
+                                        <span className={`transition-colors ${block.name === option.name ? 'text-white' : 'text-white/60 group-hover/opt:text-white'}`}>
                                             {option.name}
                                         </span>
                                     </button>
@@ -131,10 +131,10 @@ export default function FlowBlockUI({
                         )}
 
                         <div className="flex items-center gap-1.5 ml-2">
-                            <button onClick={() => onRunAction(block)} className="p-1.5 hover:bg-primary/20 text-white/30 hover:text-primary transition-all rounded-md">
+                            <button onClick={() => onRunAction(block)} className="p-1.5 hover:bg-blue-500/10 text-black/30 hover:text-blue-600 dark:text-white/30 dark:hover:bg-primary/20 dark:hover:text-primary transition-all duration-200 active:scale-90 rounded-md">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             </button>
-                            <button onClick={() => onDeleteAction(block.id)} className="p-1.5 hover:bg-rose-500/20 text-white/30 hover:text-rose-500 transition-all rounded-md">
+                            <button onClick={() => onDeleteAction(block.id)} className="p-1.5 hover:bg-rose-500/10 text-black/30 hover:text-rose-600 dark:text-white/30 dark:hover:bg-rose-500/20 dark:hover:text-rose-500 transition-all duration-200 active:scale-90 rounded-md">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
                         </div>
@@ -240,16 +240,16 @@ export default function FlowBlockUI({
                     </div>
                 ) : (
                     /* Default Input/Output Tab Bar */
-                    <div className="bg-foreground/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
+                    <div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
                         <button
                             onClick={() => setActiveTab('input')}
-                            className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'input' ? 'text-foreground dark:text-white border-b-2 border-[#00A5FF]' : 'text-muted/40 dark:text-white/20 hover:text-foreground dark:hover:text-white/40'}`}
+                            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === 'input' ? 'text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner' : 'text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
                         >
                             Input
                         </button>
                         <button
                             onClick={() => setActiveTab('output')}
-                            className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'output' ? 'text-foreground dark:text-white border-b-2 border-[#00A5FF]' : 'text-muted/40 dark:text-white/20 hover:text-foreground dark:hover:text-white/40'}`}
+                            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === 'output' ? 'text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner' : 'text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
                         >
                             Output
                         </button>

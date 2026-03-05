@@ -325,7 +325,7 @@ export default function WorkspacePage() {
                         
                         <div className="relative z-10 w-full flex flex-col md:flex-row items-center gap-8 justify-between">
                           <div className="max-w-md">
-                            <h2 className="text-2xl md:text-3xl font-black text-foreground mb-3 tracking-tight uppercase tracking-[0.05em] bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                            <h2 className="text-2xl md:text-3xl font-black mb-3 tracking-tight uppercase tracking-[0.05em] bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 dark:from-white dark:to-white/70">
                               Design and automate your workflows
                             </h2>
                             <p className="text-sm text-muted font-medium leading-relaxed mb-6">
