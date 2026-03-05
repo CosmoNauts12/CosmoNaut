@@ -67,6 +67,7 @@ export interface FlowBlock {
     isExecuting?: boolean;
     error?: string;
     response_data?: any;
+    response_headers?: Record<string, string>;
     isValid?: boolean;
 }
 

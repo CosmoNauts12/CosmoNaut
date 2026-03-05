@@ -47,6 +47,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     status: event.response.status,
                     duration_ms: event.duration,
                     response_data: event.response.body,
+                    response_headers: event.response.headers,
                     error: event.response.error ? event.response.error.message : undefined
                 });
                 break;
@@ -213,10 +214,10 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             `}</style>
 
             {/* Header / Title Area */}
-            <div className="px-8 py-6 flex items-center justify-between z-10">
+            <div className="px-8 py-6 flex items-center justify-between z-10 bg-background/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-500">
                 <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-primary to-orange-500 p-[1px]">
-                        <div className="w-full h-full rounded-[1.2rem] bg-background flex items-center justify-center text-primary transition-colors duration-500">
+                    <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-primary to-orange-500 p-[1px] shadow-lg shadow-primary/20">
+                        <div className="w-full h-full rounded-[1.2rem] bg-white dark:bg-[#020617] flex items-center justify-center text-primary transition-colors duration-500">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                         </div>
                     </div>
@@ -232,11 +233,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowChat(!showChat)}
-                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all duration-200 active:scale-95 ${showChat ? 'bg-primary border-primary text-white shadow-lg shadow-primary/30' : 'bg-foreground/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-muted hover:text-foreground dark:hover:text-white hover:border-foreground/20 dark:hover:border-white/20 hover:shadow-md'}`}
+                        className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all duration-300 ${showChat ? 'bg-gradient-to-br from-primary to-cyan-500 border-primary/50 text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-[#0c1a2e] border-black/5 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 shadow-sm'}`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </button>
-                    <div className="w-px h-8 bg-foreground/10 mx-2" />
+                    <div className="w-px h-8 bg-black/5 dark:bg-white/10 mx-2" />
                     <button
                         className={`px-8 py-3 bg-foreground/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black transition-all duration-200 uppercase tracking-[0.2em] shadow-sm hover:shadow-md active:scale-95 ${isSaving ? 'text-emerald-500 border-emerald-500/50 bg-emerald-500/10' : 'text-muted hover:text-foreground dark:hover:text-white hover:border-foreground/20 dark:hover:border-white/30 hover:bg-foreground/10 dark:hover:bg-white/10'}`}
                         onClick={handleSaveFlow}
@@ -248,31 +249,36 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             </div>
 
             {/* Execution Summary Notification */}
-            {summary && (
-                <div className="px-8 z-20 animate-in slide-in-from-top-4 duration-500">
-                    <div className={`p-4 rounded-[1.5rem] border flex items-center justify-between backdrop-blur-xl ${summary.success ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
-                        <div className="flex items-center gap-4">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${summary.success ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-                                {summary.success ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+            {
+                summary && (
+                    <div className="px-8 py-4 z-20 animate-in slide-in-from-top-4 duration-500 bg-background/50 backdrop-blur-sm border-b border-black/5 dark:border-white/5">
+                        <div className={`p-4 rounded-[1.5rem] border flex items-center justify-between backdrop-blur-xl ${summary.success ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${summary.success ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
+                                    {summary.success ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black uppercase tracking-widest">Protocol Execution Complete</p>
+                                    <p className="text-[10px] font-bold opacity-80 uppercase tracking-tighter">
+                                        {summary.executedBlocks}/{summary.totalBlocks} Blocks Processed • {summary.totalDurationMs}ms Latency
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[11px] font-black uppercase tracking-widest">Protocol Execution Complete</p>
-                                <p className="text-[10px] font-bold opacity-80 uppercase tracking-tighter">
-                                    {summary.executedBlocks}/{summary.totalBlocks} Blocks Processed • {summary.totalDurationMs}ms Latency
-                                </p>
-                            </div>
+                            <button onClick={() => setSummary(null)} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
                         </div>
                         <button onClick={() => setSummary(null)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-all duration-200 active:scale-90 opacity-60 hover:opacity-100">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Canvas Area with Absolute Positioning */}
             <div
                 ref={canvasRef}
-                className="flex-1 relative overflow-hidden select-none"
+                className="flex-1 relative overflow-hidden select-none z-1"
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
@@ -302,14 +308,14 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     ) : (
                         <div className="w-full h-full relative">
                             {/* SVG Connections Layer */}
-                            <svg className="absolute inset-0 pointer-events-none w-[5000px] h-[5000px]">
+                            <svg className="absolute inset-0 pointer-events-none w-[10000px] h-[10000px] overflow-visible">
                                 <defs>
-                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-primary/20" />
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" className="text-primary/60" />
                                     </marker>
-                                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
-                                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.5" />
+                                    <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.6" />
+                                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.9" />
                                     </linearGradient>
                                 </defs>
                                 {localFlow.blocks.length > 1 && [...localFlow.blocks].sort((a, b) => a.order - b.order).map((block, i, arr) => {
@@ -329,10 +335,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                                             key={`path-${block.id}`}
                                             d={`M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`}
                                             stroke="url(#line-gradient)"
-                                            strokeWidth="3"
+                                            strokeWidth="6"
                                             fill="none"
-                                            strokeDasharray="8 4"
+                                            strokeDasharray="12 8"
                                             className="animate-dash"
+                                            style={{ filter: 'drop-shadow(0 0 10px rgba(14, 165, 233, 0.4))' }}
                                         />
                                     );
                                 })}
@@ -418,30 +425,32 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* AI Chat Drawer */}
-            {showChat && (
-                <div className="absolute top-0 right-0 bottom-0 w-96 bg-white dark:bg-[#0F172A] border-l border-black/5 dark:border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/20 dark:shadow-black/50">
-                    <div className="flex flex-col h-full">
-                        <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            {
+                showChat && (
+                    <div className="absolute top-0 right-0 bottom-0 w-96 bg-white dark:bg-[#0F172A] border-l border-black/5 dark:border-white/10 z-40 animate-in slide-in-from-right duration-500 shadow-2xl shadow-black/20 dark:shadow-black/50">
+                        <div className="flex flex-col h-full">
+                            <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest text-foreground/80 dark:text-white/80 transition-colors duration-500">Flow Oracle</span>
                                 </div>
-                                <span className="text-xs font-black uppercase tracking-widest text-foreground/80 dark:text-white/80 transition-colors duration-500">Flow Oracle</span>
+                                <button onClick={() => setShowChat(false)} className="text-muted/20 dark:text-white/20 hover:text-foreground dark:hover:text-white transition-colors">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
                             </div>
-                            <button onClick={() => setShowChat(false)} className="text-muted/20 dark:text-white/20 hover:text-foreground dark:hover:text-white transition-colors">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <FlowChat flow={localFlow} />
+                            <div className="flex-1 overflow-hidden">
+                                <FlowChat flow={localFlow} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
