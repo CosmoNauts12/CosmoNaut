@@ -188,6 +188,42 @@ export default function FlowBlockUI({
                                     <div className="w-3 h-3 bg-white/20 rounded-full border-2 border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair" />
                                 </div>
                             </div>
+                        ) : activeTab === 'output' ? (
+                            /* Output View */
+                            <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
+                                {block.isExecuting ? (
+                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/50 dark:text-white/50 space-y-3">
+                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Executing...</p>
+                                    </div>
+                                ) : block.error ? (
+                                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg">
+                                        <p className="text-xs font-semibold text-rose-500 dark:text-rose-400 mb-1">Execution Failed</p>
+                                        <p className="text-[10px] text-rose-600 dark:text-rose-500/70">{block.error}</p>
+                                    </div>
+                                ) : block.response_data ? (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${block.status && block.status < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                                                Status: {block.status || 200}
+                                            </span>
+                                            {block.duration_ms && (
+                                                <span className="text-[9px] font-bold text-foreground/40 dark:text-white/40">{block.duration_ms}ms</span>
+                                            )}
+                                        </div>
+                                        <div className="bg-foreground/5 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[150px] overflow-y-auto custom-scrollbar">
+                                            <pre className="text-[10px] text-foreground/70 dark:text-white/70 font-mono whitespace-pre-wrap">
+                                                {typeof block.response_data === 'string' ? block.response_data : JSON.stringify(block.response_data, null, 2)}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/30 dark:text-white/30 space-y-2">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                        <p className="text-[10px] font-bold">No output yet</p>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             /* Default Configuration Style */
                             <div className="space-y-4">
