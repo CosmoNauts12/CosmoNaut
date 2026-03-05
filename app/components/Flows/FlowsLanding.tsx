@@ -21,7 +21,7 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
 
                 <img
                     src="/astro.png"
-                    alt="Create first Flow"
+                    alt="Welcome to Flows"
                     className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
                 />
 
@@ -31,39 +31,48 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                         <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
                 </div>
-
-
             </div>
 
-            <h2 className="text-2xl font-black text-foreground mb-4 tracking-tight uppercase tracking-[0.05em]">
-                Create your first Flow
+            <h2 className="text-4xl font-black text-foreground mb-4 tracking-tight uppercase tracking-[0.05em] bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                Welcome to Flows
             </h2>
 
             <p className="text-sm text-muted mb-10 max-w-sm font-medium leading-relaxed">
-                Use Flows to visualize, test, and automate complex API request workflows in a visual environment.
+                Flows allow you to visually design, test, and automate complex API workflows in a dynamic environment.
             </p>
 
-            <button
-                onClick={onCreateFlow}
-                className="px-10 py-4 bg-gradient-to-r from-primary via-primary to-orange-500 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-1 active:translate-y-0 transition-all group"
-            >
-                <span className="flex items-center gap-3">
-                    Create Flow
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                </span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button
+                    onClick={onCreateFlow}
+                    className="px-10 py-4 bg-gradient-to-r from-primary via-primary to-orange-500 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 active:translate-y-0 transition-all group"
+                >
+                    <span className="flex items-center gap-3">
+                        Create Your First Flow
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                    </span>
+                </button>
 
-            {/* Matching the design from Image 1 */}
+                <button
+                    className="px-8 py-4 bg-background/50 border border-card-border hover:border-secondary/50 text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-secondary/5 transition-all group flex items-center gap-3"
+                >
+                    Explore Templates
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary group-hover:translate-x-1 transition-transform">
+                        <path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            {/* Feature Highlights */}
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
                 {[
                     { title: "Visualize", desc: "See your API steps in a clear vertical flow." },
                     { title: "Automate", desc: "Chain requests and pass data between steps." },
                     { title: "Debug", desc: "Identify failures at a glance in the execution log." }
                 ].map((item, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-card-border bg-card-bg/50 text-left">
+                    <div key={i} className="p-4 rounded-xl border border-card-border bg-card-bg/50 text-left liquid-glass hover:border-primary/30 transition-colors">
                         <h4 className="text-[10px] font-black uppercase text-primary mb-1 tracking-widest">{item.title}</h4>
                         <p className="text-[10px] text-muted font-bold leading-tight">{item.desc}</p>
                     </div>

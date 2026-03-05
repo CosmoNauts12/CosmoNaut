@@ -339,95 +339,138 @@ export default function WorkspacePage() {
                       </div>
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Flows Grid */}
-                        <div className="lg:col-span-2 space-y-4">
-                          <div className="flex items-center justify-between pb-2 border-b border-card-border/50">
-                            <h2 className="text-xs font-black uppercase tracking-widest text-foreground">Recent Protocols</h2>
-                            <button className="text-[10px] text-primary hover:text-primary/80 uppercase tracking-widest font-bold">View All</button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* Create New Flow Card within Grid */}
-                            <div
-                              onClick={handleCreateFlowInWorkspace}
-                              className="liquid-glass p-6 rounded-[1.25rem] border-card-border/50 hover:border-primary/40 border-dashed border-2 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[160px] bg-background/50 hover:bg-card-bg/50 transition-all shadow-sm"
-                            >
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform mb-3">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        {/* Main Flows Content */}
+                        <div className="lg:col-span-2 space-y-8">
+                          {/* Continue Where You Left Off */}
+                          {flows.length > 0 && (
+                            <div className="space-y-4">
+                              <h2 className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                                <span className="text-secondary">⟲</span> Continue Where You Left Off
+                              </h2>
+                              <div className="liquid-glass p-6 rounded-[1.5rem] border-secondary/30 bg-secondary/5 hover:bg-secondary/10 hover:border-secondary/50 transition-all group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/20 flex items-center justify-center text-secondary border border-secondary/20 shadow-inner group-hover:scale-105 transition-transform">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg font-black text-foreground uppercase tracking-widest line-clamp-1">{flows[0].name}</h3>
+                                    <p className="text-[11px] text-muted font-bold uppercase tracking-widest mt-0.5">Last edited just now • {flows[0].blocks.length} Steps</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                  <button onClick={(e) => { e.stopPropagation(); handleSelectFlow(flows[0]); }} className="flex-1 sm:flex-none px-6 py-2.5 bg-secondary text-white hover:bg-secondary/90 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/25 transition-all flex items-center justify-center gap-2">
+                                    Open Flow <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                  </button>
+                                  <button className="px-3 py-2.5 bg-background/50 border border-card-border hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-500 text-muted rounded-xl transition-all shadow-sm">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                  </button>
+                                </div>
                               </div>
-                              <h3 className="text-xs font-black text-foreground uppercase tracking-widest mb-1">Create Flow</h3>
-                              <p className="text-[10px] text-muted font-bold">Start a new blank protocol</p>
                             </div>
+                          )}
 
-                            {/* Existing Flows */}
-                            {flows.map(flow => (
+                          {/* Recent Protocols Grid */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between pb-2 border-b border-card-border/50">
+                              <h2 className="text-xs font-black uppercase tracking-widest text-foreground">Recent Protocols</h2>
+                              <button className="text-[10px] text-primary hover:text-primary/80 uppercase tracking-widest font-bold">View All</button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Create New Flow Card within Grid */}
                               <div
-                                key={flow.id}
-                                className="liquid-glass p-5 rounded-[1.25rem] border-card-border/50 hover:border-primary/40 hover:shadow-[0_8px_30px_rgb(var(--primary-rgb),0.12)] transition-all group flex flex-col min-h-[160px]"
+                                onClick={handleCreateFlowInWorkspace}
+                                className="liquid-glass p-6 rounded-[1.25rem] border-card-border/50 hover:border-primary/40 border-dashed border-2 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[160px] bg-background/50 hover:bg-primary/5 transition-all shadow-sm"
                               >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                                  </div>
-                                  <div className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                    Active
-                                  </div>
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform mb-3">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                 </div>
-                                
-                                <div className="flex-1 cursor-pointer" onClick={() => handleSelectFlow(flow)}>
-                                  <h3 className="text-sm font-black text-foreground uppercase tracking-wider group-hover:text-primary transition-colors line-clamp-1">{flow.name}</h3>
-                                  <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">{flow.blocks.length} {flow.blocks.length === 1 ? 'Step' : 'Steps'} • Edited recently</p>
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-card-border/30 flex items-center gap-2">
-                                  <button onClick={(e) => { e.stopPropagation(); handleSelectFlow(flow); }} className="flex-1 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Open
-                                  </button>
-                                  <button className="w-7 h-7 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground flex items-center justify-center transition-colors">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                  </button>
-                                </div>
+                                <h3 className="text-xs font-black text-foreground uppercase tracking-widest mb-1">Create Flow</h3>
+                                <p className="text-[10px] text-muted font-bold">Start a new blank protocol</p>
                               </div>
-                            ))}
+
+                              {/* Existing Flows (skip the first one if we want, but let's show all for now or slice(1) if layout is too big. We'll show up to 3 for symmetry) */}
+                              {flows.slice(0, 3).map(flow => (
+                                <div
+                                  key={flow.id}
+                                  className="liquid-glass p-5 rounded-[1.25rem] border-card-border/50 hover:border-primary/40 hover:shadow-[0_8px_30px_rgb(var(--primary-rgb),0.12)] transition-all group flex flex-col min-h-[160px]"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                    </div>
+                                    <div className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                      Active
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex-1 cursor-pointer" onClick={() => handleSelectFlow(flow)}>
+                                    <h3 className="text-sm font-black text-foreground uppercase tracking-wider group-hover:text-primary transition-colors line-clamp-1">{flow.name}</h3>
+                                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">{flow.blocks.length} {flow.blocks.length === 1 ? 'Step' : 'Steps'}</p>
+                                  </div>
+
+                                  <div className="mt-4 pt-3 border-t border-card-border/30 flex items-center gap-2">
+                                    <button onClick={(e) => { e.stopPropagation(); handleSelectFlow(flow); }} className="flex-1 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1">
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Open
+                                    </button>
+                                    <button className="w-7 h-7 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground flex items-center justify-center transition-colors">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
 
                         {/* Sidebar: Templates & Activity */}
                         <div className="space-y-6">
-                          {/* Templates */}
-                          <div className="liquid-glass p-5 rounded-2xl border-card-border/50">
-                            <div className="flex items-center gap-2 mb-4">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-secondary"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                              <h3 className="text-[11px] font-black text-foreground uppercase tracking-widest">Templates</h3>
+                          {/* Rich Templates */}
+                          <div className="liquid-glass p-6 rounded-[1.5rem] border-card-border/50 bg-gradient-to-b from-card-bg/50 to-background/50">
+                            <div className="flex items-center gap-2 mb-6">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-secondary"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                              <h3 className="text-xs font-black text-foreground uppercase tracking-widest">Workflow Templates</h3>
                             </div>
-                            <div className="space-y-2">
-                              {['API Chaining', 'Data Aggregation', 'Scheduled Sync'].map((tmpl) => (
-                                <div key={tmpl} className="p-3 rounded-xl bg-background/50 border border-card-border/30 hover:border-secondary/40 hover:bg-secondary/5 cursor-pointer transition-all group flex items-center justify-between">
-                                  <span className="text-xs font-bold text-foreground/80 group-hover:text-secondary transition-colors">{tmpl}</span>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 text-secondary transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            <div className="space-y-3">
+                              {[
+                                { name: 'API Chaining', desc: 'Call multiple APIs in sequence.', icon: <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>, color: 'text-blue-500' },
+                                { name: 'Data Aggregation', desc: 'Combine data from multiple sources.', icon: <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>, color: 'text-emerald-500' },
+                                { name: 'Scheduled Sync', desc: 'Run workflows on a specific schedule.', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>, color: 'text-amber-500' }
+                              ].map((tmpl) => (
+                                <div key={tmpl.name} className="p-3.5 rounded-xl bg-background border border-card-border/50 hover:border-secondary/50 hover:shadow-lg hover:shadow-secondary/5 cursor-pointer transition-all group flex items-start gap-3">
+                                  <div className={`mt-0.5 w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center ${tmpl.color} group-hover:scale-110 transition-transform`}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      {tmpl.icon}
+                                    </svg>
+                                  </div>
+                                  <div className="flex-1">
+                                    <span className="text-xs font-black text-foreground uppercase tracking-widest">{tmpl.name}</span>
+                                    <p className="text-[10px] text-muted font-bold leading-tight mt-0.5">{tmpl.desc}</p>
+                                  </div>
                                 </div>
                               ))}
                             </div>
                           </div>
 
                           {/* Activity */}
-                          <div className="liquid-glass p-5 rounded-2xl border-card-border/50 flex-1">
-                            <div className="flex items-center gap-2 mb-4">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-muted"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                              <h3 className="text-[11px] font-black text-foreground uppercase tracking-widest">Activity</h3>
+                          <div className="liquid-glass p-6 rounded-[1.5rem] border-card-border/50 flex-1">
+                            <div className="flex items-center gap-2 mb-6">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-muted"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                              <h3 className="text-xs font-black text-foreground uppercase tracking-widest">Recent Activity</h3>
                             </div>
-                            <div className="space-y-4">
-                              <div className="flex gap-3">
-                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                            <div className="space-y-5">
+                              <div className="flex gap-3 relative">
+                                <div className="absolute top-4 left-[3px] w-0.5 h-10 bg-card-border/50 z-0"></div>
+                                <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] relative z-10 box-content border-2 border-background" />
                                 <div>
-                                  <p className="text-[10px] font-bold text-foreground line-clamp-1">Flow &quot;{flows[0]?.name || 'New Flow'}&quot; created</p>
-                                  <p className="text-[9px] font-black text-muted uppercase tracking-widest mt-0.5">Just now</p>
+                                  <p className="text-[11px] font-bold text-foreground line-clamp-1">Flow &quot;{flows[0]?.name || 'New Flow'}&quot; created</p>
+                                  <p className="text-[9px] font-black text-muted uppercase tracking-widest mt-1">Just now</p>
                                 </div>
                               </div>
                               <div className="flex gap-3">
-                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]" />
+                                <div className="mt-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] relative z-10 box-content border-2 border-background" />
                                 <div>
-                                  <p className="text-[10px] font-bold text-foreground line-clamp-1">Workspace protocol initialized</p>
-                                  <p className="text-[9px] font-black text-muted uppercase tracking-widest mt-0.5">2 hours ago</p>
+                                  <p className="text-[11px] font-bold text-foreground line-clamp-1">Workspace protocol initialized</p>
+                                  <p className="text-[9px] font-black text-muted uppercase tracking-widest mt-1">2 hours ago</p>
                                 </div>
                               </div>
                             </div>
