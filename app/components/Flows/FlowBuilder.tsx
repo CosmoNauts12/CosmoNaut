@@ -21,6 +21,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     const [isExecuting, setIsExecuting] = useState(false);
     const [summary, setSummary] = useState<FlowExecutionSummary | null>(null);
     const [showChat, setShowChat] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Canvas State
     const [viewport, setViewport] = useState({ x: 0, y: 0 });
@@ -97,6 +98,12 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         const newFlow = { ...localFlow, blocks: [...localFlow.blocks, newBlock] };
         setLocalFlow(newFlow);
         updateFlow(newFlow);
+    };
+
+    const handleSaveFlow = () => {
+        setIsSaving(true);
+        updateFlow(localFlow);
+        setTimeout(() => setIsSaving(false), 2000);
     };
 
     const handleDeleteBlock = (blockId: string) => {
@@ -191,28 +198,9 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden font-outfit transition-colors duration-500">
-            {/* Full-Page Split Decorative Grid - Pans with Canvas */}
-            <div className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500 overflow-hidden bg-background">
-                {/* Fixed Background container that doesn't transform so it always fills the screen */}
-                <div className="absolute inset-0">
-                    {/* Top-Left Triangle: Blue Dots */}
-                    <div className="absolute inset-0 opacity-[0.45] dark:opacity-[0.25]"
-                        style={{
-                            backgroundImage: `radial-gradient(circle, #0ea5e9 2.5px, transparent 2.5px)`,
-                            backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
-                            backgroundPosition: `${viewport.x}px ${viewport.y}px`,
-                            clipPath: 'polygon(0 0, 100% 0, 0 100%)'
-                        }} />
-                    {/* Bottom-Right Triangle: Light Green Dots */}
-                    <div className="absolute inset-0 opacity-[0.45] dark:opacity-[0.25]"
-                        style={{
-                            backgroundImage: `radial-gradient(circle, #10b981 2.5px, transparent 2.5px)`,
-                            backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
-                            backgroundPosition: `${viewport.x}px ${viewport.y}px`,
-                            clipPath: 'polygon(100% 100%, 100% 0, 0 100%)'
-                        }} />
-                </div>
-            </div>
+            {/* Elegant Background Grid - Canvas Aesthetic */}
+            <div className="absolute inset-0 z-0 opacity-[0.25] dark:opacity-[0.2] pointer-events-none"
+                style={{ backgroundImage: `radial-gradient(circle, var(--primary) 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
 
             <style jsx>{`
                 @keyframes dash {
@@ -251,10 +239,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     </button>
                     <div className="w-px h-8 bg-black/5 dark:bg-white/10 mx-2" />
                     <button
-                        className="px-8 py-3 bg-white dark:bg-[#0c1a2e] border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:border-cyan-500/30 hover:bg-slate-50 dark:hover:bg-[#112240] hover:shadow-lg hover:shadow-cyan-500/10 shadow-sm transition-all duration-300 uppercase tracking-[0.2em]"
-                        onClick={handleAddBlock}
+                        className={`px-8 py-3 bg-foreground/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black transition-all duration-200 uppercase tracking-[0.2em] shadow-sm hover:shadow-md active:scale-95 ${isSaving ? 'text-emerald-500 border-emerald-500/50 bg-emerald-500/10' : 'text-muted hover:text-foreground dark:hover:text-white hover:border-foreground/20 dark:hover:border-white/30 hover:bg-foreground/10 dark:hover:bg-white/10'}`}
+                        onClick={handleSaveFlow}
+                        disabled={isSaving}
                     >
-                        Save Configuration
+                        {isSaving ? 'Saved!' : 'Save Configuration'}
                     </button>
                 </div>
             </div>
@@ -279,6 +268,9 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
+                        <button onClick={() => setSummary(null)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-all duration-200 active:scale-90 opacity-60 hover:opacity-100">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
                     </div>
                 )
             }
@@ -308,7 +300,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                             <h3 className="text-lg font-black text-white/80 uppercase tracking-[0.2em] mb-3">Initialize your Mission</h3>
                             <button
                                 onClick={handleAddBlock}
-                                className="px-10 py-4 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em]"
+                                className="px-10 py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:to-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
                             >
                                 Create First Node
                             </button>
@@ -381,17 +373,17 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
 
                 {/* Mini-map and Controls Overlay */}
                 <div className="absolute bottom-10 left-10 z-30 flex flex-col gap-4">
-                    <div className="bg-white/90 dark:bg-[#0a1628]/90 backdrop-blur-xl border border-black/5 dark:border-cyan-500/10 rounded-2xl p-4 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-colors duration-500">
+                    <div className="bg-white/90 dark:bg-[#0F172A]/80 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-shadow duration-300">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.2))} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                            <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.2))} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg text-foreground/50 hover:text-foreground dark:text-white/50 dark:hover:text-white transition-all duration-200 active:scale-90">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </button>
-                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
-                            <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                            <span className="text-[10px] font-black text-foreground/70 dark:text-white/70 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
+                            <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg text-foreground/50 hover:text-foreground dark:text-white/50 dark:hover:text-white transition-all duration-200 active:scale-90">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </button>
-                            <div className="w-px h-6 bg-black/5 dark:bg-cyan-500/15 mx-1" />
-                            <button onClick={() => { setViewport({ x: 0, y: 0 }); setZoom(1); }} className="p-2 hover:bg-cyan-500/10 rounded-lg text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors" title="Reset View">
+                            <div className="w-px h-6 bg-black/10 dark:bg-white/10 mx-1" />
+                            <button onClick={() => { setViewport({ x: 0, y: 0 }); setZoom(1); }} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg text-foreground/50 hover:text-foreground dark:text-white/50 dark:hover:text-white transition-all duration-200 active:scale-90" title="Reset View">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
                             </button>
                         </div>
@@ -400,40 +392,38 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             </div>
 
             {/* Floating Canva-style Control Bar */}
-            {
-                localFlow.blocks.length > 0 && (
-                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
-                        <div className="bg-white/90 dark:bg-[#0a1628]/90 backdrop-blur-2xl border border-black/5 dark:border-cyan-500/10 p-2 rounded-[2rem] shadow-2xl shadow-black/10 dark:shadow-black/30 flex items-center gap-2 transition-colors duration-500">
-                            <button
-                                onClick={runFlow}
-                                disabled={isExecuting}
-                                className={`h-12 px-10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all duration-300 ${isExecuting ? 'bg-slate-200 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-[#0066CC] via-[#0088EE] to-[#00AAFF] text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 active:scale-95'}`}
-                            >
-                                {isExecuting ? (
-                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                )}
-                                {isExecuting ? 'Executing...' : 'Run Protocol'}
-                            </button>
+            {localFlow.blocks.length > 0 && (
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="bg-white/90 dark:bg-[#1E293B]/90 backdrop-blur-2xl border border-black/5 dark:border-white/10 p-2 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.15)] flex items-center gap-2">
+                        <button
+                            onClick={runFlow}
+                            disabled={isExecuting}
+                            className={`h-14 px-12 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all duration-200 ${isExecuting ? 'bg-black/5 dark:bg-white/5 text-foreground/40 dark:text-white/40 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] hover:-translate-y-0.5 active:scale-95'}`}
+                        >
+                            {isExecuting ? (
+                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            )}
+                            {isExecuting ? 'Executing...' : 'Run Protocol'}
+                        </button>
 
-                            <div className="w-px h-8 bg-black/5 dark:bg-cyan-500/15 mx-1" />
+                        <div className="w-px h-8 bg-black/10 dark:bg-white/10 mx-1" />
 
-                            <button
-                                onClick={handleAddBlock}
-                                className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#0c1a2e] hover:bg-slate-50 dark:hover:bg-[#112240] border border-black/5 dark:border-white/10 hover:border-cyan-500/30 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 active:scale-90 shadow-sm dark:shadow-none"
-                                title="Add Node"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
+                        <button
+                            onClick={handleAddBlock}
+                            className="w-14 h-14 flex items-center justify-center bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-transparent hover:border-black/10 dark:hover:border-white/20 rounded-2xl text-foreground/60 hover:text-foreground dark:text-white/60 dark:hover:text-white transition-all duration-200 active:scale-90"
+                            title="Add Node"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
 
-                            <button
-                                className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#0c1a2e] hover:bg-slate-50 dark:hover:bg-[#112240] border border-black/5 dark:border-white/10 hover:border-cyan-500/30 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 active:scale-90 shadow-sm dark:shadow-none"
-                                title="Grid View"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                            </button>
-                        </div>
+                        <button
+                            className="w-14 h-14 flex items-center justify-center bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-transparent hover:border-black/10 dark:hover:border-white/20 rounded-2xl text-foreground/60 hover:text-foreground dark:text-white/60 dark:hover:text-white transition-all duration-200 active:scale-90"
+                            title="Grid View"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        </button>
                     </div>
                 )
             }

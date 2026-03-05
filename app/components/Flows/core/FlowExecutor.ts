@@ -1,7 +1,7 @@
 import { Flow, FlowBlock } from "@/app/lib/collections";
 import { executeRequest, CosmoResponse } from "@/app/components/RequestEngine";
 
-export type FlowExecutionEvent =
+type FlowExecutionEvent =
     | { type: 'BLOCK_START', blockId: string }
     | { type: 'BLOCK_END', blockId: string, response: CosmoResponse, duration: number }
     | { type: 'BLOCK_ERROR', blockId: string, error: string }
