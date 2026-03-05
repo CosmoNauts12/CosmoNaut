@@ -355,10 +355,10 @@ export default function WorkspaceHeader() {
         <div className="h-4 w-px bg-card-border mx-1" />
 
 {/* User Dropdown */}
-        <div className="relative flex items-center h-full">
+        <div className="relative flex items-center">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-white shadow-sm ring-2 ring-primary/20 hover:scale-110 transition-transform active:scale-95"
+            className="w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-white shadow-sm ring-2 ring-primary/20 hover:scale-105 transition-all active:scale-95"
           >
             {user?.displayName?.charAt(0).toUpperCase() || "U"}
           </button>
@@ -371,15 +371,14 @@ export default function WorkspaceHeader() {
                 className="fixed inset-0 z-40 bg-transparent"
                 onClick={() => setDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-12 w-64 liquid-glass rounded-2xl border border-card-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50" />
-                <div className="relative z-10 p-5">
-                  <div className="mb-4">
-                    <p className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Signed in as</p>
-                    <p className="font-bold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
+              <div className="absolute right-0 top-[calc(100%+8px)] w-[240px] bg-card-bg/95 backdrop-blur-xl rounded-[14px] border border-card-border shadow-[0_12px_40px_-12px_rgba(0,0,0,0.2)] overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
+                <div className="relative z-10 p-4">
+                  <div className="mb-3 px-1">
+                    <p className="font-semibold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
+                    <p className="text-[11px] text-muted truncate">{user?.email || "No email"}</p>
 
                     {/* Status Display/Edit */}
-                    <div className="mt-2">
+                    <div className="mt-3">
                       {isEditingStatus ? (
                         <input
                           autoFocus
@@ -389,48 +388,59 @@ export default function WorkspaceHeader() {
                           onBlur={() => setIsEditingStatus(false)}
                           onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
                           placeholder="Set status..."
-                          className="w-full bg-black/20 border border-primary/30 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full bg-background border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-muted/50"
                         />
                       ) : (
                         <div
                           onClick={() => setIsEditingStatus(true)}
-                          className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-card-border bg-white/5 text-[11px] cursor-pointer transition-all hover:bg-white/10 group ${settings.status ? 'text-foreground' : 'text-muted hover:text-primary hover:border-primary/50'
+                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-transparent hover:bg-foreground/5 text-xs cursor-pointer transition-all group ${settings.status ? 'text-foreground' : 'text-muted hover:text-foreground'
                             }`}
                         >
                           <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span>
-                          <span className="truncate">{settings.status || "Set status"}</span>
+                          <span className="truncate">{settings.status || "Set status..."}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2" />
+                  <div className="h-px bg-card-border/50 my-2 -mx-4" />
 
-                  <div className="space-y-1">
+                  <div className="space-y-0.5 py-1">
                     <button
-                      onClick={() => openSettings("profile")}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                      onClick={() => {
+                        openSettings("profile");
+                        setDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-all flex items-center justify-between group"
                     >
                       Profile Settings
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-muted">⌘P</span>
                     </button>
-                    <button className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all">
+                    <button 
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-all"
+                    >
                       Resource Center
                     </button>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2" />
+                  <div className="h-px bg-card-border/50 my-2 -mx-4" />
 
-                  <button
-                    onClick={() => logout()}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-all group"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                      <polyline points="16 17 21 12 16 7"></polyline>
-                      <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Sign out
-                  </button>
+                  <div className="pt-1">
+                    <button
+                      onClick={() => logout()}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-rose-500/90 hover:text-rose-600 hover:bg-rose-500/10 transition-all group"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 group-hover:opacity-100 group-hover:-translate-x-0.5 transition-all">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Sign out
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
