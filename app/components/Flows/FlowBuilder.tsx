@@ -21,6 +21,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     const [isExecuting, setIsExecuting] = useState(false);
     const [summary, setSummary] = useState<FlowExecutionSummary | null>(null);
     const [showChat, setShowChat] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Canvas State
     const [viewport, setViewport] = useState({ x: 0, y: 0 });
@@ -96,6 +97,12 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         const newFlow = { ...localFlow, blocks: [...localFlow.blocks, newBlock] };
         setLocalFlow(newFlow);
         updateFlow(newFlow);
+    };
+
+    const handleSaveFlow = () => {
+        setIsSaving(true);
+        updateFlow(localFlow);
+        setTimeout(() => setIsSaving(false), 2000);
     };
 
     const handleDeleteBlock = (blockId: string) => {
@@ -231,10 +238,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     </button>
                     <div className="w-px h-8 bg-foreground/10 mx-2" />
                     <button
-                        className="px-8 py-3 bg-foreground/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black text-muted hover:text-foreground dark:hover:text-white hover:border-foreground/20 dark:hover:border-white/30 hover:bg-foreground/10 dark:hover:bg-white/10 transition-all duration-200 uppercase tracking-[0.2em] shadow-sm hover:shadow-md active:scale-95"
-                        onClick={handleAddBlock}
+                        className={`px-8 py-3 bg-foreground/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl text-[10px] font-black transition-all duration-200 uppercase tracking-[0.2em] shadow-sm hover:shadow-md active:scale-95 ${isSaving ? 'text-emerald-500 border-emerald-500/50 bg-emerald-500/10' : 'text-muted hover:text-foreground dark:hover:text-white hover:border-foreground/20 dark:hover:border-white/30 hover:bg-foreground/10 dark:hover:bg-white/10'}`}
+                        onClick={handleSaveFlow}
+                        disabled={isSaving}
                     >
-                        Save Configuration
+                        {isSaving ? 'Saved!' : 'Save Configuration'}
                     </button>
                 </div>
             </div>
