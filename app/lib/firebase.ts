@@ -112,7 +112,6 @@ export async function confirmReset(code: string, newPassword: string): Promise<v
 }
 
 export {
-    app,
     auth,
     onAuthStateChanged,
     updateProfile,

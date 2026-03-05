@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 /**
  * Structure of the application settings.
  */
-export interface Settings {
+interface Settings {
   /** Name of the default workspace to create for new users. */
   defaultWorkspace: string;
   /** Whether to automatically open the last used workspace on startup. */
