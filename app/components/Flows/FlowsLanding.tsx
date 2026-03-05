@@ -32,13 +32,7 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                     </svg>
                 </div>
 
-                <div className="absolute -bottom-2 -left-6 w-16 h-10 bg-primary/10 rounded-lg backdrop-blur-sm border border-primary/20 flex items-center justify-center animate-pulse">
-                    <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary opacity-20" />
-                    </div>
-                </div>
+
             </div>
 
             <h2 className="text-2xl font-black text-foreground mb-4 tracking-tight uppercase tracking-[0.05em]">
