@@ -75,13 +75,31 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         }));
     };
 
+    // Firebase (and Firestore specifically) rejects `undefined` values. 
+    // Since execution state often sets properties to undefined to clear them (e.g. error: undefined),
+    // we must sanitize blocks before sending them up via `updateFlow`.
+    const cleanFlowBeforeSave = (flowToClean: Flow): Flow => {
+        return {
+            ...flowToClean,
+            blocks: flowToClean.blocks.map(block => {
+                const cleanedBlock: any = { ...block };
+                Object.keys(cleanedBlock).forEach(key => {
+                    if (cleanedBlock[key] === undefined) {
+                        delete cleanedBlock[key];
+                    }
+                });
+                return cleanedBlock as FlowBlock;
+            })
+        };
+    };
+
     const handleUpdateBlock = (blockId: string, updates: Partial<FlowBlock>) => {
         const newBlocks = localFlow.blocks.map(b =>
             b.id === blockId ? { ...b, ...updates } : b
         );
         const newFlow = { ...localFlow, blocks: newBlocks };
         setLocalFlow(newFlow);
-        updateFlow(newFlow);
+        updateFlow(cleanFlowBeforeSave(newFlow));
     };
 
     const handleAddBlock = () => {
@@ -97,12 +115,12 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         };
         const newFlow = { ...localFlow, blocks: [...localFlow.blocks, newBlock] };
         setLocalFlow(newFlow);
-        updateFlow(newFlow);
+        updateFlow(cleanFlowBeforeSave(newFlow));
     };
 
     const handleSaveFlow = () => {
         setIsSaving(true);
-        updateFlow(localFlow);
+        updateFlow(cleanFlowBeforeSave(localFlow));
         setTimeout(() => setIsSaving(false), 2000);
     };
 
@@ -112,7 +130,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             .map((b, i) => ({ ...b, order: i }));
         const newFlow = { ...localFlow, blocks: newBlocks };
         setLocalFlow(newFlow);
-        updateFlow(newFlow);
+        updateFlow(cleanFlowBeforeSave(newFlow));
     };
 
     const moveBlock = (index: number, direction: 'up' | 'down') => {
@@ -128,7 +146,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
         const finalBlocks = newBlocks.map((b, i) => ({ ...b, order: i }));
         const newFlow = { ...localFlow, blocks: finalBlocks };
         setLocalFlow(newFlow);
-        updateFlow(newFlow);
+        updateFlow(cleanFlowBeforeSave(newFlow));
     };
 
     const runFlow = async () => {
