@@ -368,7 +368,7 @@ export default function Dashboard() {
                   {/* Astronaut Graphic - Much Larger */}
                   <div className="relative w-96 h-96 hidden md:block opacity-100 transform group-hover:scale-105 transition-transform duration-700 ease-in-out -mr-10">
                     <img
-                      src="/astro.png"
+                      src="/logo.svg"
                       alt="Astronaut"
                       className="w-full h-full object-contain"
                     />

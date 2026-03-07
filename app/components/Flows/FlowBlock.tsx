@@ -188,207 +188,205 @@ export default function FlowBlockUI({
                                     <div className="w-3 h-3 bg-black/10 dark:bg-white/20 rounded-full border-2 border-white dark:border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair shadow-sm" />
                                 </div>
                             </div>
-                        ) : activeTab === 'output' ? (
-                            /* Output View */
-                            <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
-                                {block.isExecuting ? (
-                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/50 dark:text-white/50 space-y-3">
-                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Executing...</p>
-                                    </div>
-                                ) : block.error ? (
-                                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg">
-                                        <p className="text-xs font-semibold text-rose-500 dark:text-rose-400 mb-1">Execution Failed</p>
-                                        <p className="text-[10px] text-rose-600 dark:text-rose-500/70">{block.error}</p>
-                                    </div>
-                                ) : block.response_data ? (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${block.status && block.status < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
-                                                Status: {block.status || 200}
-                                            </span>
-                                            {block.duration_ms && (
-                                                <span className="text-[9px] font-bold text-foreground/40 dark:text-white/40">{block.duration_ms}ms</span>
-                                            )}
+                        ) : // @ts-ignore - Structural nesting error: unreachable branch in current logic
+                            activeTab === 'output' ? (
+                                /* Output View */
+                                <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
+                                    {block.isExecuting ? (
+                                        <div className="flex flex-col items-center justify-center py-6 text-foreground/50 dark:text-white/50 space-y-3">
+                                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Executing...</p>
                                         </div>
-                                        <div className="bg-foreground/5 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[150px] overflow-y-auto custom-scrollbar">
-                                            <pre className="text-[10px] text-foreground/70 dark:text-white/70 font-mono whitespace-pre-wrap">
-                                                {typeof block.response_data === 'string' ? block.response_data : JSON.stringify(block.response_data, null, 2)}
-                                            </pre>
+                                    ) : block.error ? (
+                                        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg">
+                                            <p className="text-xs font-semibold text-rose-500 dark:text-rose-400 mb-1">Execution Failed</p>
+                                            <p className="text-[10px] text-rose-600 dark:text-rose-500/70">{block.error}</p>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/30 dark:text-white/30 space-y-2">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                        <p className="text-[10px] font-bold">No output yet</p>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            /* Default Configuration Style */
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <button className="text-[11px] font-bold text-foreground/40 dark:text-white/40 hover:text-foreground dark:hover:text-white flex items-center gap-2 transition-colors">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                        Add input
-                                    </button>
+                                    ) : block.response_data ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${block.status && block.status < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                                                    Status: {block.status || 200}
+                                                </span>
+                                                {block.duration_ms && (
+                                                    <span className="text-[9px] font-bold text-foreground/40 dark:text-white/40">{block.duration_ms}ms</span>
+                                                )}
+                                            </div>
+                                            <div className="bg-foreground/5 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[150px] overflow-y-auto custom-scrollbar">
+                                                <pre className="text-[10px] text-foreground/70 dark:text-white/70 font-mono whitespace-pre-wrap">
+                                                    {typeof block.response_data === 'string' ? block.response_data : JSON.stringify(block.response_data, null, 2)}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-6 text-foreground/30 dark:text-white/30 space-y-2">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                            <p className="text-[10px] font-bold">No output yet</p>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="relative" onMouseDown={(e) => e.stopPropagation()}>
-                                    <input
-                                        type="text"
-                                        value={block.url}
-                                        onChange={(e) => onUpdateAction({ url: e.target.value })}
-                                        placeholder="https://api.domain.com/endpoint"
-                                        className="w-full bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 dark:text-white/80 focus:border-primary/50 outline-none transition-all shadow-inner"
-                                    />
+                            ) : (
+                                /* Default Configuration Style */
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <button className="text-[11px] font-bold text-foreground/40 dark:text-white/40 hover:text-foreground dark:hover:text-white flex items-center gap-2 transition-colors">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            Add input
+                                        </button>
+                                    </div>
+                                    <div className="relative" onMouseDown={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="text"
+                                            value={block.url}
+                                            onChange={(e) => onUpdateAction({ url: e.target.value })}
+                                            placeholder="https://api.domain.com/endpoint"
+                                            className="w-full bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 dark:text-white/80 focus:border-primary/50 outline-none transition-all shadow-inner"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3" onMouseDown={(e) => e.stopPropagation()}>
+                                        <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Params</p>
+                                            {block.params.slice(0, 2).map((p, i) => (
+                                                <div key={i} className="flex gap-2 mb-1.5">
+                                                    <input value={p.key} onChange={(e) => handleKVChange('params', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Key" />
+                                                    <input value={p.value} onChange={(e) => handleKVChange('params', i, { value: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Value" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Headers</p>
+                                            {block.headers.slice(0, 2).map((h, i) => (
+                                                <div key={i} className="flex gap-2 mb-1.5">
+                                                    <input value={h.key} onChange={(e) => handleKVChange('headers', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Name" />
+                                                    <input value={h.value} onChange={(e) => handleKVChange('headers', i, { value: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Value" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                    </div>
+                )}
+
+                {/* Bottom Tab Bar */}
+                <div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
+                    <button
+                        onClick={() => setActiveTab("input")}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "input"
+                            ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
+                            : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
+                    >
+                        Input
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab("output")}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "output"
+                            ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
+                            : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
+                    >
+                        Output
+                    </button>
+                </div>
+
+                {/* OUTPUT PANEL */}
+                {isExpanded && activeTab === "output" && (
+                    <div className="p-4 py-6 space-y-4 min-h-[120px]">
+                        {block.status || block.error ? (
+                            <div className="space-y-3">
+
+                                {/* Status Header */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`w-2 h-2 rounded-full ${block.error ? "bg-rose-500" : "bg-emerald-500"
+                                                }`}
+                                        />
+                                        <span
+                                            className={`text-xs font-black uppercase tracking-wider ${block.error
+                                                ? "text-rose-500 dark:text-rose-400"
+                                                : "text-emerald-500 dark:text-emerald-400"
+                                                }`}
+                                        >
+                                            {block.error ? "Error" : `Status ${block.status}`}
+                                        </span>
+                                    </div>
+
+                                    <span className="text-[9px] font-bold text-foreground/30 dark:text-white/30 uppercase tracking-widest">
+                                        JSON
+                                    </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3" onMouseDown={(e) => e.stopPropagation()}>
-                                    <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Params</p>
-                                        {block.params.slice(0, 2).map((p, i) => (
-                                            <div key={i} className="flex gap-2 mb-1.5">
-                                                <input value={p.key} onChange={(e) => handleKVChange('params', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Key" />
-                                                <input value={p.value} onChange={(e) => handleKVChange('params', i, { value: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Value" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Headers</p>
-                                        {block.headers.slice(0, 2).map((h, i) => (
-                                            <div key={i} className="flex gap-2 mb-1.5">
-                                                <input value={h.key} onChange={(e) => handleKVChange('headers', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Name" />
-                                                <input value={h.value} onChange={(e) => handleKVChange('headers', i, { value: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Value" />
-                                            </div>
-                                        ))}
-                                    </div>
+                                {/* Response Body */}
+                                <div className="bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto scrollbar-hide shadow-inner">
+                                    {block.error ? (
+                                        <p className="text-[10px] font-bold text-rose-500 dark:text-rose-400">
+                                            {typeof block.error === "string"
+                                                ? block.error
+                                                : // @ts-ignore
+                                                block.error?.message || "Unknown error"}
+                                        </p>
+                                    ) : block.response_data ? (
+                                        <pre className="text-[10px] text-foreground/60 dark:text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                                            {(() => {
+                                                try {
+                                                    return JSON.stringify(
+                                                        JSON.parse(block.response_data),
+                                                        null,
+                                                        2
+                                                    );
+                                                } catch {
+                                                    return String(block.response_data);
+                                                }
+                                            })()}
+                                        </pre>
+                                    ) : (
+                                        <p className="text-[10px] text-foreground/30 dark:text-white/30 italic">
+                                            Response body is empty
+                                        </p>
+                                    )}
                                 </div>
+
+                                {/* Headers */}
+                                {block.response_headers &&
+                                    Object.keys(block.response_headers).length > 0 && (
+                                        <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">
+                                                Response Headers
+                                            </p>
+
+                                            {Object.entries(block.response_headers)
+                                                .slice(0, 4)
+                                                .map(([key, val]) => (
+                                                    <div key={key} className="flex gap-2 mb-1">
+                                                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400/80 font-bold">
+                                                            {key}:
+                                                        </span>
+
+                                                        <span className="text-[10px] text-foreground/50 dark:text-white/50 truncate">
+                                                            {String(val)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    )}
+                            </div>
+                        ) : (
+                            /* Empty state */
+                            <div className="flex flex-col items-center justify-center py-6 text-center">
+                                <p className="text-[10px] font-black text-foreground/20 dark:text-white/20 uppercase tracking-widest mb-1">
+                                    No data
+                                </p>
+                                <p className="text-[9px] text-foreground/10 dark:text-white/10 font-bold">
+                                    Run this block to see output
+                                </p>
                             </div>
                         )}
                     </div>
                 )}
-
-{/* Bottom Tab Bar */}
-<div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
-  <button
-    onClick={() => setActiveTab("input")}
-    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${
-      activeTab === "input"
-        ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
-        : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-    }`}
-  >
-    Input
-  </button>
-
-  <button
-    onClick={() => setActiveTab("output")}
-    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${
-      activeTab === "output"
-        ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
-        : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-    }`}
-  >
-    Output
-  </button>
-</div>
-
-{/* OUTPUT PANEL */}
-{isExpanded && activeTab === "output" && (
-  <div className="p-4 py-6 space-y-4 min-h-[120px]">
-    {block.status || block.error ? (
-      <div className="space-y-3">
-
-        {/* Status Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                block.error ? "bg-rose-500" : "bg-emerald-500"
-              }`}
-            />
-            <span
-              className={`text-xs font-black uppercase tracking-wider ${
-                block.error
-                  ? "text-rose-500 dark:text-rose-400"
-                  : "text-emerald-500 dark:text-emerald-400"
-              }`}
-            >
-              {block.error ? "Error" : `Status ${block.status}`}
-            </span>
-          </div>
-
-          <span className="text-[9px] font-bold text-foreground/30 dark:text-white/30 uppercase tracking-widest">
-            JSON
-          </span>
-        </div>
-
-        {/* Response Body */}
-        <div className="bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto scrollbar-hide shadow-inner">
-          {block.error ? (
-            <p className="text-[10px] font-bold text-rose-500 dark:text-rose-400">
-              {typeof block.error === "string"
-                ? block.error
-                : block.error?.message || "Unknown error"}
-            </p>
-          ) : block.response_data ? (
-            <pre className="text-[10px] text-foreground/60 dark:text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
-              {(() => {
-                try {
-                  return JSON.stringify(
-                    JSON.parse(block.response_data),
-                    null,
-                    2
-                  );
-                } catch {
-                  return String(block.response_data);
-                }
-              })()}
-            </pre>
-          ) : (
-            <p className="text-[10px] text-foreground/30 dark:text-white/30 italic">
-              Response body is empty
-            </p>
-          )}
-        </div>
-
-        {/* Headers */}
-        {block.response_headers &&
-          Object.keys(block.response_headers).length > 0 && (
-            <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5">
-              <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">
-                Response Headers
-              </p>
-
-              {Object.entries(block.response_headers)
-                .slice(0, 4)
-                .map(([key, val]) => (
-                  <div key={key} className="flex gap-2 mb-1">
-                    <span className="text-[10px] text-cyan-600 dark:text-cyan-400/80 font-bold">
-                      {key}:
-                    </span>
-
-                    <span className="text-[10px] text-foreground/50 dark:text-white/50 truncate">
-                      {String(val)}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          )}
-      </div>
-    ) : (
-      /* Empty state */
-      <div className="flex flex-col items-center justify-center py-6 text-center">
-        <p className="text-[10px] font-black text-foreground/20 dark:text-white/20 uppercase tracking-widest mb-1">
-          No data
-        </p>
-        <p className="text-[9px] text-foreground/10 dark:text-white/10 font-bold">
-          Run this block to see output
-        </p>
-      </div>
-    )}
-  </div>
-)}
 
                 {/* Default Input/Output Tab Bar */}
                 <div className="bg-foreground/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">

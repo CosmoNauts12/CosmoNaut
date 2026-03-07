@@ -12,7 +12,7 @@ export default function Astronaut() {
       <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full"></div>
 
       <Image
-        src="/astronaut.png"
+        src="/logo.svg"
         alt="Astronaut"
         width={750}
         height={750}

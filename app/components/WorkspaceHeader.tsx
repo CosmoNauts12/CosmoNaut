@@ -178,16 +178,27 @@ export default function WorkspaceHeader() {
         </nav>
       </div>
 
-      {/* Center Section */}
-      <div className="flex-1 flex justify-center">
-        {/* Empty area for future elements like search or page title */}
-      </div>
-
-      {/* Right Section (User Actions) */}
       <div className="flex items-center gap-4">
-{/* Collaborators Facepile */}
+        {/* Updates / Notifications Bell */}
+        <button
+          onClick={() => setIsUpdatesOpen(true)}
+          className="relative w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+          title="Updates & Notifications"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          {pendingCount > 0 && (
+            <span className="absolute 1 top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm shadow-rose-500/50">
+              {pendingCount > 9 ? '9+' : pendingCount}
+            </span>
+          )}
+        </button>
+
+        {/* Collaborators Facepile */}
         {(collaborators.length > 0 || (activeWorkspace?.ownerId === user?.uid)) && (
-          <div className="relative flex items-center group/facepile cursor-help pt-2 pb-2">
+          <div className="relative flex items-center ml-2 group/facepile cursor-help pt-2 pb-2">
             <div className="flex items-center relative transition-opacity">
               {/* Show Actual Workspace Owner */}
               {ownerInfo && (
@@ -323,6 +334,9 @@ export default function WorkspaceHeader() {
           </div>
         )}
 
+        {/* Divider before Invite */}
+        <div className="h-4 w-px bg-card-border mx-1" />
+
         <button id="tour-invite-btn" onClick={() => setIsInviteOpen(true)} className="px-3 py-1.5 glass-btn-primary rounded-xl text-[11px] flex items-center gap-1.5 active:scale-95 shadow-lg shadow-primary/20">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
           Invite
@@ -330,35 +344,11 @@ export default function WorkspaceHeader() {
 
         <div className="h-4 w-px bg-card-border mx-1" />
 
-        {/* System Controls */}
-        <div className="flex items-center gap-2">
-{/* Updates / Notifications Bell */}
-          <button
-            onClick={() => setIsUpdatesOpen(true)}
-            className="relative w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-            title="Updates & Notifications"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            {pendingCount > 0 && (
-              <span className="absolute 1 top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm shadow-rose-500/50">
-                  {pendingCount > 9 ? '9+' : pendingCount}
-              </span>
-            )}
-          </button>
-
-          <ThemeToggle />
-        </div>
-
-        <div className="h-4 w-px bg-card-border mx-1" />
-
-{/* User Dropdown */}
-        <div className="relative flex items-center">
+        {/* User Dropdown */}
+        <div className="relative flex items-center h-full">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-white shadow-sm ring-2 ring-primary/20 hover:scale-105 transition-all active:scale-95"
+            className="w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-white shadow-sm ring-2 ring-primary/20 hover:scale-110 transition-transform active:scale-95"
           >
             {user?.displayName?.charAt(0).toUpperCase() || "U"}
           </button>
@@ -371,14 +361,34 @@ export default function WorkspaceHeader() {
                 className="fixed inset-0 z-40 bg-transparent"
                 onClick={() => setDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-[calc(100%+8px)] w-[240px] bg-card-bg/95 backdrop-blur-xl rounded-[14px] border border-card-border shadow-[0_12px_40px_-12px_rgba(0,0,0,0.2)] overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
-                <div className="relative z-10 p-4">
-                  <div className="mb-3 px-1">
-                    <p className="font-semibold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
-                    <p className="text-[11px] text-muted truncate">{user?.email || "No email"}</p>
+              <div className="absolute right-0 top-12 w-64 rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50
+                dark:bg-[#050f12] dark:border dark:border-emerald-500/20 dark:shadow-[0_0_40px_rgba(16,185,129,0.12),0_20px_60px_rgba(0,0,0,0.6)]
+                bg-white/90 border border-sky-200/60 shadow-[0_0_40px_rgba(14,165,233,0.10),0_20px_60px_rgba(0,0,0,0.10)]
+                backdrop-blur-xl">
+
+                {/* Premium gradient header strip */}
+                <div className="h-1 w-full dark:bg-gradient-to-r dark:from-emerald-500 dark:via-cyan-400 dark:to-teal-500 bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400" />
+
+                {/* Subtle inner glow */}
+                <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)] bg-[radial-gradient(ellipse_at_top_right,rgba(14,165,233,0.07),transparent_60%)] pointer-events-none" />
+
+                <div className="relative z-10 p-5">
+                  {/* User info */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-black text-white shrink-0
+                        dark:bg-gradient-to-br dark:from-emerald-400 dark:to-cyan-500 dark:ring-2 dark:ring-emerald-500/30
+                        bg-gradient-to-br from-sky-400 to-teal-400 ring-2 ring-sky-400/30 shadow-lg">
+                        {user?.displayName?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] dark:text-emerald-400/60 text-sky-500/70 font-black uppercase tracking-widest leading-none mb-0.5">Signed in as</p>
+                        <p className="font-bold text-sm dark:text-white text-slate-800 truncate">{user?.displayName || "Explorer"}</p>
+                      </div>
+                    </div>
 
                     {/* Status Display/Edit */}
-                    <div className="mt-3">
+                    <div className="mt-1">
                       {isEditingStatus ? (
                         <input
                           autoFocus
@@ -388,64 +398,78 @@ export default function WorkspaceHeader() {
                           onBlur={() => setIsEditingStatus(false)}
                           onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
                           placeholder="Set status..."
-                          className="w-full bg-background border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-muted/50"
+                          className="w-full dark:bg-emerald-950/40 bg-sky-50 dark:border-emerald-500/30 border-sky-300/50 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-700 focus:outline-none dark:focus:ring-1 dark:focus:ring-emerald-500/50 focus:ring-1 focus:ring-sky-400/50"
                         />
                       ) : (
                         <div
                           onClick={() => setIsEditingStatus(true)}
-                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-transparent hover:bg-foreground/5 text-xs cursor-pointer transition-all group ${settings.status ? 'text-foreground' : 'text-muted hover:text-foreground'
-                            }`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] cursor-pointer transition-all group
+                            dark:bg-emerald-950/30 dark:border dark:border-emerald-500/20 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-950/50
+                            bg-sky-50/80 border border-sky-200/60 hover:border-sky-400/50 hover:bg-sky-100/60
+                            ${settings.status ? 'dark:text-white text-slate-700' : 'dark:text-emerald-400/60 text-sky-400 '}`}
                         >
                           <span className="group-hover:scale-110 transition-transform">{settings.status ? '🟢' : '✨'}</span>
-                          <span className="truncate">{settings.status || "Set status..."}</span>
+                          <span className="truncate">{settings.status || "Set status"}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2 -mx-4" />
+                  {/* Divider */}
+                  <div className="h-px dark:bg-gradient-to-r dark:from-transparent dark:via-emerald-500/20 dark:to-transparent bg-gradient-to-r from-transparent via-sky-300/40 to-transparent my-2" />
 
-                  <div className="space-y-0.5 py-1">
+                  {/* Menu Items */}
+                  <div className="space-y-0.5">
                     <button
-                      onClick={() => {
-                        openSettings("profile");
-                        setDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-all flex items-center justify-between group"
+                      onClick={() => openSettings("profile")}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all group flex items-center gap-2.5
+                        dark:text-slate-300 dark:hover:text-white dark:hover:bg-emerald-500/10
+                        text-slate-600 hover:text-slate-900 hover:bg-sky-50"
                     >
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center dark:bg-emerald-500/10 bg-sky-100 group-hover:scale-110 transition-transform shrink-0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="dark:text-emerald-400 text-sky-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                      </span>
                       Profile Settings
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-muted">⌘P</span>
                     </button>
-                    <button 
-                      onClick={() => setDropdownOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-all"
-                    >
+                    <button className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all group flex items-center gap-2.5
+                        dark:text-slate-300 dark:hover:text-white dark:hover:bg-cyan-500/10
+                        text-slate-600 hover:text-slate-900 hover:bg-sky-50">
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center dark:bg-cyan-500/10 bg-sky-100 group-hover:scale-110 transition-transform shrink-0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="dark:text-cyan-400 text-sky-400"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                      </span>
                       Resource Center
                     </button>
                   </div>
 
-                  <div className="h-px bg-card-border/50 my-2 -mx-4" />
+                  {/* Divider */}
+                  <div className="h-px dark:bg-gradient-to-r dark:from-transparent dark:via-emerald-500/20 dark:to-transparent bg-gradient-to-r from-transparent via-sky-300/40 to-transparent my-2" />
 
-                  <div className="pt-1">
-                    <button
-                      onClick={() => logout()}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-rose-500/90 hover:text-rose-600 hover:bg-rose-500/10 transition-all group"
-                    >
-                      <span className="flex items-center gap-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 group-hover:opacity-100 group-hover:-translate-x-0.5 transition-all">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                          <polyline points="16 17 21 12 16 7"></polyline>
-                          <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        Sign out
-                      </span>
-                    </button>
-                  </div>
+                  {/* Sign out */}
+                  <button
+                    onClick={() => logout()}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-all group"
+                  >
+                    <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-rose-500/10 group-hover:scale-110 transition-transform shrink-0">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                    </span>
+                    Sign out
+                  </button>
                 </div>
               </div>
             </>
           )}
         </div>
+
+        <div className="h-4 w-px bg-card-border mx-1" />
+
+        <ThemeToggle />
+
+        <div className="h-4 w-px bg-card-border mx-1" />
+
       </div>
 
       <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
