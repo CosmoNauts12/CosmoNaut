@@ -185,7 +185,7 @@ export default function WorkspaceHeader() {
 
       {/* Right Section (User Actions) */}
       <div className="flex items-center gap-4">
-{/* Collaborators Facepile */}
+        {/* Collaborators Facepile */}
         {(collaborators.length > 0 || (activeWorkspace?.ownerId === user?.uid)) && (
           <div className="relative flex items-center group/facepile cursor-help pt-2 pb-2">
             <div className="flex items-center relative transition-opacity">
@@ -332,7 +332,7 @@ export default function WorkspaceHeader() {
 
         {/* System Controls */}
         <div className="flex items-center gap-2">
-{/* Updates / Notifications Bell */}
+          {/* Updates / Notifications Bell */}
           <button
             onClick={() => setIsUpdatesOpen(true)}
             className="relative w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
@@ -344,7 +344,7 @@ export default function WorkspaceHeader() {
             </svg>
             {pendingCount > 0 && (
               <span className="absolute 1 top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm shadow-rose-500/50">
-                  {pendingCount > 9 ? '9+' : pendingCount}
+                {pendingCount > 9 ? '9+' : pendingCount}
               </span>
             )}
           </button>
@@ -354,7 +354,7 @@ export default function WorkspaceHeader() {
 
         <div className="h-4 w-px bg-card-border mx-1" />
 
-{/* User Dropdown */}
+        {/* User Dropdown */}
         <div className="relative flex items-center">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -416,7 +416,7 @@ export default function WorkspaceHeader() {
                       Profile Settings
                       <span className="opacity-0 group-hover:opacity-100 transition-opacity text-muted">⌘P</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setDropdownOpen(false)}
                       className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-all"
                     >
@@ -445,6 +445,13 @@ export default function WorkspaceHeader() {
               </div>
             </>
           )}
+        </div>
+
+        <div className="h-4 w-px bg-card-border mx-1" />
+
+        {/* App Logo */}
+        <div className="flex items-center justify-center transition-all ml-2">
+          <img src="/logo.svg" alt="App Logo" className="w-10 h-10 object-contain drop-shadow-md hover:scale-105 transition-transform" />
         </div>
       </div>
 

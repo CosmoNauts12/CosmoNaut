@@ -75,9 +75,12 @@ export default function SignIn() {
       {/* Background Image */}
       <div className="login-bg" />
 
-      {/* Theme Toggle */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Top Right Controls */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-4">
         <ThemeToggle />
+        <div className="flex items-center justify-center transition-all">
+          <img src="/logo.svg" alt="App Logo" className="w-12 h-12 object-contain drop-shadow-md hover:scale-105 transition-transform" />
+        </div>
       </div>
 
       {/* Main Content */}

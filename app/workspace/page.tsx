@@ -41,8 +41,8 @@ export default function WorkspacePage() {
   /** Whether an HTTP request is currently in progress. */
   const [isExecuting, setIsExecuting] = useState(false);
 
-  /** Current active activity from sidebar. */
   const [activeActivity, setActiveActivity] = useState("collections");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -219,6 +219,33 @@ export default function WorkspacePage() {
     }
   }, [synchronizedTabs, tabs]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // New Request: Ctrl + N
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        const id = `new_${Date.now()}`;
+        const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
+        setTabs(prev => [...prev, newReq]);
+        setActiveTabId(id);
+      }
+      // Close Tab: Ctrl + W
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        if (activeTabId !== "overview") {
+          handleCloseTab(activeTabId);
+        }
+      }
+      // Toggle Sidebar: Ctrl + /
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        setIsSidebarOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTabId, handleCloseTab]);
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -238,11 +265,13 @@ export default function WorkspacePage() {
       <WorkspaceHeader />
 
       <div className="flex-1 flex overflow-hidden relative z-10">
-        <WorkspaceSidebar
-          onSelectRequest={handleSelectRequest}
-          onSelectFlow={handleSelectFlow}
-          onActivityChange={setActiveActivity}
-        />
+        <div className={`transition-all duration-300 ${isSidebarOpen ? 'w-[340px] opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
+          <WorkspaceSidebar
+            onSelectRequest={handleSelectRequest}
+            onSelectFlow={handleSelectFlow}
+            onActivityChange={setActiveActivity}
+          />
+        </div>
 
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
@@ -322,7 +351,7 @@ export default function WorkspacePage() {
                       <div className="relative overflow-hidden liquid-glass rounded-[2rem] border-primary/20 bg-gradient-to-r from-primary/10 via-background to-secondary/10 p-8 flex items-center justify-between group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-colors duration-700" />
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] group-hover:bg-secondary/20 transition-colors duration-700" />
-                        
+
                         <div className="relative z-10 w-full flex flex-col md:flex-row items-center gap-8 justify-between">
                           <div className="max-w-md">
                             <h2 className="text-2xl md:text-3xl font-black mb-3 tracking-tight uppercase tracking-[0.05em] bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 dark:from-white dark:to-white/70">
@@ -332,28 +361,28 @@ export default function WorkspacePage() {
                               Build powerful API flows visually. Connect steps, parse data, and automate your systems with minimal friction.
                             </p>
                             <div className="flex gap-4">
-                                <div className="flex items-center gap-2 text-[10px] font-black text-foreground uppercase tracking-widest bg-background/50 px-3 py-1.5 rounded-lg border border-card-border/50 shadow-sm backdrop-blur-sm">
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> {flows.length} Flows Total
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] font-black text-foreground uppercase tracking-widest bg-background/50 px-3 py-1.5 rounded-lg border border-card-border/50 shadow-sm backdrop-blur-sm">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"/> {flows.length} Active
-                                </div>
+                              <div className="flex items-center gap-2 text-[10px] font-black text-foreground uppercase tracking-widest bg-background/50 px-3 py-1.5 rounded-lg border border-card-border/50 shadow-sm backdrop-blur-sm">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg> {flows.length} Flows Total
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] font-black text-foreground uppercase tracking-widest bg-background/50 px-3 py-1.5 rounded-lg border border-card-border/50 shadow-sm backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" /> {flows.length} Active
+                              </div>
                             </div>
                           </div>
                           <div className="relative w-40 h-40 hidden md:flex items-center justify-center shrink-0">
-                             <img src="/astro.png" alt="Automation Illustration" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] group-hover:scale-105 transition-transform duration-700 z-10" />
-                             
-                             <div className="absolute top-0 right-0 w-10 h-10 bg-secondary/20 rounded-xl backdrop-blur-md border border-secondary/30 flex items-center justify-center animate-bounce duration-[3000ms]">
-                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
-                                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                               </svg>
-                             </div>
-                             
-                             <div className="absolute bottom-4 -left-4 w-8 h-8 bg-primary/20 rounded-lg backdrop-blur-md border border-primary/30 flex items-center justify-center animate-pulse z-0">
-                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
-                               </svg>
-                             </div>
+                            <img src="/astro.png" alt="Automation Illustration" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] group-hover:scale-105 transition-transform duration-700 z-10" />
+
+                            <div className="absolute top-0 right-0 w-10 h-10 bg-secondary/20 rounded-xl backdrop-blur-md border border-secondary/30 flex items-center justify-center animate-bounce duration-[3000ms]">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                              </svg>
+                            </div>
+
+                            <div className="absolute bottom-4 -left-4 w-8 h-8 bg-primary/20 rounded-lg backdrop-blur-md border border-primary/30 flex items-center justify-center animate-pulse z-0">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+                              </svg>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -412,7 +441,7 @@ export default function WorkspacePage() {
                                         Active
                                       </div>
                                     </div>
-                                    
+
                                     <div className="flex-1 cursor-pointer" onClick={() => handleSelectFlow(flow)}>
                                       <h3 className="text-sm font-black text-foreground uppercase tracking-wider group-hover:text-primary transition-colors line-clamp-1">{flow.name}</h3>
                                       <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">{flow.blocks.length} {flow.blocks.length === 1 ? 'Step' : 'Steps'}</p>
@@ -443,9 +472,9 @@ export default function WorkspacePage() {
                             </div>
                             <div className="space-y-4">
                               {[
-                                { name: 'API Chaining', desc: 'Call multiple APIs in sequence.', icon: <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>, color: 'text-blue-500' },
+                                { name: 'API Chaining', desc: 'Call multiple APIs in sequence.', icon: <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />, color: 'text-blue-500' },
                                 { name: 'Data Aggregation', desc: 'Combine data from multiple sources.', icon: <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>, color: 'text-emerald-500' },
-                                { name: 'Scheduled Sync', desc: 'Run workflows on a specific schedule.', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>, color: 'text-amber-500' }
+                                { name: 'Scheduled Sync', desc: 'Run workflows on a specific schedule.', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>, color: 'text-amber-500' }
                               ].map((tmpl) => (
                                 <div key={tmpl.name} className="p-4 rounded-xl bg-background/50 border border-card-border/50 hover:border-secondary/50 hover:shadow-lg hover:shadow-secondary/5 cursor-pointer transition-all group flex items-start gap-4">
                                   <div className={`mt-0.5 w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center ${tmpl.color} group-hover:scale-110 transition-transform`}>
