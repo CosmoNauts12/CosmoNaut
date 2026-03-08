@@ -1,0 +1,11 @@
+﻿
+ RUN  v4.0.18 C:/Users/ripan/OneDrive/Documents/CosmoNaut
+
+ Γ¥» test/integration/response-visualizer.test.tsx (1 test | 1 failed) 1097ms
+     ├ù Successfully formats raw engine strings into Pretty JSON via format selector 1094ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  10:58:39
+   Duration  5.67s (transform 438ms, setup 301ms, import 2.62s, tests 1.10s, environment 1.43s)
+

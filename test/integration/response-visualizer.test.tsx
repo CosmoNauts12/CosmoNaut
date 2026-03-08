@@ -4,6 +4,10 @@ import { describe, test, expect } from "vitest";
 import React from "react";
 import ResponsePanel from "@/app/components/ResponsePanel";
 
+vi.mock("react-syntax-highlighter", () => ({
+  Prism: ({ children }: any) => <pre>{children}</pre>,
+}));
+
 describe("Ultra-Integration: Response Format Visualization", () => {
   test("Successfully formats raw engine strings into Pretty JSON via format selector", async () => {
     const rawData = '{"status":"active","nodes":["node-1","node-2"]}';
@@ -17,7 +21,6 @@ describe("Ultra-Integration: Response Format Visualization", () => {
     render(<ResponsePanel response={mockResponse} isExecuting={false} />);
 
     // 1. Target the JSON body specifically
-    // This avoids collision with the 'Status' label in the header
     const jsonContainer = await screen.findByText(/"status":\s*"active"/);
     expect(jsonContainer).toBeInTheDocument();
 

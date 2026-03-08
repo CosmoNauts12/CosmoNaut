@@ -1,0 +1,58 @@
+﻿
+ RUN  v4.0.18 C:/Users/ripan/OneDrive/Documents/CosmoNaut
+
+ Γ£ô test/integration/comprehensive-engine-bridge.test.tsx (2 tests) 740ms
+     Γ£ô Integration of URL Cleaning + Auth Injection + History Persistence  607ms
+ Γ£ô app/components/__tests__/ProfileModal.test.tsx (6 tests) 1148ms
+     Γ£ô switches to change password view  313ms
+ Γ£ô app/reset-password/__tests__/ResetPassword.test.tsx (4 tests) 696ms
+     Γ£ô toggles password visibility in the reset form  364ms
+ Γ£ô test/integration/auth-header-injection.test.tsx (1 test) 443ms
+     Γ£ô converts Bearer Auth state into Authorization header for Engine  440ms
+ Γ£ô test/integration/privacy-history.test.tsx (1 test) 597ms
+     Γ£ô UH1 Goal: History integration correctly captures Auth metadata for replay  593ms
+ Γ£ô test/integration/multi-step-flow.test.tsx (1 test) 578ms
+     Γ£ô Chain Integration: Successfully passes data from Response A to Request B  575ms
+ Γ£ô test/integration/import-export-handshake.test.tsx (1 test) 659ms
+     Γ£ô Importing a collection correctly updates the Sidebar and Provider state  656ms
+ Γ£ô test/integration/orchestration-lifecycle.test.tsx (2 tests) 697ms
+     Γ£ô UH1 Flow: Complex JSON Post with Auth Normalization & Trace Recording  574ms
+ Γ£ô test/integration/scenario-replay.test.tsx (1 test) 674ms
+     Γ£ô Replaying a history item restores complex Auth and Body telemetry  670ms
+ Γ£ô app/signup/__tests__/SignUp.test.tsx (3 tests) 830ms
+     Γ£ô prevents form submission if password is not strong  454ms
+ Γ¥» test/integration/response-visualizer.test.tsx (1 test | 1 failed) 1214ms
+     ├ù Successfully formats raw engine strings into Pretty JSON via format selector 1211ms
+ Γ¥» test/integration/request-loading.test.tsx (1 test | 1 failed) 1551ms
+     ├ù Send ΓåÆ loading ΓåÆ response ΓåÆ history persisted ΓåÆ engine contract 1548ms
+ Γ£ô test/integration/request-error.contract.test.tsx (1 test) 525ms
+     Γ£ô error ΓåÆ response lifecycle ΓåÆ history persisted  522ms
+ Γ£ô test/integration/request-execution.contract.test.tsx (1 test) 540ms
+     Γ£ô normalizes ΓåÆ calls engine ΓåÆ renders response ΓåÆ persists history  537ms
+ Γ£ô test/integration/request-flow.test.tsx (1 test) 586ms
+     Γ£ô user sends request ΓåÆ engine runs ΓåÆ response renders ΓåÆ history saved  581ms
+ Γ£ô test/integration/distributed-tracing-flow.test.tsx (1 test) 429ms
+     Γ£ô persists engine-level errors and trace metadata to history  425ms
+ Γ£ô test/integration/header-logic.test.tsx (1 test) 420ms
+     Γ£ô automatically adds Content-Type when a JSON body is present in POST  416ms
+ Γ£ô test/integration/request-demo-limiter.test.tsx (1 test) 431ms
+     Γ£ô demo user can execute request and it still hits engine  428ms
+ Γ£ô test/integration/workspace-orchestration.test.tsx (1 test) 364ms
+     Γ£ô Fast Switch: UI reacts to workspace role and flushes state  359ms
+ Γ£ô app/components/Flows/core/FlowExecutor.test.ts (3 tests) 16ms
+ Γ£ô test/integration/disk-persistence.test.tsx (1 test) 114ms
+ Γ£ô test/integration/request-normalization.test.tsx (1 test) 424ms
+     Γ£ô normalizes params into URL and persists history  421ms
+ Γ£ô test/integration/role-transition.test.tsx (1 test) 95ms
+ Γ£ô app/components/__tests__/AuthCard.test.tsx (1 test) 247ms
+ Γ£ô test/integration/rbac-security.test.tsx (1 test) 361ms
+     Γ£ô Read-only role disables critical UI controls and prevents modification  358ms
+ Γ£ô app/components/__tests__/ThemeToggle.test.tsx (1 test) 260ms
+ Γ£ô app/components/__tests__/Astronaut.test.tsx (1 test) 273ms
+ Γ£ô app/components/__tests__/LoadingSplash.test.tsx (1 test) 60ms
+
+ Test Files  2 failed | 26 passed (28)
+      Tests  2 failed | 40 passed (42)
+   Start at  10:59:48
+   Duration  12.98s (transform 1.90s, setup 12.89s, import 27.81s, tests 14.97s, environment 109.95s)
+

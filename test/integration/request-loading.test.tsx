@@ -29,6 +29,10 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("react-syntax-highlighter", () => ({
+  Prism: ({ children }: any) => <pre>{children}</pre>,
+}));
+
 /*CONTEXT MOCKS*/
 
 const addToHistoryMock = vi.fn();

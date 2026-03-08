@@ -61,7 +61,7 @@ export async function executeRequest(request: CosmoRequest, userMode: 'authentic
 
         return response;
     } catch (error: unknown) {
-        console.error("Execution failed:", error);
+        console.error("Execution failed:", error instanceof Error ? error.message : JSON.stringify(error));
 
         // If it's already a structured error from Tauri
         if (error && typeof error === 'object' && 'error_type' in error) {

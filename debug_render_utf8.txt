@@ -1,0 +1,954 @@
+﻿
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/ripan/OneDrive/Documents/CosmoNaut[39m
+
+[90mstdout[2m | test/integration/response-visualizer.test.tsx[2m > [22m[2mUltra-Integration: Response Format Visualization[2m > [22m[2mSuccessfully formats raw engine strings into Pretty JSON via format selector
+[22m[39m[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-card-bg/5 backdrop-blur-xl border-t border-card-border overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"h-12 px-4 border-b border-card-border/50 flex items-center justify-between z-20 bg-black/20 backdrop-blur-md"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-1"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-1.5 rounded-md text-[11px] font-black uppercase tracking-[0.15em] transition-all text-primary bg-primary/10"[39m
+            [36m>[39m
+              [0mBody[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-1.5 rounded-md text-[11px] font-black uppercase tracking-[0.15em] transition-all text-muted hover:text-foreground"[39m
+            [36m>[39m
+              [0mPreview[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-[1px] h-4 bg-muted/20 mx-2"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[11px] font-black uppercase tracking-widest text-foreground/80 transition-colors border border-transparent"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-primary/70"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-[10px] w-4 font-bold"[39m
+                [36m/>[39m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mJSON[0m
+              [36m</span>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"transition-transform duration-200 "[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"10"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"3"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"10"[39m
+              [36m>[39m
+                [36m<polyline[39m
+                  [33mpoints[39m=[32m"6 9 12 15 18 9"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col items-end"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70"[39m
+              [36m>[39m
+                [0mStatus[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[11px] font-black text-emerald-500"[39m
+              [36m>[39m
+                [0m200[0m
+                [0m [0m
+                [0mOK[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col items-end"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70"[39m
+              [36m>[39m
+                [0mTime[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[11px] font-black text-emerald-500"[39m
+              [36m>[39m
+                [0m150[0m
+                [0m ms[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col items-end"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[9px] font-black text-muted uppercase tracking-tighter leading-none mb-1 opacity-70"[39m
+              [36m>[39m
+                [0mSize[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-[11px] font-black text-emerald-500"[39m
+              [36m>[39m
+                [0m47 B[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-[1px] h-4 bg-muted/20"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-center gap-2 group"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-black text-muted group-hover:text-primary uppercase tracking-[0.1em] transition-colors"[39m
+            [36m>[39m
+              [0mSave[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"text-muted group-hover:text-primary transition-colors"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.5"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"[39m
+              [36m/>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"17 21 17 13 7 13 7 21"[39m
+              [36m/>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"7 3 7 8 15 8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 hover:text-primary transition-colors opacity-60 hover:opacity-100"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=...
+
+ [31mΓ¥»[39m test/integration/response-visualizer.test.tsx [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1124[2mms[22m[39m
+[31m     [31m├ù[31m Successfully formats raw engine strings into Pretty JSON via format selector[39m[33m 1122[2mms[22m[39m
+bun : 
+At line:1 char:1
++ bun vitest run test/integ
+ration/response-visualizer.
+test.tsx > debug_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (:St  
+  ring) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+[39m[1m[41m Failed Tests 
+1 [49m[22m[31mΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[41m[1m FAIL [22m[49m t
+est/integration/response-vi
+sualizer.test.tsx[2m > 
+[22mUltra-Integration: 
+Response Format 
+Visualization[2m > 
+[22mSuccessfully formats 
+raw engine strings into 
+Pretty JSON via format 
+selector
+[31m[1mTestingLibraryElem
+entError[22m[39m: Unable 
+to find an element with 
+the text: 
+/"status":\s*"active"/. 
+This could be because the 
+text is broken up by 
+multiple elements. In this 
+case, you can provide a 
+function for your text 
+matcher to make your 
+matcher more flexible.
+
+Ignored nodes: comments, 
+script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      
+[33mclass[39m=[32m"flex 
+flex-col h-full 
+bg-card-bg/5 
+backdrop-blur-xl border-t 
+border-card-border 
+overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        
+[33mclass[39m=[32m"h-12 
+px-4 border-b 
+border-card-border/50 flex 
+items-center 
+justify-between z-20 
+bg-black/20 
+backdrop-blur-md"[39m
+      [36m>[39m
+        [36m<div[39m
+          
+[33mclass[39m=[32m"flex 
+items-center gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"flex 
+gap-1"[39m
+          [36m>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"px-3 
+py-1.5 rounded-md 
+text-[11px] font-black 
+uppercase 
+tracking-[0.15em] 
+transition-all 
+text-primary 
+bg-primary/10"[39m
+            [36m>[39m
+              [0mBody[0m
+            
+[36m</button>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"px-3 
+py-1.5 rounded-md 
+text-[11px] font-black 
+uppercase 
+tracking-[0.15em] 
+transition-all text-muted 
+hover:text-foreground"[39m
+            [36m>[39m
+              
+[0mPreview[0m
+            
+[36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"w-[1px] h-4 
+bg-muted/20 mx-2"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"relative"[39m
+          [36m>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"flex 
+items-center gap-2 px-2 
+py-1.5 rounded-lg 
+hover:bg-black/5 
+dark:hover:bg-white/5 
+text-[11px] font-black 
+uppercase tracking-widest 
+text-foreground/80 
+transition-colors border 
+border-transparent"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-primary/70"
+[39m
+              [36m>[39m
+                
+[36m<span[39m
+                  [33mclas
+s[39m=[32m"text-[10px] 
+w-4 font-bold"[39m
+                
+[36m/>[39m
+              
+[36m</span>[39m
+              
+[36m<span>[39m
+                
+[0mJSON[0m
+              
+[36m</span>[39m
+              
+[36m<svg[39m
+                [33mclass
+[39m=[32m"transition-trans
+form duration-200 "[39m
+                [33mfill[
+39m=[32m"none"[39m
+                [33mheight
+[39m=[32m"10"[39m
+                [33mstroke
+[39m=[32m"currentColor"[
+39m
+                [33mstroke
+-linecap[39m=[32m"round"
+[39m
+                [33mstroke
+-linejoin[39m=[32m"round"
+[39m
+                [33mstroke
+-width[39m=[32m"3"[39m
+                
+[33mviewBox[39m=[32m"0 
+0 24 24"[39m
+                [33mwidth
+[39m=[32m"10"[39m
+              [36m>[39m
+                
+[36m<polyline[39m
+                  
+[33mpoints[39m=[32m"6 9 
+12 15 18 9"[39m
+                
+[36m/>[39m
+              
+[36m</svg>[39m
+            
+[36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          
+[33mclass[39m=[32m"flex 
+items-center gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"flex 
+gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mStatus[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m200[0m
+                [0m [0m
+                [0mOK[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mTime[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m150[0m
+                [0m ms[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mSize[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m47 
+B[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"w-[1px] h-4 
+bg-muted/20"[39m
+          [36m/>[39m
+          [36m<button[39m
+            
+[33mclass[39m=[32m"flex 
+items-center gap-2 
+group"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[3
+9m=[32m"text-[10px] 
+font-black text-muted 
+group-hover:text-primary 
+uppercase tracking-[0.1em] 
+transition-colors"[39m
+            [36m>[39m
+              [0mSave[0m
+            
+[36m</span>[39m
+            [36m<svg[39m
+              [33mclass[3
+9m=[32m"text-muted 
+group-hover:text-primary 
+transition-colors"[39m
+              [33mfill[39
+m=[32m"none"[39m
+              [33mheight[
+39m=[32m"14"[39m
+              [33mstroke[
+39m=[32m"currentColor"[39
+m
+              [33mstroke-l
+inecap[39m=[32m"round"[3
+9m
+              [33mstroke-l
+inejoin[39m=[32m"round"[
+39m
+              [33mstroke-w
+idth[39m=[32m"2.5"[39m
+              
+[33mviewBox[39m=[32m"0 
+0 24 24"[39m
+              [33mwidth[3
+9m=[32m"14"[39m
+            [36m>[39m
+              
+[36m<path[39m
+                
+[33md[39m=[32m"M19 
+21H5a2 2 0 0 1-2-2V5a2 2 0 
+0 1 2-2h11l5 5v11a2 2 0 0 
+1-2 2z"[39m
+              [36m/>[39m
+              
+[36m<polyline[39m
+                
+[33mpoints[39m=[32m"17 
+21 17 13 7 13 7 21"[39m
+              [36m/>[39m
+              
+[36m<polyline[39m
+                
+[33mpoints[39m=[32m"7 3 
+7 8 15 8"[39m
+              [36m/>[39m
+            
+[36m</svg>[39m
+          
+[36m</button>[39m
+          [36m<button[39m
+            
+[33mclass[39m=[32m"p-1 
+hover:text-primary 
+transition-colors 
+opacity-60 
+hover:opacity-100"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39
+m=[32m"none"[39m
+              [33mheight[
+39m=[32m"16"[39m
+              [33mstroke[
+39m=[32m"currentColor"[39
+m
+              [33mstroke-l
+inecap[39m=[32m"round"[3
+9m
+              [33mstroke-l
+inejoin[39m=[32m"round"[
+39m
+              [33mstroke-w
+idth[39m=[32m"2"[39m
+              
+[33mviewBox[39m=...
+
+Ignored nodes: comments, 
+script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      
+[33mclass[39m=[32m"flex 
+flex-col h-full 
+bg-card-bg/5 
+backdrop-blur-xl border-t 
+border-card-border 
+overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        
+[33mclass[39m=[32m"h-12 
+px-4 border-b 
+border-card-border/50 flex 
+items-center 
+justify-between z-20 
+bg-black/20 
+backdrop-blur-md"[39m
+      [36m>[39m
+        [36m<div[39m
+          
+[33mclass[39m=[32m"flex 
+items-center gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"flex 
+gap-1"[39m
+          [36m>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"px-3 
+py-1.5 rounded-md 
+text-[11px] font-black 
+uppercase 
+tracking-[0.15em] 
+transition-all 
+text-primary 
+bg-primary/10"[39m
+            [36m>[39m
+              [0mBody[0m
+            
+[36m</button>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"px-3 
+py-1.5 rounded-md 
+text-[11px] font-black 
+uppercase 
+tracking-[0.15em] 
+transition-all text-muted 
+hover:text-foreground"[39m
+            [36m>[39m
+              
+[0mPreview[0m
+            
+[36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"w-[1px] h-4 
+bg-muted/20 mx-2"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"relative"[39m
+          [36m>[39m
+            
+[36m<button[39m
+              
+[33mclass[39m=[32m"flex 
+items-center gap-2 px-2 
+py-1.5 rounded-lg 
+hover:bg-black/5 
+dark:hover:bg-white/5 
+text-[11px] font-black 
+uppercase tracking-widest 
+text-foreground/80 
+transition-colors border 
+border-transparent"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-primary/70"
+[39m
+              [36m>[39m
+                
+[36m<span[39m
+                  [33mclas
+s[39m=[32m"text-[10px] 
+w-4 font-bold"[39m
+                
+[36m/>[39m
+              
+[36m</span>[39m
+              
+[36m<span>[39m
+                
+[0mJSON[0m
+              
+[36m</span>[39m
+              
+[36m<svg[39m
+                [33mclass
+[39m=[32m"transition-trans
+form duration-200 "[39m
+                [33mfill[
+39m=[32m"none"[39m
+                [33mheight
+[39m=[32m"10"[39m
+                [33mstroke
+[39m=[32m"currentColor"[
+39m
+                [33mstroke
+-linecap[39m=[32m"round"
+[39m
+                [33mstroke
+-linejoin[39m=[32m"round"
+[39m
+                [33mstroke
+-width[39m=[32m"3"[39m
+                
+[33mviewBox[39m=[32m"0 
+0 24 24"[39m
+
+                [33mwidth
+[39m=[32m"10"[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 11:00:58
+              [36m>[39m
+[2m   Duration [22m 3.91s[2m (transform 148ms, setup 223ms, import 1.07s, tests 1.12s, environment 1.26s)[22m
+
+                
+[36m<polyline[39m
+                  
+[33mpoints[39m=[32m"6 9 
+12 15 18 9"[39m
+                
+[36m/>[39m
+              
+[36m</svg>[39m
+            
+[36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          
+[33mclass[39m=[32m"flex 
+items-center gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"flex 
+gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mStatus[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m200[0m
+                [0m [0m
+                [0mOK[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mTime[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m150[0m
+                [0m ms[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+            [36m<div[39m
+              
+[33mclass[39m=[32m"flex 
+flex-col items-end"[39m
+            [36m>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[9px] 
+font-black text-muted 
+uppercase tracking-tighter 
+leading-none mb-1 
+opacity-70"[39m
+              [36m>[39m
+                
+[0mSize[0m
+              
+[36m</span>[39m
+              
+[36m<span[39m
+                [33mclass
+[39m=[32m"text-[11px] 
+font-black 
+text-emerald-500"[39m
+              [36m>[39m
+                [0m47 
+B[0m
+              
+[36m</span>[39m
+            
+[36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m
+=[32m"w-[1px] h-4 
+bg-muted/20"[39m
+          [36m/>[39m
+          [36m<button[39m
+            
+[33mclass[39m=[32m"flex 
+items-center gap-2 
+group"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[3
+9m=[32m"text-[10px] 
+font-black text-muted 
+group-hover:text-primary 
+uppercase tracking-[0.1em] 
+transition-colors"[39m
+            [36m>[39m
+              [0mSave[0m
+            
+[36m</span>[39m
+            [36m<svg[39m
+              [33mclass[3
+9m=[32m"text-muted 
+group-hover:text-primary 
+transition-colors"[39m
+              [33mfill[39
+m=[32m"none"[39m
+              [33mheight[
+39m=[32m"14"[39m
+              [33mstroke[
+39m=[32m"currentColor"[39
+m
+              [33mstroke-l
+inecap[39m=[32m"round"[3
+9m
+              [33mstroke-l
+inejoin[39m=[32m"round"[
+39m
+              [33mstroke-w
+idth[39m=[32m"2.5"[39m
+              
+[33mviewBox[39m=[32m"0 
+0 24 24"[39m
+              [33mwidth[3
+9m=[32m"14"[39m
+            [36m>[39m
+              
+[36m<path[39m
+                
+[33md[39m=[32m"M19 
+21H5a2 2 0 0 1-2-2V5a2 2 0 
+0 1 2-2h11l5 5v11a2 2 0 0 
+1-2 2z"[39m
+              [36m/>[39m
+              
+[36m<polyline[39m
+                
+[33mpoints[39m=[32m"17 
+21 17 13 7 13 7 21"[39m
+              [36m/>[39m
+              
+[36m<polyline[39m
+                
+[33mpoints[39m=[32m"7 3 
+7 8 15 8"[39m
+              [36m/>[39m
+            
+[36m</svg>[39m
+          
+[36m</button>[39m
+          [36m<button[39m
+            
+[33mclass[39m=[32m"p-1 
+hover:text-primary 
+transition-colors 
+opacity-60 
+hover:opacity-100"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39
+m=[32m"none"[39m
+              [33mheight[
+39m=[32m"16"[39m
+              [33mstroke[
+39m=[32m"currentColor"[39
+m
+              [33mstroke-l
+inecap[39m=[32m"round"[3
+9m
+              [33mstroke-l
+inejoin[39m=[32m"round"[
+39m
+              [33mstroke-w
+idth[39m=[32m"2"[39m
+              
+[33mviewBox[39m=...
+[90m [2mΓ¥»[22m 
+waitForWrapper node_modules
+/@testing-library/dom/dist/
+wait-for.js:[2m163:27[22m
+[39m
+[90m [2mΓ¥»[22m node_mod
+ules/@testing-library/dom/d
+ist/query-helpers.js:[2m86
+:33[22m[39m
+[36m [2mΓ¥»[22m test/int
+egration/response-visualize
+r.test.tsx:[2m22:40[22m[
+39m
+    [90m 20| [39m    
+[90m// 1. Target the JSON 
+body specifically[39m
+    [90m 21| [39m    
+[90m// This avoids 
+collision with the 
+'Status' label in the 
+header[39m
+    [90m 22| [39m    
+const jsonContainer = 
+await screen.findByText(/"s
+tatus":\s*"activeΓÇª
+    [90m   | [39m        
+                           
+    [31m^[39m
+    [90m 23| [39m    [34
+mexpect[39m(jsonContainer)
+[33m.[39m[34mtoBeInTheDo
+cument[39m()[33m;[39m
+    [90m 24| [39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+[1/1]ΓÄ»[22m[39m
+

@@ -46,7 +46,8 @@ pub struct CosmoResponse {
     /// Response headers
     pub headers: HashMap<String, String>,
     /// Request duration in milliseconds
-    pub duration_ms: u128,
+    /// Request duration in milliseconds
+    pub duration_ms: u64,
 }
 
 /// Executes an HTTP request using reqwest.
@@ -112,7 +113,7 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
             message: e.to_string(),
         }
     })?;
-    let duration = start.elapsed().as_millis();
+    let duration = start.elapsed().as_millis() as u64;
 
     let status = response.status().as_u16();
     let mut headers = HashMap::new();
