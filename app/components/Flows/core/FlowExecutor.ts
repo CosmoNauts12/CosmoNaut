@@ -55,10 +55,22 @@ export class FlowExecutor {
             }
 
             this.onEvent?.({ type: 'BLOCK_START', blockId: block.id });
-            summary.executedBlocks++;
 
             try {
+                // Story 3.3: Skip actual network execution for Start and Schedule triggers
+                if (block.name === 'Start' || block.name === 'Schedule') {
+                    summary.executedBlocks++;
+                    this.onEvent?.({
+                        type: 'BLOCK_END',
+                        blockId: block.id,
+                        response: { status: 200, headers: {}, body: 'Success', error: undefined, duration_ms: 0 },
+                        duration: 0
+                    });
+                    continue;
+                }
+
                 const result = await this.executeBlock(block, isDemo);
+                summary.executedBlocks++;
 
                 if (result.status >= 400 || result.error) {
                     summary.failedBlocks++;
@@ -123,9 +135,13 @@ export class FlowExecutor {
             finalHeaders['Content-Type'] = 'application/json';
         }
 
+        if (!block.url || !block.url.trim()) {
+            throw new Error("Missing Request URL for this step.");
+        }
+
         return await executeRequest({
             method: block.method,
-            url: targetUrl || "https://jsonplaceholder.typicode.com/posts/1",
+            url: targetUrl || block.url,
             headers: finalHeaders,
             body: block.method !== 'GET' ? block.body : undefined
         }, isDemo ? 'demo' : 'authenticated');

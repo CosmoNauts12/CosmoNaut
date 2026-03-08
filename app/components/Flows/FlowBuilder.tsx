@@ -14,7 +14,7 @@ import { useAuth } from "../AuthProvider";
  * Enhanced with premium Canva-inspired floating UI.
  */
 export default function FlowBuilder({ flow }: { flow: Flow }) {
-    const { updateFlow, currentRole } = useCollections();
+    const { updateFlow, currentRole, collections } = useCollections();
     const { isDemo } = useAuth();
 
     const [localFlow, setLocalFlow] = useState<Flow>(flow);
@@ -22,6 +22,19 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     const [summary, setSummary] = useState<FlowExecutionSummary | null>(null);
     const [showChat, setShowChat] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isElementsOpen, setIsElementsOpen] = useState(true);
+    const [showEmptyImportMenu, setShowEmptyImportMenu] = useState(false);
+    const importEmptyMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (importEmptyMenuRef.current && !importEmptyMenuRef.current.contains(event.target as Node)) {
+                setShowEmptyImportMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Canvas State
     const [viewport, setViewport] = useState({ x: 0, y: 0 });
@@ -103,19 +116,39 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     };
 
     const handleAddBlock = () => {
+        handleAddNode('Start');
+    };
+
+    const handleImportFirstNode = (req: any) => {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        let addX = 100;
+        let addY = 100;
+
+        if (rect) {
+            addX = (rect.width / 2 - viewport.x) / zoom;
+            addY = (rect.height / 2 - viewport.y) / zoom;
+        }
+
+        const snappedX = Math.round(addX / 20) * 20;
+        const snappedY = Math.round(addY / 20) * 20;
+
         const newBlock: FlowBlock = {
             id: `b_${Date.now()}`,
-            name: "New API Step",
-            method: "GET",
-            url: "",
-            params: [{ key: '', value: '', enabled: true }],
-            headers: [{ key: '', value: '', enabled: true }],
-            body: "",
-            order: localFlow.blocks.length
+            name: req.name, // Use request name
+            method: req.method,
+            url: req.url,
+            params: req.params && req.params.length > 0 ? req.params : [{ key: '', value: '', enabled: true }],
+            headers: req.headers && req.headers.length > 0 ? req.headers : [{ key: '', value: '', enabled: true }],
+            body: req.body || '',
+            order: 0,
+            x: snappedX,
+            y: snappedY
         };
-        const newFlow = { ...localFlow, blocks: [...localFlow.blocks, newBlock] };
+
+        const newFlow = { ...localFlow, blocks: [newBlock] };
         setLocalFlow(newFlow);
         updateFlow(cleanFlowBeforeSave(newFlow));
+        setShowEmptyImportMenu(false);
     };
 
     const handleSaveFlow = () => {
@@ -179,13 +212,55 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             const x = (e.clientX - rect.left - viewport.x) / zoom - dragOffset.x;
             const y = (e.clientY - rect.top - viewport.y) / zoom - dragOffset.y;
 
-            handleUpdateBlock(draggedBlockId, { x, y });
+            // Grid Snapping mechanism (Snap to 20px grid)
+            const snappedX = Math.round(x / 20) * 20;
+            const snappedY = Math.round(y / 20) * 20;
+
+            handleUpdateBlock(draggedBlockId, { x: snappedX, y: snappedY });
         }
     };
 
     const handleCanvasMouseUp = () => {
         setIsPanning(false);
         setDraggedBlockId(null);
+    };
+
+    const handleAddNode = (nodeType: string) => {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        let addX = 100;
+        let addY = 100;
+
+        if (rect) {
+            // Find center of the visible canvas
+            addX = (rect.width / 2 - viewport.x) / zoom;
+            addY = (rect.height / 2 - viewport.y) / zoom;
+        }
+
+        // Offset slightly based on number of blocks to avoid exact pile-up
+        const offset = localFlow.blocks.length * 20;
+        const x = addX + offset;
+        const y = addY + offset;
+
+        // Grid Snapping mechanism (Snap to 20px grid)
+        const snappedX = Math.round(x / 20) * 20;
+        const snappedY = Math.round(y / 20) * 20;
+
+        const newBlock: FlowBlock = {
+            id: `b_${Date.now()}`,
+            name: nodeType,
+            method: nodeType === 'Request' ? "GET" : "POST",
+            url: "",
+            params: [{ key: '', value: '', enabled: true }],
+            headers: [{ key: '', value: '', enabled: true }],
+            body: "",
+            order: localFlow.blocks.length,
+            x: snappedX,
+            y: snappedY
+        };
+
+        const newFlow = { ...localFlow, blocks: [...localFlow.blocks, newBlock] };
+        setLocalFlow(newFlow);
+        updateFlow(cleanFlowBeforeSave(newFlow));
     };
 
     const handleNodeDragStart = (blockId: string, e: React.MouseEvent) => {
@@ -316,12 +391,45 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                                 <img src="/astro.png" className="w-16 h-16 opacity-40 grayscale" alt="Empty" />
                             </div>
                             <h3 className="text-lg font-black text-white/80 uppercase tracking-[0.2em] mb-3">Initialize your Mission</h3>
-                            <button
-                                onClick={handleAddBlock}
-                                className="px-10 py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:to-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-                            >
-                                Create First Node
-                            </button>
+                            <div className="flex flex-col items-center gap-3 relative" ref={importEmptyMenuRef}>
+                                <button
+                                    onClick={handleAddBlock}
+                                    className="px-10 py-4 w-56 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:to-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+                                >
+                                    Create First Node
+                                </button>
+
+                                <button
+                                    onClick={() => setShowEmptyImportMenu(!showEmptyImportMenu)}
+                                    className="px-10 py-4 w-56 rounded-2xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-white/50 hover:text-white/80 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    Import Request
+                                </button>
+
+                                {showEmptyImportMenu && (
+                                    <div className="absolute top-[calc(100%+8px)] w-64 max-h-64 overflow-y-auto custom-scrollbar bg-white dark:bg-[#252525] border border-black/10 dark:border-white/10 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                                        {collections.flatMap((c: any) => c.requests).length === 0 ? (
+                                            <div className="px-4 py-3 text-center text-xs text-muted/60">No saved requests found</div>
+                                        ) : (
+                                            collections.flatMap((c: any) => c.requests).map((req: any) => (
+                                                <button
+                                                    key={req.id}
+                                                    onClick={() => handleImportFirstNode(req)}
+                                                    className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group/import"
+                                                >
+                                                    <span className={`text-[9px] font-black uppercase w-10 text-right ${req.method === 'GET' ? 'text-emerald-500' :
+                                                        req.method === 'POST' ? 'text-amber-500' :
+                                                            req.method === 'PUT' ? 'text-blue-500' :
+                                                                'text-rose-500'
+                                                        }`}>{req.method}</span>
+                                                    <span className="text-xs font-semibold text-foreground/80 dark:text-white/80 truncate group-hover/import:text-primary transition-colors">{req.name}</span>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className="w-full h-full relative">
@@ -345,8 +453,9 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                                     const endX = nextBlock.x ?? 100;
                                     const endY = (nextBlock.y ?? (100 + (i + 1) * 500)) + 30;
 
-                                    const cp1x = startX + (endX - startX) / 2;
-                                    const cp2x = startX + (endX - startX) / 2;
+                                    // Dynamic Connection path logic for smooth curve
+                                    const cp1x = startX + Math.max(100, (endX - startX) / 2);
+                                    const cp2x = endX - Math.max(100, (endX - startX) / 2);
 
                                     return (
                                         <path
@@ -366,7 +475,7 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                             {localFlow.blocks.map((block) => (
                                 <div
                                     key={block.id}
-                                    className="absolute transition-shadow duration-300"
+                                    className="absolute transition-shadow duration-300 animate-in zoom-in-95 fade-in ease-out"
                                     style={{
                                         left: block.x ?? 100,
                                         top: block.y ?? (100 + block.order * 500),
@@ -429,11 +538,11 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                         <div className="w-px h-8 bg-black/10 dark:bg-white/10 mx-1" />
 
                         <button
-                            onClick={handleAddBlock}
-                            className="w-14 h-14 flex items-center justify-center bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-transparent hover:border-black/10 dark:hover:border-white/20 rounded-2xl text-foreground/60 hover:text-foreground dark:text-white/60 dark:hover:text-white transition-all duration-200 active:scale-90"
-                            title="Add Node"
+                            onClick={() => setIsElementsOpen(!isElementsOpen)}
+                            className={`w-14 h-14 flex items-center justify-center border border-transparent hover:border-black/10 dark:hover:border-white/20 rounded-2xl transition-all duration-200 active:scale-90 ${isElementsOpen ? 'bg-black/10 dark:bg-white/10 text-primary' : 'bg-black/5 dark:bg-white/5 text-foreground/60 hover:text-foreground dark:text-white/60 dark:hover:text-white'}`}
+                            title="Elements"
                         >
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         </button>
 
                         <button
@@ -445,6 +554,67 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
                     </div>
                 </div>
             )}
+
+            {/* Canva-style Elements Sidebar */}
+            <div className={`absolute top-[88px] bottom-6 right-6 w-72 bg-white/95 dark:bg-[#1E293B]/95 backdrop-blur-3xl border border-black/5 dark:border-white/10 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.15)] z-40 transition-all duration-500 flex flex-col overflow-hidden ${isElementsOpen ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0 pointer-events-none'}`}>
+                <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                    <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Elements</h3>
+                    <button onClick={() => setIsElementsOpen(false)} className="text-muted hover:text-foreground transition-colors p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
+                    {/* Element Categories */}
+                    <div>
+                        <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3 px-2">Triggers</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div
+                                onClick={() => handleAddNode('Start')}
+                                className="bg-black/5 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-black/5 dark:hover:border-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:shadow-lg transition-all active:scale-95 group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" /></svg>
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Start</span>
+                            </div>
+                            <div
+                                onClick={() => handleAddNode('Schedule')}
+                                className="bg-black/5 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-black/5 dark:hover:border-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:shadow-lg transition-all active:scale-95 group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-center">Schedule</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3 px-2">Actions</p>
+                        <div className="grid grid-cols-1 gap-3">
+                            <div
+                                onClick={() => handleAddNode('Request')}
+                                className="bg-black/5 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-black/5 dark:hover:border-white/10 p-4 rounded-2xl flex items-center gap-4 cursor-pointer hover:shadow-lg transition-all active:scale-95 group w-full"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex flex-shrink-0 items-center justify-center group-hover:scale-110 transition-transform">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-foreground">API Request</p>
+                                    <p className="text-[9px] font-bold text-muted mt-0.5">Make an HTTP call</p>
+                                </div>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted opacity-50"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* Drag Hint at bottom */}
+                <div className="p-4 bg-primary/5 border-t border-primary/10 flex items-center justify-center gap-2 text-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+                    <p className="text-[9px] font-black uppercase tracking-widest">Click element to spawn</p>
+                </div>
+            </div>
 
             {/* AI Chat Drawer */}
             {
