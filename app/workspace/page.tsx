@@ -221,13 +221,20 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // New Request: Ctrl + N
+      // New: Ctrl + N (Contextual)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        const id = `new_${Date.now()}`;
-        const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
-        setTabs(prev => [...prev, newReq]);
-        setActiveTabId(id);
+        const isFlowContext = activeActivity === 'flows' || tabs.find(t => t.id === activeTabId)?.tabType === 'flow';
+
+        if (isFlowContext) {
+          e.preventDefault();
+          handleCreateFlowInWorkspace();
+        } else {
+          e.preventDefault();
+          const id = `new_${Date.now()}`;
+          const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
+          setTabs(prev => [...prev, newReq]);
+          setActiveTabId(id);
+        }
       }
       // Close Tab: Ctrl + W
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w') {
@@ -244,7 +251,7 @@ export default function WorkspacePage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTabId, handleCloseTab]);
+  }, [activeTabId, handleCloseTab, activeActivity, tabs, handleCreateFlowInWorkspace]);
 
   if (loading || !user) {
     return (
