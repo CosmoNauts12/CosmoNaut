@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSettings } from "./SettingsProvider";
 import { executeRequest, CosmoResponse } from "./RequestEngine";
 import { useCollections } from "./CollectionsProvider";
@@ -28,11 +28,15 @@ export type ActiveRequest = (SavedRequest & { collectionId: string }) | {
 export default function RequestPanel({
   activeRequest,
   onResponse,
-  onExecuting
+  onExecuting,
+  saveTrigger = 0,
+  sendTrigger = 0
 }: {
   activeRequest: ActiveRequest;
   onResponse: (res: CosmoResponse | null) => void;
   onExecuting: (executing: boolean) => void;
+  saveTrigger?: number;
+  sendTrigger?: number;
 }) {
   const { settings } = useSettings();
   const { collections, saveRequest, updateRequest, createCollection, addToHistory, currentRole } = useCollections();
@@ -184,6 +188,27 @@ export default function RequestPanel({
       onExecuting(false);
     }
   };
+
+  /**
+   * Keyboard shortcut listeners
+   */
+  // Trigger Tracking
+  const lastSaveTrigger = useRef(saveTrigger);
+  const lastSendTrigger = useRef(sendTrigger);
+
+  useEffect(() => {
+    if (saveTrigger > lastSaveTrigger.current) {
+      handleSave();
+    }
+    lastSaveTrigger.current = saveTrigger;
+  }, [saveTrigger]);
+
+  useEffect(() => {
+    if (sendTrigger > lastSendTrigger.current) {
+      handleSend();
+    }
+    lastSendTrigger.current = sendTrigger;
+  }, [sendTrigger]);
 
   /**
    * Saves the current request configuration.

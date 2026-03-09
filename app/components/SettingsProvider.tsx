@@ -46,6 +46,10 @@ interface SettingsContextType {
   isShortcutsOpen: boolean;
   /** Setter for the shortcuts modal visibility. */
   setShortcutsOpen: (open: boolean) => void;
+  /** Controls visibility of the sidebar. */
+  isSidebarOpen: boolean;
+  /** Setter for the sidebar visibility. */
+  setSidebarOpen: (open: boolean) => void;
   /** Helper to open settings/modals directly. */
   openSettings: (tab?: string) => void;
 }
@@ -75,6 +79,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isBillingOpen, setBillingOpen] = useState(false);
   const [isShortcutsOpen, setShortcutsOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
 
@@ -116,13 +121,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const { invoke } = await import('@tauri-apps/api/core');
           const saved = await invoke<string>('load_user_preferences', { userId: user.uid });
           if (saved && saved !== "{}") {
-             setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+            setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
           } else {
-             // If no backend settings, try migration from local storage or defaults
-             const localSaved = localStorage.getItem(STORAGE_KEY);
-             if (localSaved) {
-                setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(localSaved) });
-             }
+            // If no backend settings, try migration from local storage or defaults
+            const localSaved = localStorage.getItem(STORAGE_KEY);
+            if (localSaved) {
+              setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(localSaved) });
+            }
           }
         } else {
           // Fallback for guest/web
@@ -151,9 +156,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         if (user && typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
           const { invoke } = await import('@tauri-apps/api/core');
-          await invoke('save_user_preferences', { 
-            userId: user.uid, 
-            preferences: JSON.stringify(settings) 
+          await invoke('save_user_preferences', {
+            userId: user.uid,
+            preferences: JSON.stringify(settings)
           });
         }
         // Always save to local storage as backup/guest mode
@@ -191,6 +196,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setBillingOpen,
         isShortcutsOpen,
         setShortcutsOpen,
+        isSidebarOpen,
+        setSidebarOpen,
         openSettings,
       }}
     >

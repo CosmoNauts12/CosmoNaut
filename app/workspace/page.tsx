@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import WorkspaceSidebar from "../components/WorkspaceSidebar";
@@ -27,9 +27,14 @@ export type ActiveTab = (ActiveRequest & { tabType: 'request' }) | (Flow & { tab
  */
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
-  const { settings } = useSettings();
   const { activeWorkspaceId, collections, history, flows } = useCollections();
+  const { settings, isSidebarOpen, setSidebarOpen } = useSettings();
   const router = useRouter();
+
+  // Keyboard Trigger State
+  const [saveTrigger, setSaveTrigger] = useState(0);
+  const [sendTrigger, setSendTrigger] = useState(0);
+
 
   // Tab Management State
   /** List of currently open request tabs. */
@@ -44,6 +49,18 @@ export default function WorkspacePage() {
 
   /** Current active activity from sidebar. */
   const [activeActivity, setActiveActivity] = useState("collections");
+
+  // Refs for stable keyboard listener
+  const activeTabIdRef = useRef(activeTabId);
+  const activeActivityRef = useRef(activeActivity);
+
+  useEffect(() => {
+    activeTabIdRef.current = activeTabId;
+  }, [activeTabId]);
+
+  useEffect(() => {
+    activeActivityRef.current = activeActivity;
+  }, [activeActivity]);
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -84,46 +101,22 @@ export default function WorkspacePage() {
     }
   };
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/");
+  const handleNewRequestAction = useCallback(() => {
+    if (activeActivityRef.current === 'flows') {
+      handleCreateFlowInWorkspace();
+    } else {
+      setActiveActivity("collections");
+      const id = `new_${Date.now()}`;
+      const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
+      setTabs(prev => [...prev, newReq]);
+      setActiveTabId(id);
     }
-  }, [user, loading, router]);
+  }, [handleCreateFlowInWorkspace]);
 
-  /**
-   * Switches to an existing tab or opens a new one for the selected request.
-   * @param request - The request object to open, containing its parent collection ID.
-   */
-  const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
-    // Check if tab already exists
-    const exists = tabs.find(t => t.id === request.id);
-    if (!exists) {
-      setTabs(prev => [...prev, { ...request, tabType: 'request' }]);
-    }
-    setActiveTabId(request.id);
-  };
-
-  /**
-   * Switches to an existing flow tab or opens a new one.
-   */
-  const handleSelectFlow = (flow: Flow) => {
-    const exists = tabs.find(t => t.id === flow.id);
-    if (!exists) {
-      setTabs(prev => [...prev, { ...flow, tabType: 'flow' }]);
-    }
-    setActiveTabId(flow.id);
-  };
-
-  /**
-   * Closes a specific tab and manages focus transition.
-   * Prompts for confirmation if the relevant setting is enabled.
-   * @param tabId - Unique identifier of the tab to close.
-   */
   /**
    * Executes the actual tab closing logic.
    */
-  const performCloseTab = (tabId: string) => {
+  const performCloseTab = useCallback((tabId: string) => {
     setTabs(prev => {
       const newTabs = prev.filter(t => t.id !== tabId);
 
@@ -141,14 +134,14 @@ export default function WorkspacePage() {
 
       return newTabs;
     });
-  };
+  }, [activeTabId]);
 
   /**
    * Initiates the tab closing process.
    * Prompts for confirmation if the relevant setting is enabled.
    * @param tabId - Unique identifier of the tab to close.
    */
-  const handleCloseTab = (tabId: string) => {
+  const handleCloseTab = useCallback((tabId: string) => {
     if (settings.confirmCloseTab) {
       setConfirmModal({
         isOpen: true,
@@ -159,7 +152,96 @@ export default function WorkspacePage() {
     } else {
       performCloseTab(tabId);
     }
+  }, [settings.confirmCloseTab, performCloseTab]);
+
+  // Action refs for stable keyboard listener
+  const handleNewRequestActionRef = useRef(handleNewRequestAction);
+  const handleCloseTabRef = useRef(handleCloseTab);
+  const setSidebarOpenRef = useRef(setSidebarOpen);
+
+  useEffect(() => {
+    handleNewRequestActionRef.current = handleNewRequestAction;
+  }, [handleNewRequestAction]);
+
+  useEffect(() => {
+    handleCloseTabRef.current = handleCloseTab;
+  }, [handleCloseTab]);
+
+  useEffect(() => {
+    setSidebarOpenRef.current = setSidebarOpen;
+  }, [setSidebarOpen]);
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if it's a shortcut (Ctrl/Cmd)
+      const isMod = e.ctrlKey || e.metaKey;
+
+      if (isMod) {
+        const key = e.key.toLowerCase();
+        if (key === 's') {
+          e.preventDefault();
+          setSaveTrigger(prev => prev + 1);
+        } else if (key === 'enter') {
+          e.preventDefault();
+          setSendTrigger(prev => prev + 1);
+        } else if (key === 'n') {
+          e.preventDefault();
+          handleNewRequestActionRef.current();
+        } else if (key === 'w') {
+          e.preventDefault();
+          const currentTabId = activeTabIdRef.current;
+          if (currentTabId !== 'overview') {
+            handleCloseTabRef.current(currentTabId);
+          }
+        } else if (key === '/' || e.code === 'Slash') {
+          e.preventDefault();
+          setSidebarOpenRef.current(prev => !prev);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []); // Truly stable listener
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
+  /**
+   * Switches to an existing tab or opens a new one for the selected request.
+   * @param request - The request object to open, containing its parent collection ID.
+   */
+  const handleSelectRequest = (request: SavedRequest & { collectionId: string }) => {
+    setActiveActivity("collections");
+    // Check if tab already exists
+    const exists = tabs.find(t => t.id === request.id);
+    if (!exists) {
+      setTabs(prev => [...prev, { ...request, tabType: 'request' }]);
+    }
+    setActiveTabId(request.id);
   };
+
+  /**
+   * Switches to an existing flow tab or opens a new one.
+   */
+  const handleSelectFlow = (flow: Flow) => {
+    setActiveActivity("flows");
+    const exists = tabs.find(t => t.id === flow.id);
+    if (!exists) {
+      setTabs(prev => [...prev, { ...flow, tabType: 'flow' }]);
+    }
+    setActiveTabId(flow.id);
+  };
+
+  /**
+   * Closes a specific tab and manages focus transition.
+   * Prompts for confirmation if the relevant setting is enabled.
+   * @param tabId - Unique identifier of the tab to close.
+   */
 
   const activeRequest = tabs.find(t => t.id === activeTabId);
 
@@ -239,11 +321,13 @@ export default function WorkspacePage() {
       <WorkspaceHeader />
 
       <div className="flex-1 flex overflow-hidden relative z-10">
-        <WorkspaceSidebar
-          onSelectRequest={handleSelectRequest}
-          onSelectFlow={handleSelectFlow}
-          onActivityChange={setActiveActivity}
-        />
+        {isSidebarOpen && (
+          <WorkspaceSidebar
+            onSelectRequest={handleSelectRequest}
+            onSelectFlow={handleSelectFlow}
+            onActivityChange={setActiveActivity}
+          />
+        )}
 
         {/* Main Work Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-card-bg/20 backdrop-blur-sm">
@@ -284,12 +368,7 @@ export default function WorkspacePage() {
             ))}
 
             <button
-              onClick={() => {
-                const id = `new_${Date.now()}`;
-                const newReq: ActiveTab = { id, name: 'New Request', method: 'GET', tabType: 'request' };
-                setTabs(prev => [...prev, newReq]);
-                setActiveTabId(id);
-              }}
+              onClick={handleNewRequestAction}
               className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted hover:text-foreground transition-colors ml-1"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -562,13 +641,19 @@ export default function WorkspacePage() {
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
                   {activeRequest.tabType === 'flow' ? (
-                    <FlowBuilder flow={activeRequest as Flow} />
+                    <FlowBuilder
+                      flow={activeRequest as Flow}
+                      saveTrigger={saveTrigger}
+                      sendTrigger={sendTrigger}
+                    />
                   ) : (
                     <RequestPanel
                       // @ts-ignore
                       activeRequest={activeRequest as any}
                       onResponse={setLastResponse}
                       onExecuting={setIsExecuting}
+                      saveTrigger={saveTrigger}
+                      sendTrigger={sendTrigger}
                     />
                   )}
                 </div>
@@ -581,10 +666,10 @@ export default function WorkspacePage() {
             )}
           </div>
         </main>
-      </div>
+      </div >
 
       {/* Footer Bar */}
-      <footer id="tour-footer-actions" className="h-7 border-t border-card-border bg-card-bg/50 backdrop-blur-md flex items-center justify-between px-3 text-[10px] text-muted font-medium z-40 transition-colors duration-500">
+      < footer id="tour-footer-actions" className="h-7 border-t border-card-border bg-card-bg/50 backdrop-blur-md flex items-center justify-between px-3 text-[10px] text-muted font-medium z-40 transition-colors duration-500" >
         <div className="flex items-center gap-4">
           <button className="hover:text-foreground flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" /> Cloud View</button>
           <button className="hover:text-foreground">Find and replace</button>
@@ -594,7 +679,7 @@ export default function WorkspacePage() {
           <button className="hover:text-foreground">Runner</button>
           <button className="hover:text-foreground">Trash</button>
         </div>
-      </footer>
+      </footer >
 
       <DemoTour />
 
@@ -615,6 +700,6 @@ export default function WorkspacePage() {
       />
 
       {isCreatingFlow && <FlowLoadingOverlay />}
-    </div>
+    </div >
   );
 }

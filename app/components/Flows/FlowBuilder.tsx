@@ -13,7 +13,15 @@ import { useAuth } from "../AuthProvider";
  * Full scenario design canvas with sequential execution and reordering.
  * Enhanced with premium Canva-inspired floating UI.
  */
-export default function FlowBuilder({ flow }: { flow: Flow }) {
+export default function FlowBuilder({
+    flow,
+    saveTrigger = 0,
+    sendTrigger = 0
+}: {
+    flow: Flow,
+    saveTrigger?: number,
+    sendTrigger?: number
+}) {
     const { updateFlow, currentRole } = useCollections();
     const { isDemo } = useAuth();
 
@@ -22,6 +30,10 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
     const [summary, setSummary] = useState<FlowExecutionSummary | null>(null);
     const [showChat, setShowChat] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Trigger Tracking
+    const lastSaveTrigger = useRef(saveTrigger);
+    const lastSendTrigger = useRef(sendTrigger);
 
     // Canvas State
     const [viewport, setViewport] = useState({ x: 0, y: 0 });
@@ -213,6 +225,23 @@ export default function FlowBuilder({ flow }: { flow: Flow }) {
             }));
         }
     };
+
+    /**
+     * Keyboard shortcut listeners
+     */
+    useEffect(() => {
+        if (saveTrigger > lastSaveTrigger.current) {
+            handleSaveFlow();
+        }
+        lastSaveTrigger.current = saveTrigger;
+    }, [saveTrigger]);
+
+    useEffect(() => {
+        if (sendTrigger > lastSendTrigger.current) {
+            runFlow();
+        }
+        lastSendTrigger.current = sendTrigger;
+    }, [sendTrigger]);
 
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden font-outfit transition-colors duration-500">

@@ -1,0 +1,180 @@
+﻿bun : $ vitest run
+At line:1 char:1
++ bun run test > 
+vitest_results.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ($ vitest run:   
+ String) [], Remote    
+Exception
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/ripan/OneDrive/Documents/CosmoNaut[39m
+
+[90mstderr[2m | app/r
+eset-password/__tests__
+/ResetPassword.test.tsx
+[2m > 
+[22m[2mResetPassword 
+Page[2m > 
+[22m[2mshows loading 
+state while verifying 
+code
+[22m[39mAn update to 
+ResetPasswordForm 
+inside a test was not 
+wrapped in act(...).
+
+When testing, code 
+that causes React 
+state updates should 
+be wrapped into 
+act(...):
+
+act(() => {
+  /* fire events that 
+update state */
+});
+/* assert on the 
+output */
+
+This ensures that 
+you're testing the 
+behavior the user 
+would see in the 
+browser. Learn more at 
+https://react.dev/link/
+wrap-tests-with-act
+
+ [32mΓ£ô[39m test/integration/response-visualizer.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 487[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Successfully formats raw engine strings into Pretty JSON via format selector [33m 485[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/distributed-tracing-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 565[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m persists engine-level errors and trace metadata to history [33m 562[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/rbac-security.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 442[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Read-only role disables critical UI controls and prevents modification [33m 440[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-demo-limiter.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 617[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m demo user can execute request and it still hits engine [33m 615[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/privacy-history.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 644[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m UH1 Goal: History integration correctly captures Auth metadata for replay [33m 641[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/auth-header-injection.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 667[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m converts Bearer Auth state into Authorization header for Engine [33m 665[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/orchestration-lifecycle.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 683[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m UH1 Flow: Complex JSON Post with Auth Normalization & Trace Recording [33m 513[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/scenario-replay.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 707[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Replaying a history item restores complex Auth and Body telemetry [33m 705[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/import-export-handshake.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 691[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Importing a collection correctly updates the Sidebar and Provider state [33m 688[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/multi-step-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 828[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Chain Integration: Successfully passes data from Response A to Request B [33m 825[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/comprehensive-engine-bridge.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 832[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Integration of URL Cleaning + Auth Injection + History Persistence [33m 680[2mms[22m[39m
+ [32mΓ£ô[39m app/reset-password/__tests__/ResetPassword.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 883[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m toggles password visibility in the reset form [33m 553[2mms[22m[39m
+ [32mΓ£ô[39m app/signup/__tests__/SignUp.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 838[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m prevents form submission if password is not strong [33m 378[2mms[22m[39m
+[90mstderr[2m | app/c
+omponents/__tests__/Pro
+fileModal.test.tsx[2m 
+> 
+[22m[2mProfileModal 
+Component[2m > 
+[22m[2mhandles 
+incorrect current 
+password error
+[22m[39mPassword 
+change error: Error: 
+Incorrect password
+    at C:/Users/ripan/O
+neDrive/Documents/Cosmo
+Naut/app/components/__t
+ests__/ProfileModal.tes
+t.tsx:107:23
+    at [90mfile:///C:/
+Users/ripan/OneDrive/Do
+cuments/CosmoNaut/[39m
+node_modules/[4m@vites
+t/runner[24m/dist/inde
+x.js:145:11
+    at [90mfile:///C:/
+Users/ripan/OneDrive/Do
+cuments/CosmoNaut/[39m
+node_modules/[4m@vites
+t/runner[24m/dist/inde
+x.js:915:26
+    at [90mfile:///C:/
+Users/ripan/OneDrive/Do
+cuments/CosmoNaut/[39m
+node_modules/[4m@vites
+t/runner[24m/dist/inde
+x.js:1243:20
+    at new Promise 
+(<anonymous>)
+    at runWithTimeout 
+[90m(file:///C:/Users/r
+ipan/OneDrive/Documents
+/CosmoNaut/[39mnode_mo
+dules/[4m@vitest/runne
+r[24m/dist/index.js:12
+09:10[90m)[39m
+    at [90mfile:///C:/
+Users/ripan/OneDrive/Do
+cuments/CosmoNaut/[39m
+node_modules/[4m@vites
+t/runner[24m/dist/inde
+x.js:1653:37
+    at Traces.$ [90m(f
+ile:///C:/Users/ripan/O
+neDrive/Documents/Cosmo
+Naut/[39mnode_modules/
+[4mvitest[24m/dist/ch
+unks/traces.CCmnQaNT.js
+:142:27[90m)[39m
+    at trace [90m(file
+:///C:/Users/ripan/OneD
+rive/Documents/CosmoNau
+t/[39mnode_modules/[4
+mvitest[24m/dist/chunk
+s/test.B8ej_ZHS.js:239:
+21[90m)[39m
+    at runTest [90m(fi
+le:///C:/Users/ripan/On
+eDrive/Documents/CosmoN
+aut/[39mnode_modules/
+[4m@vitest/runner[24m/
+dist/index.js:1653:12[
+90m)[39m {
+  code: [32m'auth/wron
+g-password'[39m
+}
+
+ [32mΓ£ô[39m app/components/__tests__/ProfileModal.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1160[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m switches to change password view [33m 379[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-execution.contract.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 323[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m normalizes ΓåÆ calls engine ΓåÆ renders response ΓåÆ persists history [33m 321[2mms[22m[39m
+ [32mΓ£ô[39m app/components/Flows/core/FlowExecutor.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/LoadingSplash.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/disk-persistence.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 106[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/role-transition.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/Astronaut.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 251[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/AuthCard.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 234[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/ThemeToggle.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 233[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/header-logic.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 312[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m automatically adds Content-Type when a JSON body is present in POST [33m 310[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/workspace-orchestration.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 293[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-normalization.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 310[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m normalizes params into URL and persists history [33m 308[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-loading.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 365[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Send ΓåÆ loading ΓåÆ response ΓåÆ history persisted ΓåÆ engine contract [33m 362[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-error.contract.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 179[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 211[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m      Tests [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 00:32:23
+[2m   Duration [22m 25.68s[2m (transform 8.34s, setup 45.32s, import 30.51s, tests 13.01s, environment 265.14s)[22m
+

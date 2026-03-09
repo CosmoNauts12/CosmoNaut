@@ -1,0 +1,1186 @@
+﻿bun test v1.3.8 (b64edcb4)
+bun : 
+At line:1 char:1
++ bun test > 
+test_results.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo           
+   : NotSpecified: (:St    
+ring) [], RemoteExcept    ion
+    + FullyQualifiedErrorI   
+ d : NativeCommandError
+ 
+test\integration\auth-header-
+injection.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\auth
+-header-injection.test.tsx:25
+:5)
+(fail) Integration: Auth to 
+Header Conversion > converts 
+Bearer Auth state into 
+Authorization header for 
+Engine
+
+test\integration\comprehensiv
+e-engine-bridge.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\comp
+rehensive-engine-bridge.test.
+tsx:50:5)
+(fail) Ultra-Integration: 
+End-to-End Request Pipeline 
+> Integration of URL 
+Cleaning + Auth Injection + 
+History Persistence
+ 96 |       }));
+ 97 |     });
+ 98 |   });
+ 99 | 
+100 |   test("Integration: 
+JSON Validation Edge Case", 
+async () => {
+101 |     const alertMock = 
+vi.spyOn(window, 'alert').moc
+kImplementation(() => {});
+                             
+        ^
+ReferenceError: window is 
+not defined
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\comp
+rehensive-engine-bridge.test.
+tsx:101:32)
+(fail) Ultra-Integration: 
+End-to-End Request Pipeline 
+> Integration: JSON 
+Validation Edge Case
+
+test\integration\disk-persist
+ence.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\disk
+-persistence.test.tsx:32:5)
+(fail) Ultra-Integration: 
+Disk Persistence Bridge > 
+Deleting a collection 
+triggers a write to the 
+local filesystem via Tauri
+
+test\integration\distributed-
+tracing-flow.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\dist
+ributed-tracing-flow.test.tsx
+:28:5)
+(fail) Integration: 
+Distributed Tracing 
+Persistence > persists 
+engine-level errors and 
+trace metadata to history
+
+test\integration\header-logic
+.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\head
+er-logic.test.tsx:20:5)
+(fail) Integration: Auto 
+Header Injection > 
+automatically adds 
+Content-Type when a JSON 
+body is present in POST
+
+test\integration\import-expor
+t-handshake.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\impo
+rt-export-handshake.test.tsx:
+24:5)
+(fail) Ultra-Integration: 
+Import & Collection 
+Handshake > Importing a 
+collection correctly updates 
+the Sidebar and Provider 
+state
+
+test\integration\multi-step-f
+low.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\mult
+i-step-flow.test.tsx:46:26)
+(fail) Ultra-Integration: 
+Multi-Step Flow Automation > 
+Chain Integration: 
+Successfully passes data 
+from Response A to Request B
+
+test\integration\orchestratio
+n-lifecycle.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\orch
+estration-lifecycle.test.tsx:
+60:5)
+(fail) Mega-Integration: 
+Advanced Request 
+Orchestration > UH1 Flow: 
+Complex JSON Post with Auth 
+Normalization & Trace 
+Recording
+105 |       );
+106 |     });
+107 |   });
+108 | 
+109 |   test("Error 
+Boundary: JSON Validation", 
+async () => {
+110 |     const alertMock = 
+vi.spyOn(window, 'alert').moc
+kImplementation(() => {});
+                             
+        ^
+ReferenceError: window is 
+not defined
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\orch
+estration-lifecycle.test.tsx:
+110:32)
+(fail) Mega-Integration: 
+Advanced Request 
+Orchestration > Error 
+Boundary: JSON Validation
+
+test\integration\privacy-hist
+ory.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\priv
+acy-history.test.tsx:47:5)
+(fail) Ultra-Integration: 
+Privacy-Aware Persistence > 
+UH1 Goal: History 
+integration correctly 
+captures Auth metadata for 
+replay
+
+test\integration\rbac-securit
+y.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\rbac
+-security.test.tsx:21:5)
+(fail) Mega-Integration: 
+Role Based Access Control > 
+Read-only role disables 
+critical UI controls and 
+prevents modification 
+[31.00ms]
+
+test\integration\request-demo
+-limiter.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-demo-limiter.test.tsx:74:
+5)
+(fail) Integration: Demo 
+request flow > demo user can 
+execute request and it still 
+hits engine
+
+test\integration\request-erro
+r.contract.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-error.contract.test.tsx:9
+0:5)
+(fail) Integration: Engine 
+error contract > error ΓåÆ 
+response lifecycle ΓåÆ 
+history persisted [15.00ms]
+
+test\integration\request-exec
+ution.contract.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-execution.contract.test.t
+sx:115:5)
+(fail) Integration: Full 
+request execution contract > 
+normalizes ΓåÆ calls engine 
+ΓåÆ renders response ΓåÆ 
+persists history
+
+test\integration\request-flow
+.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-flow.test.tsx:119:5)
+(fail) Integration: request 
+flow > user sends request 
+ΓåÆ engine runs ΓåÆ response 
+renders ΓåÆ history saved
+
+test\integration\request-load
+ing.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-loading.test.tsx:113:5)
+(fail) Integration: Request 
+loading lifecycle > Send ΓåÆ 
+loading ΓåÆ response ΓåÆ 
+history persisted ΓåÆ engine 
+contract
+
+test\integration\request-norm
+alization.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\requ
+est-normalization.test.tsx:86
+:5)
+(fail) Integration: Request 
+normalization > normalizes 
+params into URL and persists 
+history
+
+test\integration\response-vis
+ualizer.test.tsx:
+
+# Unhandled error between 
+tests
+-----------------------------
+--
+2 | import { render, screen, 
+fireEvent } from 
+"@testing-library/react";
+3 | import { describe, test, 
+expect } from "vitest";
+4 | import React from 
+"react";
+5 | import ResponsePanel 
+from "@/app/components/Respon
+sePanel";
+6 | 
+7 | vi.mock("react-syntax-hig
+hlighter", () => ({
+    ^
+ReferenceError: vi is not 
+defined
+      at C:\Users\ripan\OneDr
+ive\Documents\CosmoNaut\test\
+integration\response-visualiz
+er.test.tsx:7:1
+      at 
+loadAndEvaluateModule (2:1)
+-----------------------------
+--
+
+
+test\integration\role-transit
+ion.test.tsx:
+30 |     vi.clearAllMocks();
+31 |   });
+32 | 
+33 |   test("UI immediately 
+locks down when switching 
+from 'owner' to 'read'", () 
+=> {
+34 |     // A. Mock the 
+'owner' role first
+35 |     vi.mocked(useCollect
+ions).mockReturnValue({
+            ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useCollections)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\role
+-transition.test.tsx:35:8)
+(fail) Ultra-Integration: 
+Dynamic Role Transition > UI 
+immediately locks down when 
+switching from 'owner' to 
+'read'
+
+test\integration\scenario-rep
+lay.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\scen
+ario-replay.test.tsx:37:5)
+(fail) Ultra-Integration: 
+Scenario Replay Pipeline > 
+Replaying a history item 
+restores complex Auth and 
+Body telemetry
+
+test\integration\workspace-or
+chestration.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\test\integration\work
+space-orchestration.test.tsx:
+42:26)
+(fail) Ultra-Integration: 
+Workspace Context Switching 
+> Fast Switch: UI reacts to 
+workspace role and flushes 
+state
+
+app\components\__tests__\Astr
+onaut.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\Astronaut.test.tsx:7:9)
+(fail) Astronaut > renders 
+astronaut image
+
+app\components\__tests__\Auth
+Card.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\AuthCard.test.tsx:10:9)
+(fail) AuthCard > renders 
+title and children correctly
+
+app\components\__tests__\Load
+ingSplash.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\LoadingSplash.test.tsx:7:
+9)
+(fail) LoadingSplash > 
+renders loading text and 
+brand name
+
+app\components\__tests__\Prof
+ileModal.test.tsx:
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > renders profile 
+info correctly
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > switches to 
+change password view
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > validates 
+password strength in the 
+modal
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > successfully 
+updates password after 
+re-authentication
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > handles 
+incorrect current password 
+error
+26 |     const 
+mockSetProfileOpen = vi.fn();
+27 |     const 
+mockUpdateSettings = vi.fn();
+28 | 
+29 |     beforeEach(() => {
+30 |         
+vi.clearAllMocks();
+31 |         vi.mocked(useSet
+tings).mockReturnValue({
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useSettings)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ProfileModal.test.tsx:31:
+12)
+(fail) ProfileModal 
+Component > blocks 
+submission if new password 
+is not strong
+
+app\components\__tests__\Them
+eToggle.test.tsx:
+251 |     throw error;
+252 |   }
+253 |   if (!baseElement) {
+254 |     // default to 
+document.body instead of 
+documentElement to avoid 
+output of potentially-large
+255 |     // head elements 
+(such as JSS style blocks) 
+in debug output
+256 |     baseElement = 
+document.body;
+                        ^
+ReferenceError: document is 
+not defined
+      at render (C:\Users\rip
+an\OneDrive\Documents\CosmoNa
+ut\node_modules\@testing-libr
+ary\react\dist\pure.js:256:19
+)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\components\__test
+s__\ThemeToggle.test.tsx:24:9
+)
+(fail) ThemeToggle > renders 
+and allows toggling theme 
+[16.00ms]
+
+app\reset-password\__tests__\
+ResetPassword.test.tsx:
+13 |     const mockPush = 
+vi.fn();
+14 |     const mockGet = 
+vi.fn();
+15 | 
+16 |     beforeEach(() => {
+17 |         
+vi.clearAllMocks();
+18 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\reset-password\__
+tests__\ResetPassword.test.ts
+x:18:12)
+(fail) ResetPassword Page > 
+shows loading state while 
+verifying code
+13 |     const mockPush = 
+vi.fn();
+14 |     const mockGet = 
+vi.fn();
+15 | 
+16 |     beforeEach(() => {
+17 |         
+vi.clearAllMocks();
+18 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\reset-password\__
+tests__\ResetPassword.test.ts
+x:18:12)
+(fail) ResetPassword Page > 
+toggles password visibility 
+in the reset form
+13 |     const mockPush = 
+vi.fn();
+14 |     const mockGet = 
+vi.fn();
+15 | 
+16 |     beforeEach(() => {
+17 |         
+vi.clearAllMocks();
+18 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\reset-password\__
+tests__\ResetPassword.test.ts
+x:18:12)
+(fail) ResetPassword Page > 
+shows strength meter on 
+password focus
+13 |     const mockPush = 
+vi.fn();
+14 |     const mockGet = 
+vi.fn();
+15 | 
+16 |     beforeEach(() => {
+17 |         
+vi.clearAllMocks();
+18 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\reset-password\__
+tests__\ResetPassword.test.ts
+x:18:12)
+(fail) ResetPassword Page > 
+blocks reset if requirements 
+are not met
+
+app\signup\__tests__\SignUp.t
+est.tsx:
+20 | describe('SignUp Page', 
+() => {
+21 |     const mockPush = 
+vi.fn();
+22 | 
+23 |     beforeEach(() => {
+24 |         
+vi.clearAllMocks();
+25 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\signup\__tests__\
+SignUp.test.tsx:25:12)
+(fail) SignUp Page > toggles 
+password visibility when eye 
+icon is clicked
+20 | describe('SignUp Page', 
+() => {
+21 |     const mockPush = 
+vi.fn();
+22 | 
+23 |     beforeEach(() => {
+24 |         
+vi.clearAllMocks();
+25 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\signup\__tests__\
+SignUp.test.tsx:25:12)
+(fail) SignUp Page > updates 
+strength meter and checklist 
+as user types
+20 | describe('SignUp Page', 
+() => {
+21 |     const mockPush = 
+vi.fn();
+22 | 
+23 |     beforeEach(() => {
+24 |         
+vi.clearAllMocks();
+25 |         vi.mocked(useRou
+ter).mockReturnValue({ push: 
+mockPush } as any);
+                ^
+TypeError: vi.mocked is not 
+a function. (In 
+'vi.mocked(useRouter)', 
+'vi.mocked' is undefined)
+      at <anonymous> (C:\User
+s\ripan\OneDrive\Documents\Co
+smoNaut\app\signup\__tests__\
+SignUp.test.tsx:25:12)
+(fail) SignUp Page > 
+prevents form submission if 
+password is not strong
+
+app\components\Flows\core\Flo
+wExecutor.test.ts:
+
+# Unhandled error between 
+tests
+-----------------------------
+--
+4 |  * vi.hoisted ensures 
+the mock function is created 
+BEFORE modules are imported.
+5 |  * This is required 
+because vi.mock() factories 
+are hoisted to the top of the
+6 |  * file by vitest, 
+running before any import 
+statements. Without 
+vi.hoisted,
+7 |  * vi.mocked(executeReque
+st).mockResolvedValue is not 
+a function at runtime.
+8 |  */
+9 | const mockExecuteRequest 
+= vi.hoisted(() => vi.fn());
+                             
+     ^
+TypeError: vi.hoisted is not 
+a function. (In 
+'vi.hoisted(() => vi.fn())', 
+'vi.hoisted' is undefined)
+      at C:\Users\ripan\OneDr
+ive\Documents\CosmoNaut\app\c
+omponents\Flows\core\FlowExec
+utor.test.ts:9:31
+      at 
+loadAndEvaluateModule (2:1)
+-----------------------------
+--
+
+
+ 0 pass
+ 40 fail
+ 2 errors
+Ran 40 tests across 28 
+files. [959.00ms]
