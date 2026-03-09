@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useSettings } from "./SettingsProvider";
 import { useAuth } from "./AuthProvider";
 import { useCollections } from "./CollectionsProvider";
+import { useTheme } from "./ThemeContext";
 
 /**
  * Modal component for editing user preferences.
@@ -15,6 +16,7 @@ import { useCollections } from "./CollectionsProvider";
 export default function SettingsModal() {
   const { isSettingsOpen, setSettingsOpen, settings, updateSettings } = useSettings();
   const { workspaces } = useCollections();
+  const { theme, toggleTheme } = useTheme();
 
   if (!isSettingsOpen) return null;
 
@@ -76,7 +78,7 @@ export default function SettingsModal() {
                   <button
                     key={m}
                     onClick={() => updateSettings({ defaultMethod: m as 'GET' | 'POST' })}
-                    className={`px-3 py-1 rounded-lg text-[10px] font-black transition-all ${settings.defaultMethod === m
+                    className={`w-16 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all ${settings.defaultMethod === m
                       ? 'bg-primary text-white shadow-lg shadow-primary/20'
                       : 'text-muted hover:text-foreground'
                       }`}
@@ -87,31 +89,56 @@ export default function SettingsModal() {
               </div>
             </div>
 
-            <div className="h-px bg-card-border/50" />
+          </div>
 
-            {/* Toggles */}
-            <div className="space-y-4">
-              {[
-                { id: 'openLastWorkspace', label: 'Open Last Workspace', desc: 'Reopen where you left off' },
-                { id: 'confirmCloseTab', label: 'Confirm Before Closing Tabs', desc: 'Avoid accidental data loss' },
-                { id: 'confirmDelete', label: 'Confirm Before Deleting', desc: 'Extra safety for your missions' },
-              ].map((toggle) => (
-                <div key={toggle.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-wider text-foreground">{toggle.label}</p>
-                    <p className="text-[10px] text-muted font-bold">{toggle.desc}</p>
-                  </div>
-                  <button
-                    onClick={() => updateSettings({ [toggle.id]: !settings[toggle.id as keyof typeof settings] })}
-                    className={`w-9 h-5 rounded-full relative transition-all duration-300 ${settings[toggle.id as keyof typeof settings] ? 'bg-primary' : 'bg-white/10'
-                      }`}
-                  >
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 shadow-sm ${settings[toggle.id as keyof typeof settings] ? 'left-5' : 'left-1'
-                      }`} />
-                  </button>
-                </div>
+          <div className="h-px bg-card-border/50 my-6" />
+
+          {/* Theme / Appearance */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-foreground">Appearance</p>
+              <p className="text-[10px] text-muted font-bold">Toggle light or dark mode</p>
+            </div>
+            <div className="flex bg-card-bg/50 rounded-xl border border-card-border p-1">
+              {['light', 'dark'].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => {
+                    if (theme !== t) toggleTheme();
+                  }}
+                  className={`w-16 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${theme === t
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'text-muted hover:text-foreground'
+                    }`}
+                >
+                  {t}
+                </button>
               ))}
             </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="space-y-6">
+            {[
+              { id: 'openLastWorkspace', label: 'Open Last Workspace', desc: 'Reopen where you left off' },
+              { id: 'confirmCloseTab', label: 'Confirm Before Closing Tabs', desc: 'Avoid accidental data loss' },
+              { id: 'confirmDelete', label: 'Confirm Before Deleting', desc: 'Extra safety for your missions' },
+            ].map((toggle) => (
+              <div key={toggle.id} className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-foreground">{toggle.label}</p>
+                  <p className="text-[10px] text-muted font-bold">{toggle.desc}</p>
+                </div>
+                <button
+                  onClick={() => updateSettings({ [toggle.id]: !settings[toggle.id as keyof typeof settings] })}
+                  className={`w-9 h-5 rounded-full relative transition-all duration-300 ${settings[toggle.id as keyof typeof settings] ? 'bg-primary' : 'bg-white/10'
+                    }`}
+                >
+                  <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 shadow-sm ${settings[toggle.id as keyof typeof settings] ? 'left-5' : 'left-1'
+                    }`} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
