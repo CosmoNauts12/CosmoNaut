@@ -62,7 +62,9 @@ export default function WorkspaceSidebar({
     flows,
     createFlow,
     renameFlow,
-    deleteFlow
+    updateFlow,
+    deleteFlow,
+    saveRequest
   } = useCollections();
 
   const [activeActivity, setActiveActivity] = useState('collections');
@@ -231,6 +233,50 @@ export default function WorkspaceSidebar({
     }
   };
 
+  /**
+   * Imports a Collection or Flow from a JSON file using standard FileReader
+   */
+  const handleGlobalImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (currentRole === 'read') {
+      alert("You do not have permission to import data in this workspace.");
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+
+        if (data.blocks && Array.isArray(data.blocks)) {
+          // Flow Import
+          const flowId = await createFlow(data.name || "Imported Flow");
+          await updateFlow({
+            ...data,
+            id: flowId
+          });
+        } else if (data.requests && Array.isArray(data.requests)) {
+          // Collection Import
+          const colId = await createCollection(data.name || "Imported Collection");
+          for (const req of data.requests) {
+            await saveRequest(req, colId);
+          }
+        } else {
+          alert("Unrecognized CosmoNaut data format.");
+        }
+      } catch (err) {
+        console.error("Import error", err);
+        alert("Failed to parse import file.");
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
       {/* Activity Bar (Narrow Left) */}
@@ -298,9 +344,10 @@ export default function WorkspaceSidebar({
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
               )}
-              <button className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[12px] font-bold uppercase tracking-wider">
+              <label className="px-2 py-0.5 rounded-md hover:bg-foreground/5 text-muted hover:text-foreground transition-colors text-[12px] font-bold uppercase tracking-wider cursor-pointer flex items-center">
                 Import
-              </button>
+                <input type="file" className="hidden" accept=".json" onChange={handleGlobalImport} />
+              </label>
             </div>
           </div>
 

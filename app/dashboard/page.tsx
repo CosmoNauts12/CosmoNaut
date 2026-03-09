@@ -322,6 +322,9 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-6">
             <ThemeToggle />
+            <div className="flex items-center justify-center transition-all ml-2">
+              <img src="/logo.svg" alt="App Logo" className="w-10 h-10 object-contain drop-shadow-md hover:scale-105 transition-transform" />
+            </div>
           </div>
         </header>
 

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { FlowBlock, KVItem } from "@/app/lib/collections";
+import { FlowBlock, KVItem, SavedRequest } from "@/app/lib/collections";
+import { useCollections } from "../CollectionsProvider";
 
 const methods = ["GET", "POST", "PUT", "DELETE"];
 
@@ -31,13 +32,19 @@ export default function FlowBlockUI({
     const [isExpanded, setIsExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState<'input' | 'output'>('input');
     const [showTriggerMenu, setShowTriggerMenu] = useState(false);
+    const [showImportMenu, setShowImportMenu] = useState(false);
+    const { collections } = useCollections();
     const menuRef = useRef<HTMLDivElement>(null);
+    const importMenuRef = useRef<HTMLDivElement>(null);
 
-    // Close menu on outside click
+    // Close menus on outside click
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setShowTriggerMenu(false);
+            }
+            if (importMenuRef.current && !importMenuRef.current.contains(event.target as Node)) {
+                setShowImportMenu(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -61,6 +68,17 @@ export default function FlowBlockUI({
             newList.splice(index, 1);
             onUpdateAction({ [field]: newList });
         }
+    };
+
+    const handleImportRequest = (req: SavedRequest) => {
+        onUpdateAction({
+            method: req.method,
+            url: req.url,
+            params: req.params && req.params.length > 0 ? req.params : [{ key: '', value: '', enabled: true }],
+            headers: req.headers && req.headers.length > 0 ? req.headers : [{ key: '', value: '', enabled: true }],
+            body: req.body || ''
+        });
+        setShowImportMenu(false);
     };
 
     const triggerOptions = [
@@ -114,15 +132,15 @@ export default function FlowBlockUI({
                                             onUpdateAction({ name: option.name });
                                             setShowTriggerMenu(false);
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:bg-white/5 hover:pl-4 group/opt active:scale-[0.98]"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 hover:pl-4 group/opt active:scale-[0.98]"
                                     >
-                                        <span className={`w-4 flex justify-center transition-colors ${block.name === option.name ? 'text-white' : 'text-transparent'}`}>
+                                        <span className={`w-4 flex justify-center transition-colors ${block.name === option.name ? 'text-primary dark:text-white' : 'text-transparent'}`}>
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                         </span>
-                                        <span className={`flex-shrink-0 transition-colors ${block.name === option.name ? 'text-white' : 'text-white/40 group-hover/opt:text-white/80'}`}>
+                                        <span className={`flex-shrink-0 transition-colors ${block.name === option.name ? 'text-primary dark:text-white' : 'text-foreground/40 dark:text-white/40 group-hover/opt:text-foreground/80 dark:group-hover/opt:text-white/80'}`}>
                                             {option.icon}
                                         </span>
-                                        <span className={`transition-colors ${block.name === option.name ? 'text-white' : 'text-white/60 group-hover/opt:text-white'}`}>
+                                        <span className={`transition-colors ${block.name === option.name ? 'text-foreground dark:text-white' : 'text-foreground/80 dark:text-white/60 group-hover/opt:text-foreground dark:group-hover/opt:text-white'}`}>
                                             {option.name}
                                         </span>
                                     </button>
@@ -144,102 +162,62 @@ export default function FlowBlockUI({
                 {/* Node Body / Config */}
                 {isExpanded && activeTab === 'input' && (
                     <div className="p-4 py-8 space-y-6 flex flex-col justify-center min-h-[120px]">
-                        {block.name === 'Request' ? (
+                        {block.name !== 'Start' && block.name !== 'Schedule' ? (
                             /* Specific "Request" Body Style from Reference Image */
-                            <div className="flex flex-col items-end space-y-4 pr-1">
-                                {['Headers', 'Params', 'Body'].map((item) => (
-                                    <div key={item} className="group/item flex items-center gap-3 relative">
-                                        <span className="text-sm font-medium text-foreground/90 dark:text-white/90">{item} ( )</span>
-                                        <div className="w-3 h-3 bg-black/10 dark:bg-white/20 rounded-full border-2 border-white dark:border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair shadow-sm" />
-                                        {/* Port Glow */}
-                                        <div className="absolute -right-1 w-2 h-2 bg-primary/40 rounded-full blur-sm opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : block.name === 'Schedule' ? (
-                            /* "Schedule" Style from Reference Image */
-                            <div className="flex flex-col space-y-4">
-                                <div className="space-y-3">
-                                    <p className="text-xs font-bold text-foreground/40 dark:text-white/50">Describe when the flow should run</p>
-                                    <div className="relative group/input" onMouseDown={(e) => e.stopPropagation()}>
-                                        <textarea
-                                            placeholder="e.g., Run every Monday at 2pm EST"
-                                            className="w-full bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-4 py-6 text-sm text-foreground/60 dark:text-white/60 placeholder:text-foreground/20 dark:placeholder:text-white/20 outline-none focus:border-primary/30 transition-all resize-none h-32 shadow-inner"
-                                        />
-                                        <button className="absolute bottom-3 right-3 bg-[#422B22] hover:bg-[#523B32] text-[#FF5C35] px-4 py-1.5 rounded-md text-[11px] font-bold transition-colors">
-                                            Apply
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3 self-end mt-4 group/item relative">
-                                    <span className="text-sm font-medium text-foreground/90 dark:text-white/90">Timestamp ( )</span>
-                                    <div className="w-3 h-3 bg-black/10 dark:bg-white/20 rounded-full border-2 border-white dark:border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair shadow-sm" />
-                                </div>
-                            </div>
-                        ) : block.name === 'Start' ? (
-                            /* "Start" Style */
-                            <div className="flex flex-col space-y-4">
-                                <button className="text-[11px] font-bold text-foreground/40 dark:text-white/40 hover:text-foreground dark:hover:text-white flex items-center gap-2 transition-colors">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Add input
-                                </button>
-                                <div className="flex items-center gap-3 self-end mt-4 group/item relative">
-                                    <span className="text-sm font-medium text-foreground/90 dark:text-white/90">Output ( )</span>
-                                    <div className="w-3 h-3 bg-black/10 dark:bg-white/20 rounded-full border-2 border-white dark:border-[#1E1E1E] group-hover/item:bg-primary transition-colors cursor-crosshair shadow-sm" />
-                                </div>
-                            </div>
-                        ) : activeTab === 'output' ? (
-                            /* Output View */
-                            <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
-                                {block.isExecuting ? (
-                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/50 dark:text-white/50 space-y-3">
-                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Executing...</p>
-                                    </div>
-                                ) : block.error ? (
-                                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg">
-                                        <p className="text-xs font-semibold text-rose-500 dark:text-rose-400 mb-1">Execution Failed</p>
-                                        <p className="text-[10px] text-rose-600 dark:text-rose-500/70">{block.error}</p>
-                                    </div>
-                                ) : block.response_data ? (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${block.status && block.status < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
-                                                Status: {block.status || 200}
-                                            </span>
-                                            {block.duration_ms && (
-                                                <span className="text-[9px] font-bold text-foreground/40 dark:text-white/40">{block.duration_ms}ms</span>
+                            <div className="flex flex-col items-stretch space-y-4">
+                                <div className="flex justify-between items-center relative" ref={importMenuRef} onMouseDown={(e) => e.stopPropagation()}>
+                                    <div className="text-[10px] font-black text-muted/50 uppercase tracking-widest">HTTP Configuration</div>
+                                    <button
+                                        onClick={() => setShowImportMenu(!showImportMenu)}
+                                        className="text-[10px] font-black uppercase tracking-widest text-[#00A5FF]/80 hover:text-[#00A5FF] bg-[#00A5FF]/5 hover:bg-[#00A5FF]/10 px-3 py-1.5 rounded flex items-center gap-2 transition-all active:scale-95 border border-[#00A5FF]/20"
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        Import from Collection
+                                    </button>
+
+                                    {showImportMenu && (
+                                        <div className="absolute top-[calc(100%+8px)] right-0 w-64 max-h-64 overflow-y-auto custom-scrollbar bg-white dark:bg-[#252525] border border-black/10 dark:border-white/10 rounded-lg shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                                            {collections.flatMap(c => c.requests).length === 0 ? (
+                                                <div className="px-4 py-3 text-center text-xs text-muted/60">No saved requests found</div>
+                                            ) : (
+                                                collections.flatMap(c => c.requests).map((req) => (
+                                                    <button
+                                                        key={req.id}
+                                                        onClick={() => handleImportRequest(req)}
+                                                        className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group/import"
+                                                    >
+                                                        <span className={`text-[9px] font-black uppercase w-10 text-right ${req.method === 'GET' ? 'text-emerald-500' :
+                                                            req.method === 'POST' ? 'text-amber-500' :
+                                                                req.method === 'PUT' ? 'text-blue-500' :
+                                                                    'text-rose-500'
+                                                            }`}>{req.method}</span>
+                                                        <span className="text-xs font-semibold text-foreground/80 dark:text-white/80 truncate group-hover/import:text-primary transition-colors">{req.name}</span>
+                                                    </button>
+                                                ))
                                             )}
                                         </div>
-                                        <div className="bg-foreground/5 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[150px] overflow-y-auto custom-scrollbar">
-                                            <pre className="text-[10px] text-foreground/70 dark:text-white/70 font-mono whitespace-pre-wrap">
-                                                {typeof block.response_data === 'string' ? block.response_data : JSON.stringify(block.response_data, null, 2)}
-                                            </pre>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 relative w-full" onMouseDown={(e) => e.stopPropagation()}>
+                                    <div className="relative w-24">
+                                        <select
+                                            value={block.method || 'GET'}
+                                            onChange={(e) => onUpdateAction({ method: e.target.value as any })}
+                                            className="w-full appearance-none bg-black/5 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-black text-primary/80 dark:text-primary outline-none focus:border-primary/50 transition-all cursor-pointer shadow-inner"
+                                        >
+                                            {['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-primary/60">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-foreground/30 dark:text-white/30 space-y-2">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                        <p className="text-[10px] font-bold">No output yet</p>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            /* Default Configuration Style */
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <button className="text-[11px] font-bold text-foreground/40 dark:text-white/40 hover:text-foreground dark:hover:text-white flex items-center gap-2 transition-colors">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                        Add input
-                                    </button>
-                                </div>
-                                <div className="relative" onMouseDown={(e) => e.stopPropagation()}>
                                     <input
                                         type="text"
                                         value={block.url}
                                         onChange={(e) => onUpdateAction({ url: e.target.value })}
                                         placeholder="https://api.domain.com/endpoint"
-                                        className="w-full bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 dark:text-white/80 focus:border-primary/50 outline-none transition-all shadow-inner"
+                                        className="flex-1 min-w-0 bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 dark:text-white/80 focus:border-primary/50 outline-none transition-all shadow-inner"
                                     />
                                 </div>
 
@@ -263,148 +241,163 @@ export default function FlowBlockUI({
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* Body Input for Non-GET Requests */}
+                                {block.method !== 'GET' && (
+                                    <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm" onMouseDown={(e) => e.stopPropagation()}>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">JSON Payload</p>
+                                        <textarea
+                                            value={block.body || ""}
+                                            onChange={(e) => onUpdateAction({ body: e.target.value })}
+                                            placeholder="{\n  &quot;key&quot;: &quot;value&quot;\n}"
+                                            className="w-full bg-black/5 dark:bg-[#121212] border-none rounded-md px-3 py-2 text-[10px] font-medium text-foreground/80 dark:text-white/80 outline-none transition-all resize-none h-20 shadow-inner"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ) : block.name === 'Schedule' ? (
+                            /* "Schedule" Style from Reference Image */
+                            <div className="flex flex-col space-y-4">
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-foreground/40 dark:text-white/50">Describe when the flow should run</p>
+                                    <div className="relative group/input" onMouseDown={(e) => e.stopPropagation()}>
+                                        <textarea
+                                            placeholder="e.g., Run every Monday at 2pm EST"
+                                            className="w-full bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/10 rounded-lg px-4 py-6 text-sm text-foreground/60 dark:text-white/60 placeholder:text-foreground/20 dark:placeholder:text-white/20 outline-none focus:border-primary/30 transition-all resize-none h-32 shadow-inner"
+                                        />
+                                        <button className="absolute bottom-3 right-3 bg-[#422B22] hover:bg-[#523B32] text-[#FF5C35] px-4 py-1.5 rounded-md text-[11px] font-bold transition-colors">
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            /* "Start" Style */
+                            <div className="flex flex-col space-y-4">
+                                <div className="text-[11px] font-bold text-foreground/40 dark:text-white/40 mb-2 text-center py-4">
+                                    A node to begin the flow.<br />No configuration required.
+                                </div>
                             </div>
                         )}
                     </div>
                 )}
 
-{/* Bottom Tab Bar */}
-<div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
-  <button
-    onClick={() => setActiveTab("input")}
-    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${
-      activeTab === "input"
-        ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
-        : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-    }`}
-  >
-    Input
-  </button>
-
-  <button
-    onClick={() => setActiveTab("output")}
-    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${
-      activeTab === "output"
-        ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
-        : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
-    }`}
-  >
-    Output
-  </button>
-</div>
-
-{/* OUTPUT PANEL */}
-{isExpanded && activeTab === "output" && (
-  <div className="p-4 py-6 space-y-4 min-h-[120px]">
-    {block.status || block.error ? (
-      <div className="space-y-3">
-
-        {/* Status Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                block.error ? "bg-rose-500" : "bg-emerald-500"
-              }`}
-            />
-            <span
-              className={`text-xs font-black uppercase tracking-wider ${
-                block.error
-                  ? "text-rose-500 dark:text-rose-400"
-                  : "text-emerald-500 dark:text-emerald-400"
-              }`}
-            >
-              {block.error ? "Error" : `Status ${block.status}`}
-            </span>
-          </div>
-
-          <span className="text-[9px] font-bold text-foreground/30 dark:text-white/30 uppercase tracking-widest">
-            JSON
-          </span>
-        </div>
-
-        {/* Response Body */}
-        <div className="bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto scrollbar-hide shadow-inner">
-          {block.error ? (
-            <p className="text-[10px] font-bold text-rose-500 dark:text-rose-400">
-              {typeof block.error === "string"
-                ? block.error
-                : block.error?.message || "Unknown error"}
-            </p>
-          ) : block.response_data ? (
-            <pre className="text-[10px] text-foreground/60 dark:text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
-              {(() => {
-                try {
-                  return JSON.stringify(
-                    JSON.parse(block.response_data),
-                    null,
-                    2
-                  );
-                } catch {
-                  return String(block.response_data);
-                }
-              })()}
-            </pre>
-          ) : (
-            <p className="text-[10px] text-foreground/30 dark:text-white/30 italic">
-              Response body is empty
-            </p>
-          )}
-        </div>
-
-        {/* Headers */}
-        {block.response_headers &&
-          Object.keys(block.response_headers).length > 0 && (
-            <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5">
-              <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">
-                Response Headers
-              </p>
-
-              {Object.entries(block.response_headers)
-                .slice(0, 4)
-                .map(([key, val]) => (
-                  <div key={key} className="flex gap-2 mb-1">
-                    <span className="text-[10px] text-cyan-600 dark:text-cyan-400/80 font-bold">
-                      {key}:
-                    </span>
-
-                    <span className="text-[10px] text-foreground/50 dark:text-white/50 truncate">
-                      {String(val)}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          )}
-      </div>
-    ) : (
-      /* Empty state */
-      <div className="flex flex-col items-center justify-center py-6 text-center">
-        <p className="text-[10px] font-black text-foreground/20 dark:text-white/20 uppercase tracking-widest mb-1">
-          No data
-        </p>
-        <p className="text-[9px] text-foreground/10 dark:text-white/10 font-bold">
-          Run this block to see output
-        </p>
-      </div>
-    )}
-  </div>
-)}
-
-                {/* Default Input/Output Tab Bar */}
-                <div className="bg-foreground/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
+                {/* Bottom Tab Bar */}
+                <div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
                     <button
-                        onClick={() => setActiveTab('input')}
-                        className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'input' ? 'text-foreground dark:text-white border-b-2 border-[#00A5FF]' : 'text-muted/40 dark:text-white/20 hover:text-foreground dark:hover:text-white/40'}`}
+                        onClick={() => setActiveTab("input")}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "input"
+                            ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
+                            : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
                     >
                         Input
                     </button>
+
                     <button
-                        onClick={() => setActiveTab('output')}
-                        className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all ${activeTab === 'output' ? 'text-foreground dark:text-white border-b-2 border-[#00A5FF]' : 'text-muted/40 dark:text-white/20 hover:text-foreground dark:hover:text-white/40'}`}
+                        onClick={() => setActiveTab("output")}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "output"
+                            ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
+                            : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
                     >
                         Output
                     </button>
                 </div>
+
+                {/* OUTPUT PANEL */}
+                {isExpanded && activeTab === "output" && (
+                    <div className="p-4 py-6 space-y-4 min-h-[120px]">
+                        {block.status || block.error ? (
+                            <div className="space-y-3">
+
+                                {/* Status Header */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`w-2 h-2 rounded-full ${block.error ? "bg-rose-500" : "bg-emerald-500"
+                                                }`}
+                                        />
+                                        <span
+                                            className={`text-xs font-black uppercase tracking-wider ${block.error
+                                                ? "text-rose-500 dark:text-rose-400"
+                                                : "text-emerald-500 dark:text-emerald-400"
+                                                }`}
+                                        >
+                                            {block.error ? "Error" : `Status ${block.status}`}
+                                        </span>
+                                    </div>
+
+                                    <span className="text-[9px] font-bold text-foreground/30 dark:text-white/30 uppercase tracking-widest">
+                                        JSON
+                                    </span>
+                                </div>
+
+                                {/* Response Body */}
+                                <div className="bg-slate-50 dark:bg-[#121212] border border-black/5 dark:border-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto scrollbar-hide shadow-inner">
+                                    {block.error ? (
+                                        <p className="text-[10px] font-bold text-rose-500 dark:text-rose-400">
+                                            {String(block.error) || "Unknown error"}
+                                        </p>
+                                    ) : block.response_data ? (
+                                        <pre className="text-[10px] text-foreground/60 dark:text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                                            {(() => {
+                                                try {
+                                                    return JSON.stringify(
+                                                        JSON.parse(block.response_data),
+                                                        null,
+                                                        2
+                                                    );
+                                                } catch {
+                                                    return String(block.response_data);
+                                                }
+                                            })()}
+                                        </pre>
+                                    ) : (
+                                        <p className="text-[10px] text-foreground/30 dark:text-white/30 italic">
+                                            Response body is empty
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Headers */}
+                                {block.response_headers &&
+                                    Object.keys(block.response_headers).length > 0 && (
+                                        <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">
+                                                Response Headers
+                                            </p>
+
+                                            {Object.entries(block.response_headers)
+                                                .slice(0, 4)
+                                                .map(([key, val]) => (
+                                                    <div key={key} className="flex gap-2 mb-1">
+                                                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400/80 font-bold">
+                                                            {key}:
+                                                        </span>
+
+                                                        <span className="text-[10px] text-foreground/50 dark:text-white/50 truncate">
+                                                            {String(val)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    )}
+                            </div>
+                        ) : (
+                            /* Empty state */
+                            <div className="flex flex-col items-center justify-center py-6 text-center">
+                                <p className="text-[10px] font-black text-foreground/20 dark:text-white/20 uppercase tracking-widest mb-1">
+                                    No data
+                                </p>
+                                <p className="text-[9px] text-foreground/10 dark:text-white/10 font-bold">
+                                    Run this block to see output
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
             </div>
         </div>
     );
