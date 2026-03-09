@@ -257,11 +257,11 @@ export default function Dashboard() {
           {/* CosmoNaut Resources */}
           <div className="mt-8 px-2 space-y-2">
             {[
-              { label: 'What is CosmoNaut', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'How to Publish', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'Learning Center', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'Support Center', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'CosmoNaut Enterprise', href: 'https://cosmonaut-website.vercel.app/' }
+              { label: 'What is CosmoNaut', href: 'https://cosmonautweb.vercel.app/index_download.html#resources' },
+              { label: 'How to Publish', href: 'https://github.com/Adith1207/CosmoNaut#readme' },
+              { label: 'Learning Center', href: 'https://github.com/Adith1207/CosmoNaut/wiki' },
+              { label: 'Support Center', href: 'https://github.com/Adith1207/CosmoNaut/issues' },
+              { label: 'CosmoNaut Enterprise', href: 'https://cosmonautweb.vercel.app/index_download.html#download' }
             ].map((link, i) => (
               <button
                 key={i}
