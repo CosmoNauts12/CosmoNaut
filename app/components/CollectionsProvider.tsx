@@ -36,6 +36,7 @@ interface CollectionsContextType {
 
   // Flow Actions
   createFlow: (name: string) => Promise<string>;
+  createFlowFromTemplate: (templateId: string) => Promise<string>;
   updateFlow: (flow: Flow) => Promise<void>;
   deleteFlow: (flowId: string) => Promise<void>;
   renameFlow: (flowId: string, newName: string) => Promise<void>;
@@ -542,6 +543,127 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   };
 
   /**
+   * Creates a new flow populated with template blocks.
+   */
+  const createFlowFromTemplate = async (templateId: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
+    const id = `f_${Date.now()}`;
+    const now = Date.now();
+    let name = "New Flow";
+    let blocks: FlowBlock[] = [];
+
+    if (templateId === "chaining") {
+      name = "API Chaining Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "1. Authenticate",
+          method: "POST",
+          url: "https://api.example.com/v1/auth",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "clientId": "your_id",\n  "secret": "your_secret"\n}',
+          order: 0,
+          x: 100, y: 100
+        },
+        {
+          id: `b_${now}_2`,
+          name: "2. Fetch Secure Data",
+          method: "GET",
+          url: "https://api.example.com/v1/protected/data",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [
+            { key: 'Authorization', value: 'Bearer {{1. Authenticate.body.token}}', enabled: true }
+          ],
+          body: "",
+          order: 1,
+          x: 100, y: 250 // Positioned below
+        }
+      ];
+    } else if (templateId === "aggregation") {
+      name = "Data Aggregation Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "Get User Info",
+          method: "GET",
+          url: "https://api.example.com/users/123",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 0,
+          x: 50, y: 100 // Left
+        },
+        {
+          id: `b_${now}_2`,
+          name: "Get Company Info",
+          method: "GET",
+          url: "https://api.example.com/companies/456",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 1,
+          x: 400, y: 100 // Right (Parallel)
+        },
+        {
+          id: `b_${now}_3`,
+          name: "Sync to Dashboard",
+          method: "POST",
+          url: "https://internal.dashboard.com/sync",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "user": {{Get User Info.body}},\n  "company": {{Get Company Info.body}}\n}',
+          order: 2,
+          x: 225, y: 300 // Below, centered
+        }
+      ];
+    } else if (templateId === "scheduled") {
+      name = "Scheduled Sync Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "Export Daily Records",
+          method: "GET",
+          url: "https://api.crm.com/v2/records?date={{$today}}",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 0,
+          x: 100, y: 100
+        },
+        {
+          id: `b_${now}_2`,
+          name: "Push to Webhook",
+          method: "POST",
+          url: "https://hooks.slack.com/services/T000/B000/XXX",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "text": "Daily records exported:\\n {{Export Daily Records.body.summary}}"\n}',
+          order: 1,
+          x: 100, y: 250
+        }
+      ];
+    }
+
+    if (isDemo) {
+      setFlows(prev => [...prev, { id, name, blocks, createdAt: now, updatedAt: now }]);
+      return id;
+    }
+
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "flows", id), {
+        name,
+        blocks,
+        createdAt: now,
+        updatedAt: now
+      });
+    } catch (e) {
+      console.error("Failed to create flow template in Firestore:", e);
+    }
+    return id;
+  };
+
+  /**
    * Updates an existing flow.
    */
   const updateFlow = async (flow: Flow) => {
@@ -669,6 +791,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       deleteCollection,
       renameCollection,
       createFlow,
+      createFlowFromTemplate,
       updateFlow,
       deleteFlow,
       renameFlow,

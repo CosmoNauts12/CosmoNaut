@@ -4,6 +4,7 @@ import React from "react";
 
 interface FlowsLandingProps {
     onCreateFlow: () => void;
+    onExploreTemplates: () => void;
 }
 
 /**
@@ -12,7 +13,7 @@ interface FlowsLandingProps {
  * Displays the empty state for the Flows section.
  * Inspired by Postman's flow landing page.
  */
-export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
+export default function FlowsLanding({ onCreateFlow, onExploreTemplates }: FlowsLandingProps) {
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
             <div className="relative w-64 h-64 mb-8 group transition-transform duration-700 hover:scale-110">
@@ -33,7 +34,7 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-foreground mb-4 tracking-tight uppercase tracking-[0.05em] bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+            <h2 className="text-2xl font-bold text-foreground mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 dark:from-white dark:to-white/70">
                 Welcome to Flows
             </h2>
 
@@ -44,7 +45,7 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
             <div className="flex flex-col sm:flex-row items-center gap-4">
                 <button
                     onClick={onCreateFlow}
-                    className="px-10 py-4 bg-gradient-to-r from-primary via-primary to-orange-500 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 active:translate-y-0 transition-all group"
+                    className="px-10 py-4 glass-btn-primary text-white font-semibold text-sm rounded-2xl flex items-center gap-3 transition-all group"
                 >
                     <span className="flex items-center gap-3">
                         Create Your First Flow
@@ -56,7 +57,8 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                 </button>
 
                 <button
-                    className="px-8 py-4 bg-background/50 border border-card-border hover:border-secondary/50 text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-secondary/5 transition-all group flex items-center gap-3"
+                    onClick={onExploreTemplates}
+                    className="px-8 py-4 bg-background/50 border border-card-border hover:border-secondary/50 text-foreground font-semibold text-sm rounded-2xl hover:bg-secondary/5 transition-all group flex items-center gap-3"
                 >
                     Explore Templates
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary group-hover:translate-x-1 transition-transform">
@@ -73,8 +75,8 @@ export default function FlowsLanding({ onCreateFlow }: FlowsLandingProps) {
                     { title: "Debug", desc: "Identify failures at a glance in the execution log." }
                 ].map((item, i) => (
                     <div key={i} className="p-4 rounded-xl border border-card-border bg-card-bg/50 text-left liquid-glass hover:border-primary/30 transition-colors">
-                        <h4 className="text-[10px] font-black uppercase text-primary mb-1 tracking-widest">{item.title}</h4>
-                        <p className="text-[10px] text-muted font-bold leading-tight">{item.desc}</p>
+                        <h4 className="text-xs font-semibold text-primary mb-1 tracking-wide">{item.title}</h4>
+                        <p className="text-xs text-muted font-medium leading-tight">{item.desc}</p>
                     </div>
                 ))}
             </div>

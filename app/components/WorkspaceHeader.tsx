@@ -152,11 +152,14 @@ export default function WorkspaceHeader() {
   }, [activeWorkspaceId, activeWorkspace?.ownerId]);
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
+    <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-50 transition-colors duration-500">
       <div className="flex items-center gap-6">
         {/* App Logo */}
-        <div className="flex items-center justify-center transition-all">
-          <img src="/logo.svg" alt="App Logo" className="w-8 h-8 object-contain drop-shadow-md hover:scale-105 transition-transform" />
+        <div className="flex items-center justify-center gap-2.5 transition-all group cursor-pointer">
+          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#0D9488] to-[#0284C7] flex items-center justify-center shadow-md shadow-primary/20 group-hover:shadow-primary/40 group-hover:scale-105 transition-all">
+            <img src="/logo.svg" alt="App Logo" className="w-[18px] h-[18px] object-contain brightness-0 invert" />
+          </div>
+          <span className="text-[13px] font-black tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 uppercase">CosmoNaut</span>
         </div>
 
         {/* Breadcrumbs/Nav */}
