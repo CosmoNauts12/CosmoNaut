@@ -10,7 +10,7 @@
     "shell:allow-open",
     "updater:default",
     "notification:default",
-    "process:allow-relaunch",
+    "process:allow-restart",
     "opener:default"
   ]
 }
