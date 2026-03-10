@@ -93,6 +93,7 @@ dependencies = [
  "axum",
  "base64 0.21.7",
  "chrono",
+ "futures-util",
  "jsonwebtoken",
  "keyring",
  "lazy_static",
@@ -111,6 +112,7 @@ dependencies = [
  "tower 0.4.13",
  "url",
  "urlencoding",
+ "uuid",
 ]
 
 [[package]]
@@ -3810,6 +3812,7 @@ dependencies = [
  "bytes",
  "encoding_rs",
  "futures-core",
+ "futures-util",
  "h2",
  "http",
  "http-body",
@@ -3834,12 +3837,14 @@ dependencies = [
  "tokio",
  "tokio-native-tls",
  "tokio-rustls",
+ "tokio-util",
  "tower 0.5.3",
  "tower-http",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
  "webpki-roots",
 ]

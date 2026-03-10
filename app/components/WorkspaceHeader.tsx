@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, getDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import ThemeToggle from "./ThemeToggle";
 import { useSettings } from "./SettingsProvider";
 import { useAuth } from "./AuthProvider";
 import { useCollections } from "./CollectionsProvider";
@@ -153,10 +152,18 @@ export default function WorkspaceHeader() {
   }, [activeWorkspaceId, activeWorkspace?.ownerId]);
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-40 transition-colors duration-500">
+    <header className="h-12 flex items-center justify-between px-4 border-b border-card-border bg-card-bg/20 backdrop-blur-md sticky top-0 z-50 transition-colors duration-500">
       <div className="flex items-center gap-6">
+        {/* App Logo */}
+        <div className="flex items-center justify-center gap-2.5 transition-all group cursor-pointer">
+          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#0D9488] to-[#0284C7] flex items-center justify-center shadow-md shadow-primary/20 group-hover:shadow-primary/40 group-hover:scale-105 transition-all">
+            <img src="/logo.svg" alt="App Logo" className="w-[18px] h-[18px] object-contain brightness-0 invert" />
+          </div>
+          <span className="text-[13px] font-black tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 uppercase">CosmoNaut</span>
+        </div>
+
         {/* Breadcrumbs/Nav */}
-        <div id="tour-header-breadcrumbs" className="flex items-center gap-2 text-xs">
+        <div id="tour-header-breadcrumbs" className="flex items-center gap-2 text-xs border-l border-card-border pl-6">
           <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             Home
@@ -166,8 +173,8 @@ export default function WorkspaceHeader() {
           <div className="ml-2 px-1.5 py-0.5 rounded bg-foreground/5 border border-card-border text-[10px] text-muted font-bold uppercase tracking-wider">Public</div>
         </div>
 
-        {/* Global Nav Links */}
-        <nav className="hidden md:flex items-center gap-4 text-xs font-medium border-l border-card-border pl-6">
+        {/* Global Nav Links & System Controls */}
+        <nav className="hidden md:flex items-center gap-4 text-xs font-medium border-l border-card-border pl-6 pr-6">
           <button className="text-primary bg-primary/10 px-2.5 py-1 rounded-md">Overview</button>
           <button
             onClick={() => openSettings("general")}
@@ -175,27 +182,33 @@ export default function WorkspaceHeader() {
           >
             Settings
           </button>
+
+          {/* Updates / Notifications Bell */}
+          <button
+            onClick={() => setIsUpdatesOpen(true)}
+            className="relative w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
+            title="Updates & Notifications"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            {pendingCount > 0 && (
+              <span className="absolute 1 top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm shadow-rose-500/50">
+                {pendingCount > 9 ? '9+' : pendingCount}
+              </span>
+            )}
+          </button>
         </nav>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Updates / Notifications Bell */}
-        <button
-          onClick={() => setIsUpdatesOpen(true)}
-          className="relative w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
-          title="Updates & Notifications"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          {pendingCount > 0 && (
-            <span className="absolute 1 top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm shadow-rose-500/50">
-              {pendingCount > 9 ? '9+' : pendingCount}
-            </span>
-          )}
-        </button>
+      {/* Center Section */}
+      <div className="flex-1 flex justify-center">
+        {/* Empty area for future elements like search or page title */}
+      </div>
 
+      {/* Right Section (User Actions) */}
+      <div className="flex items-center gap-6">
         {/* Collaborators Facepile */}
         {(collaborators.length > 0 || (activeWorkspace?.ownerId === user?.uid)) && (
           <div className="relative flex items-center ml-2 group/facepile cursor-help pt-2 pb-2">
@@ -334,15 +347,10 @@ export default function WorkspaceHeader() {
           </div>
         )}
 
-        {/* Divider before Invite */}
-        <div className="h-4 w-px bg-card-border mx-1" />
-
-        <button id="tour-invite-btn" onClick={() => setIsInviteOpen(true)} className="px-3 py-1.5 glass-btn-primary rounded-xl text-[11px] flex items-center gap-1.5 active:scale-95 shadow-lg shadow-primary/20">
+        <button id="tour-invite-btn" onClick={() => setIsInviteOpen(true)} className="px-4 py-1.5 glass-btn-primary rounded-xl text-[11px] flex items-center gap-1.5 active:scale-95 shadow-lg shadow-primary/20">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
           Invite
         </button>
-
-        <div className="h-4 w-px bg-card-border mx-1" />
 
         {/* User Dropdown */}
         <div className="relative flex items-center h-full">
@@ -361,31 +369,11 @@ export default function WorkspaceHeader() {
                 className="fixed inset-0 z-40 bg-transparent"
                 onClick={() => setDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-12 w-64 rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50
-                dark:bg-[#050f12] dark:border dark:border-emerald-500/20 dark:shadow-[0_0_40px_rgba(16,185,129,0.12),0_20px_60px_rgba(0,0,0,0.6)]
-                bg-white/90 border border-sky-200/60 shadow-[0_0_40px_rgba(14,165,233,0.10),0_20px_60px_rgba(0,0,0,0.10)]
-                backdrop-blur-xl">
-
-                {/* Premium gradient header strip */}
-                <div className="h-1 w-full dark:bg-gradient-to-r dark:from-emerald-500 dark:via-cyan-400 dark:to-teal-500 bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400" />
-
-                {/* Subtle inner glow */}
-                <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)] bg-[radial-gradient(ellipse_at_top_right,rgba(14,165,233,0.07),transparent_60%)] pointer-events-none" />
-
-                <div className="relative z-10 p-5">
-                  {/* User info */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-black text-white shrink-0
-                        dark:bg-gradient-to-br dark:from-emerald-400 dark:to-cyan-500 dark:ring-2 dark:ring-emerald-500/30
-                        bg-gradient-to-br from-sky-400 to-teal-400 ring-2 ring-sky-400/30 shadow-lg">
-                        {user?.displayName?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[9px] dark:text-emerald-400/60 text-sky-500/70 font-black uppercase tracking-widest leading-none mb-0.5">Signed in as</p>
-                        <p className="font-bold text-sm dark:text-white text-slate-800 truncate">{user?.displayName || "Explorer"}</p>
-                      </div>
-                    </div>
+              <div className="absolute right-0 top-[calc(100%+8px)] w-[240px] bg-white dark:bg-[#252525] rounded-[14px] border border-black/10 dark:border-white/10 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.3)] overflow-hidden animate-in fade-in zoom-in-95 origin-top-right duration-200 z-50">
+                <div className="relative z-10 p-4">
+                  <div className="mb-3 px-1">
+                    <p className="font-semibold text-sm text-foreground truncate">{user?.displayName || "Explorer"}</p>
+                    <p className="text-[11px] text-muted truncate">{user?.email || "No email"}</p>
 
                     {/* Status Display/Edit */}
                     <div className="mt-1">
@@ -463,13 +451,6 @@ export default function WorkspaceHeader() {
             </>
           )}
         </div>
-
-        <div className="h-4 w-px bg-card-border mx-1" />
-
-        <ThemeToggle />
-
-        <div className="h-4 w-px bg-card-border mx-1" />
-
       </div>
 
       <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
