@@ -7,6 +7,9 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 import dynamic from "next/dynamic";
+import { check } from "@tauri-apps/plugin-updater";
+import { sendNotification, requestPermission, isPermissionGranted } from "@tauri-apps/plugin-notification";
+import UpdatesModal from "../components/UpdatesModal";
 
 const AnalyticsDashboard = dynamic(() => import("../components/AnalyticsDashboard"), {
   ssr: false,
@@ -40,6 +43,26 @@ export default function Dashboard() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
+
+  // Auto-check for updates
+  useEffect(() => {
+    async function checkUpdates() {
+      try {
+        const update = await check();
+        if (update) {
+          // Open the updates modal automatically
+          setIsUpdatesModalOpen(true);
+        }
+      } catch (error) {
+        console.error("Failed to check for updates:", error);
+      }
+    }
+
+    // Delay a bit to not interfere with initial load
+    const timeout = setTimeout(checkUpdates, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -297,8 +320,15 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Actions */}
-        <div className="mt-auto p-6 border-t border-card-border">
-          <button onClick={handleLogout} className="text-xs font-medium text-muted hover:text-foreground transition-colors px-4">
+        <div className="mt-auto p-6 border-t border-card-border space-y-2">
+          <button
+            onClick={() => setIsUpdatesModalOpen(true)}
+            className="w-full text-left px-4 py-2 text-xs font-medium text-muted hover:text-primary transition-colors flex items-center justify-between group"
+          >
+            <span>Inbox & Updates</span>
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+          <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-xs font-medium text-muted hover:text-red-500 transition-colors">
             Log Out
           </button>
         </div>
@@ -408,6 +438,7 @@ export default function Dashboard() {
       </main>
 
       <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+      <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
     </div>
   );
 }
