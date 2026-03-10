@@ -27,6 +27,8 @@ export interface CosmoResponse {
     headers: Record<string, string>;
     duration_ms: number;
     error?: CosmoError;
+    is_stream?: boolean;
+    stream_channel_id?: string;
 }
 
 /**

@@ -10,17 +10,17 @@ import ConfirmModal from "./ConfirmModal";
 const activities = [
   {
     id: 'collections', name: 'Collections', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
     )
   },
   {
     id: 'history', name: 'History', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
     )
   },
   {
     id: 'flows', name: 'Flows', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     )
   },
 ];
@@ -294,10 +294,10 @@ export default function WorkspaceSidebar({
               : 'text-muted hover:text-foreground'
               }`}
           >
-            <div className={`p-2.5 rounded-xl transition-all duration-200 ${activeActivity === activity.id ? 'bg-primary/10' : 'group-hover:bg-foreground/5'}`}>
+            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeActivity === activity.id ? 'bg-primary/10' : 'group-hover:bg-foreground/5'}`}>
               {activity.icon}
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-tight text-center leading-none transition-colors ${activeActivity === activity.id ? 'text-primary' : 'text-muted group-hover:text-foreground'}`}>
+            <span className={`text-[9px] font-bold uppercase tracking-wider text-center leading-none transition-colors ${activeActivity === activity.id ? 'text-primary' : 'text-muted group-hover:text-foreground'}`}>
               {activity.name}
             </span>
             {activeActivity === activity.id && (
@@ -312,7 +312,7 @@ export default function WorkspaceSidebar({
         {/* Workspace Switcher */}
         <div className="p-4 border-b border-card-border/50 bg-black/5 dark:bg-white/5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-black text-muted uppercase tracking-widest">Active Workspace</span>
+            <span className="text-xs font-bold text-muted uppercase tracking-wider">Active Workspace</span>
             <div className="flex gap-1">
               <button onClick={handleCreateWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
               <button onClick={handleRenameWorkspace} className="p-1 hover:bg-foreground/5 rounded text-muted transition-colors"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>

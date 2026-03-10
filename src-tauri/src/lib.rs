@@ -2,6 +2,8 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Instant;
+use futures_util::StreamExt;
+use uuid::Uuid;
 
 mod auth;
 
@@ -47,12 +49,20 @@ pub struct CosmoResponse {
     pub headers: HashMap<String, String>,
     /// Request duration in milliseconds
     pub duration_ms: u128,
+    /// Whether this response is a stream
+    pub is_stream: bool,
+    /// Channel ID for Server-Sent Events stream
+    pub stream_channel_id: Option<String>,
 }
 
 /// Executes an HTTP request using reqwest.
 /// Handles normalization, client initialization, and execution timing.
 #[tauri::command]
-async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
+async fn execute_cosmo_request(app_handle: tauri::AppHandle, request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
+    do_execute_cosmo_request(Some(app_handle), request).await
+}
+
+async fn do_execute_cosmo_request(app_handle: Option<tauri::AppHandle>, request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
     let client = reqwest::Client::builder()
         .user_agent("Cosmonaut/1.0 (Desktop API Client)")
         .build()
@@ -116,11 +126,47 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
 
     let status = response.status().as_u16();
     let mut headers = HashMap::new();
+    let mut is_stream = false;
     for (name, value) in response.headers().iter() {
-        headers.insert(
-            name.to_string(),
-            value.to_str().unwrap_or("").to_string(),
-        );
+        let name_str = name.to_string();
+        let val_str = value.to_str().unwrap_or("").to_string();
+        if name_str.to_lowercase() == "content-type" && val_str.contains("text/event-stream") {
+            is_stream = true;
+        }
+        headers.insert(name_str, val_str);
+    }
+
+    if is_stream {
+        let stream_channel_id = Uuid::new_v4().to_string();
+        let channel_id_clone = stream_channel_id.clone();
+        
+        if let Some(handle) = app_handle {
+            use tauri::Emitter;
+            tokio::spawn(async move {
+                let mut stream = response.bytes_stream();
+                while let Some(chunk_result) = stream.next().await {
+                    match chunk_result {
+                        Ok(bytes) => {
+                            let text = String::from_utf8_lossy(&bytes).to_string();
+                            let _ = handle.emit(&channel_id_clone, text);
+                        }
+                        Err(e) => {
+                            log::error!("Error reading stream chunk: {}", e);
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+        
+        return Ok(CosmoResponse {
+            status,
+            body: "".to_string(),
+            headers,
+            duration_ms: duration,
+            is_stream: true,
+            stream_channel_id: Some(stream_channel_id),
+        });
     }
 
     let body = response.text().await.map_err(|e| CosmoError {
@@ -133,6 +179,8 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
         body,
         headers,
         duration_ms: duration,
+        is_stream: false,
+        stream_channel_id: None,
     })
 }
 
@@ -373,7 +421,7 @@ mod tests {
             body: None,
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_ok());
         let response = result.unwrap();
         assert_eq!(response.status, 200);
@@ -397,7 +445,7 @@ mod tests {
             body: Some(r#"{"data": 123}"#.to_string()),
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_ok());
         let response = result.unwrap();
         assert_eq!(response.status, 201);
@@ -413,7 +461,7 @@ mod tests {
             body: None,
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_err());
         let error = result.unwrap_err();
         match error.error_type {

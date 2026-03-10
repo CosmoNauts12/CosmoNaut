@@ -108,7 +108,7 @@ export default function FlowBlockUI({
                             value={block.name}
                             onChange={(e) => onUpdateAction({ name: e.target.value })}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-transparent font-black text-[13px] text-foreground/90 dark:text-white/90 outline-none w-full uppercase tracking-tight"
+                            className="bg-transparent font-bold text-[13px] text-foreground/90 dark:text-white/90 outline-none w-full tracking-normal"
                             placeholder="NODE NAME"
                         />
                     </div>
@@ -116,7 +116,7 @@ export default function FlowBlockUI({
                     <div className="flex items-center gap-2 relative" onClick={(e) => e.stopPropagation()} ref={menuRef}>
                         <button
                             onClick={() => setShowTriggerMenu(!showTriggerMenu)}
-                            className="text-[9px] font-black text-muted/80 hover:text-foreground dark:text-white/40 dark:hover:text-white flex items-center gap-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-2.5 py-1.5 rounded-lg border border-transparent dark:border-white/5 hover:border-black/10 dark:hover:border-white/20 transition-all duration-200 active:scale-95 group uppercase tracking-widest"
+                            className="text-[10px] font-semibold text-muted/80 hover:text-foreground dark:text-white/40 dark:hover:text-white flex items-center gap-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-2.5 py-1.5 rounded-lg border border-transparent dark:border-white/5 hover:border-black/10 dark:hover:border-white/20 transition-all duration-200 active:scale-95 group"
                         >
                             Change trigger
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={`transition-transform duration-300 ${showTriggerMenu ? 'rotate-180 text-foreground dark:text-white' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -161,15 +161,15 @@ export default function FlowBlockUI({
 
                 {/* Node Body / Config */}
                 {isExpanded && activeTab === 'input' && (
-                    <div className="p-4 py-8 space-y-6 flex flex-col justify-center min-h-[120px]">
+                    <div className="p-4 py-5 space-y-4 flex flex-col justify-center min-h-[120px]">
                         {block.name !== 'Start' && block.name !== 'Schedule' ? (
                             /* Specific "Request" Body Style from Reference Image */
                             <div className="flex flex-col items-stretch space-y-4">
                                 <div className="flex justify-between items-center relative" ref={importMenuRef} onMouseDown={(e) => e.stopPropagation()}>
-                                    <div className="text-[10px] font-black text-muted/50 uppercase tracking-widest">HTTP Configuration</div>
+                                    <div className="text-[10px] font-semibold text-muted/50 uppercase tracking-wider">HTTP Configuration</div>
                                     <button
                                         onClick={() => setShowImportMenu(!showImportMenu)}
-                                        className="text-[10px] font-black uppercase tracking-widest text-[#00A5FF]/80 hover:text-[#00A5FF] bg-[#00A5FF]/5 hover:bg-[#00A5FF]/10 px-3 py-1.5 rounded flex items-center gap-2 transition-all active:scale-95 border border-[#00A5FF]/20"
+                                        className="text-[10px] font-semibold text-primary/80 hover:text-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded flex items-center gap-2 transition-all active:scale-95 border border-primary/20"
                                     >
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                         Import from Collection
@@ -223,7 +223,7 @@ export default function FlowBlockUI({
 
                                 <div className="grid grid-cols-2 gap-3" onMouseDown={(e) => e.stopPropagation()}>
                                     <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Params</p>
+                                        <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/50 mb-2">Params</p>
                                         {block.params.slice(0, 2).map((p, i) => (
                                             <div key={i} className="flex gap-2 mb-1.5">
                                                 <input value={p.key} onChange={(e) => handleKVChange('params', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Key" />
@@ -232,7 +232,7 @@ export default function FlowBlockUI({
                                         ))}
                                     </div>
                                     <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">Headers</p>
+                                        <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/50 mb-2">Headers</p>
                                         {block.headers.slice(0, 2).map((h, i) => (
                                             <div key={i} className="flex gap-2 mb-1.5">
                                                 <input value={h.key} onChange={(e) => handleKVChange('headers', i, { key: e.target.value })} className="min-w-0 flex-1 bg-black/5 dark:bg-white/5 border-none rounded px-2 py-1 text-[10px] text-foreground/60 dark:text-white/60 outline-none" placeholder="Name" />
@@ -245,7 +245,7 @@ export default function FlowBlockUI({
                                 {/* Body Input for Non-GET Requests */}
                                 {block.method !== 'GET' && (
                                     <div className="bg-slate-100/30 dark:bg-[#181818] p-3 rounded-lg border border-black/5 dark:border-white/5 shadow-sm" onMouseDown={(e) => e.stopPropagation()}>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 dark:text-white/30 mb-2">JSON Payload</p>
+                                        <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/50 mb-2">JSON Payload</p>
                                         <textarea
                                             value={block.body || ""}
                                             onChange={(e) => onUpdateAction({ body: e.target.value })}
@@ -283,10 +283,10 @@ export default function FlowBlockUI({
                 )}
 
                 {/* Bottom Tab Bar */}
-                <div className="bg-black/5 dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
+                <div className="bg-black/[0.03] dark:bg-[#181818] flex border-t border-black/5 dark:border-white/5 rounded-b-xl overflow-hidden">
                     <button
                         onClick={() => setActiveTab("input")}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "input"
+                        className={`flex-1 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 active:scale-95 ${activeTab === "input"
                             ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
                             : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
                             }`}
@@ -296,7 +296,7 @@ export default function FlowBlockUI({
 
                     <button
                         onClick={() => setActiveTab("output")}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 active:scale-95 ${activeTab === "output"
+                        className={`flex-1 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 active:scale-95 ${activeTab === "output"
                             ? "text-foreground dark:text-white bg-black/5 dark:bg-white/5 shadow-inner"
                             : "text-muted/60 dark:text-white/40 hover:text-foreground dark:hover:text-white/80 hover:bg-black/5 dark:hover:bg-white/5"
                             }`}
