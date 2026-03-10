@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useSettings } from "./SettingsProvider";
 import { executeRequest, CosmoResponse } from "./RequestEngine";
@@ -73,6 +73,7 @@ export default function RequestPanel({
       setHeaders(activeRequest.headers);
       setBody(activeRequest.body);
       setSaveName(activeRequest.name);
+      setTargetCollectionId(activeRequest.collectionId);
     } else {
       // Default / Metadata
       setMethod(activeRequest.method);
@@ -80,8 +81,9 @@ export default function RequestPanel({
         setUrl("https://jsonplaceholder.typicode.com/posts/1");
       }
       setSaveName(activeRequest.name);
+      if (collections.length > 0) setTargetCollectionId(collections[0].id);
     }
-  }, [activeRequest]);
+  }, [activeRequest, collections.length]);
 
   /**
    * Sanitizes the input URL.
@@ -115,7 +117,7 @@ export default function RequestPanel({
    * 4. Invokes the Rust engine.
    * 5. Logs results to history.
    */
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     onExecuting(true);
     let targetUrl = cleanUrl(url);
 
@@ -217,7 +219,7 @@ export default function RequestPanel({
         onExecuting(false);
       }
     }
-  };
+  }, [url, params, headers, auth, body, method, onExecuting, onResponse, isDemo, addToHistory]);
 
   /**
    * Saves the current request configuration.
@@ -225,7 +227,7 @@ export default function RequestPanel({
    * - Creates new request in a collection otherwise.
    * - Prompts for name/collection if needed.
    */
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!saveName.trim()) return alert("Please enter a name");
 
     if (!showSaveModal && 'url' in activeRequest) {
@@ -239,7 +241,7 @@ export default function RequestPanel({
         auth,
         headers,
         body
-      }, activeRequest.collectionId);
+      }, (activeRequest as any).collectionId);
       return;
     }
 
@@ -264,31 +266,37 @@ export default function RequestPanel({
     }, collectionId);
 
     setShowSaveModal(false);
-  };
+  }, [saveName, activeRequest, method, url, params, auth, headers, body, showSaveModal, targetCollectionId, collections, updateRequest, createCollection, saveRequest]);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      const isS = e.key.toLowerCase() === 's';
+      const isEnter = e.key === 'Enter';
+
+      if ((e.ctrlKey || e.metaKey) && isS) {
         e.preventDefault();
         if (currentRole === 'read') return;
 
         if (showSaveModal) {
           handleSave();
-        } else if ('url' in activeRequest) {
-          handleSave();
         } else {
-          if (collections.length > 0) setTargetCollectionId(collections[0].id);
+          // Open Modal for BOTH new and existing requests if Shortcut is used
+          // (Addressing "Redirect to save request page" requirement)
+          if (collections.length > 0 && !targetCollectionId) {
+            setTargetCollectionId('collectionId' in activeRequest ? (activeRequest as any).collectionId : collections[0].id);
+          }
           setShowSaveModal(true);
         }
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      if ((e.ctrlKey || e.metaKey) && isEnter) {
         e.preventDefault();
         handleSend();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSave, handleSend, activeRequest, collections, currentRole, showSaveModal]);
+  }, [handleSave, handleSend, activeRequest, collections, currentRole, showSaveModal, targetCollectionId]);
 
   return (
     <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-sm">
@@ -326,11 +334,16 @@ export default function RequestPanel({
               {currentRole !== 'read' && (
                 <>
                   <button
-                    onClick={handleSave}
+                    onClick={() => {
+                      if ('collectionId' in activeRequest) {
+                        setTargetCollectionId(activeRequest.collectionId);
+                      }
+                      setShowSaveModal(true);
+                    }}
                     className="h-11 px-6 rounded-xl border border-primary/30 bg-primary/5 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    Update
+                    Save
                   </button>
                   <button
                     onClick={() => {
