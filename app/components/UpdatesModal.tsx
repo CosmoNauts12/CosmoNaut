@@ -5,6 +5,7 @@ import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, addDoc } from "firebase/firestore";
 import { useAuth } from "./AuthProvider";
 import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 interface UpdatesModalProps {
     isOpen: boolean;
@@ -143,6 +144,7 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
                         break;
                     case 'Finished':
                         setUpdateStatus('Update installed. Restarting...');
+                        relaunch();
                         break;
                 }
             });
