@@ -51,23 +51,8 @@ export default function Dashboard() {
       try {
         const update = await check();
         if (update) {
-          // Check for notification permission
-          let permissionGranted = await isPermissionGranted();
-          if (!permissionGranted) {
-            const permission = await requestPermission();
-            permissionGranted = permission === 'granted';
-          }
-
-          if (permissionGranted) {
-            sendNotification({
-              title: 'CosmoNaut Update Available',
-              body: `A new version v${update.version} is ready. Click to update!`,
-              icon: 'icons/32x32.png'
-            });
-          }
-
-          // Also open the modal automatically if you want, or just show a badge
-          // For now, let's just make sure the user knows.
+          // Open the updates modal automatically
+          setIsUpdatesModalOpen(true);
         }
       } catch (error) {
         console.error("Failed to check for updates:", error);
