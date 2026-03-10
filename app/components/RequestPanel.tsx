@@ -270,7 +270,16 @@ export default function RequestPanel({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        handleSave();
+        if (currentRole === 'read') return;
+
+        if (showSaveModal) {
+          handleSave();
+        } else if ('url' in activeRequest) {
+          handleSave();
+        } else {
+          if (collections.length > 0) setTargetCollectionId(collections[0].id);
+          setShowSaveModal(true);
+        }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
@@ -279,7 +288,7 @@ export default function RequestPanel({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSave, handleSend]);
+  }, [handleSave, handleSend, activeRequest, collections, currentRole, showSaveModal]);
 
   return (
     <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-sm">
