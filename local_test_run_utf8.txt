@@ -1,0 +1,55 @@
+﻿
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/ripan/Downloads/git_se/CosmoNaut[39m
+
+ [32mΓ£ô[39m test/integration/comprehensive-engine-bridge.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 613[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Integration of URL Cleaning + Auth Injection + History Persistence [33m 512[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/header-logic.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 438[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m automatically adds Content-Type when a JSON body is present in POST [33m 430[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/import-export-handshake.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 629[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Importing a collection correctly updates the Sidebar and Provider state [33m 626[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/workspace-orchestration.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 449[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Fast Switch: UI reacts to workspace role and flushes state [33m 445[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/scenario-replay.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 687[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Replaying a history item restores complex Auth and Body telemetry [33m 684[2mms[22m[39m
+ [32mΓ£ô[39m app/signup/__tests__/SignUp.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 689[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m prevents form submission if password is not strong [33m 368[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-normalization.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 531[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m normalizes params into URL and persists history [33m 528[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/orchestration-lifecycle.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 611[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m UH1 Flow: Complex JSON Post with Auth Normalization & Trace Recording [33m 494[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/multi-step-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 574[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Chain Integration: Successfully passes data from Response A to Request B [33m 571[2mms[22m[39m
+ [32mΓ£ô[39m app/reset-password/__tests__/ResetPassword.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 670[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m toggles password visibility in the reset form [33m 374[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/ProfileModal.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1129[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m switches to change password view [33m 408[2mms[22m[39m
+ [31mΓ¥»[39m test/integration/response-visualizer.test.tsx [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 167[2mms[22m[39m
+[31m     [31m├ù[31m Successfully formats raw engine strings into Pretty JSON via format selector[39m[32m 164[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-error.contract.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 422[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m error ΓåÆ response lifecycle ΓåÆ history persisted [33m 419[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-execution.contract.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 446[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m normalizes ΓåÆ calls engine ΓåÆ renders response ΓåÆ persists history [33m 443[2mms[22m[39m
+ [31mΓ¥»[39m test/integration/request-loading.test.tsx [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1468[2mms[22m[39m
+[31m     [31m├ù[31m Send ΓåÆ loading ΓåÆ response ΓåÆ history persisted ΓåÆ engine contract[39m[33m 1466[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 347[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m user sends request ΓåÆ engine runs ΓåÆ response renders ΓåÆ history saved [33m 345[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/privacy-history.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 403[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m UH1 Goal: History integration correctly captures Auth metadata for replay [33m 400[2mms[22m[39m
+ [32mΓ£ô[39m app/components/Flows/core/FlowExecutor.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/distributed-tracing-flow.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 346[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m persists engine-level errors and trace metadata to history [33m 342[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/role-transition.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/disk-persistence.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/LoadingSplash.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/ThemeToggle.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 231[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/AuthCard.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 212[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/request-demo-limiter.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 299[2mms[22m[39m
+ [32mΓ£ô[39m app/components/__tests__/Astronaut.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/rbac-security.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 240[2mms[22m[39m
+ [32mΓ£ô[39m test/integration/auth-header-injection.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 249[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m26 passed[39m[22m[90m (28)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m40 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 02:39:34
+[2m   Duration [22m 10.35s[2m (transform 1.20s, setup 11.97s, import 21.88s, tests 12.30s, environment 88.39s)[22m
+

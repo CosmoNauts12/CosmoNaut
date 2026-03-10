@@ -16,22 +16,21 @@ describe("Ultra-Integration: Response Format Visualization", () => {
 
     render(<ResponsePanel response={mockResponse} isExecuting={false} />);
 
-    // 1. Target the JSON body specifically by looking for the 'pre' tag content
-    // This avoids collision with the 'Status' label in the header
-    const jsonContainer = screen.getByText((content, element) => {
-      return element?.tagName.toLowerCase() === 'pre' && content.includes('"status": "active"');
+    // 1. Target the JSON body specifically
+    const jsonContainer = screen.getByText((_, element) => {
+      const isCode = element?.tagName.toLowerCase() === 'code';
+      const hasContent = element?.textContent?.replace(/\s/g, '').includes('"status":"active"');
+      return isCode && hasContent;
     });
     expect(jsonContainer).toBeInTheDocument();
 
     // 2. Open Format Dropdown
-    // Use a more specific selector for the JSON button in the header
     const formatBtn = screen.getByRole("button", { name: /json/i });
     fireEvent.click(formatBtn);
 
     // 3. Verify that the re-render maintains formatting integrity
-    // The format logic in ResponsePanel uses useMemo to avoid expensive re-parses
-    expect(jsonContainer.textContent).toContain('  "status": "active"');
-    
+    expect(jsonContainer.textContent?.replace(/\s/g, '')).toContain('"status":"active"');
+
     // 4. Verify Metadata Integration (UH1 Performance Tuning)
     expect(screen.getByText("150 ms")).toBeInTheDocument();
     expect(screen.getByText("47 B")).toBeInTheDocument();

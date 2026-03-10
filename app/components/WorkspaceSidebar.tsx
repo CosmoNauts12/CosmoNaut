@@ -280,7 +280,11 @@ export default function WorkspaceSidebar({
   return (
     <div className="flex h-full border-r border-card-border bg-card-bg/50 backdrop-blur-xl transition-colors duration-500">
       {/* Activity Bar (Narrow Left) */}
-      <div id="tour-activity-bar" className="w-[84px] flex flex-col items-center py-6 border-r border-card-border/50 gap-4">
+      <div
+        id="tour-activity-bar"
+        data-active-activity={activeActivity}
+        className="w-[84px] flex flex-col items-center py-6 border-r border-card-border/50 gap-4"
+      >
         {activities.map((activity) => (
           <button
             key={activity.id}
