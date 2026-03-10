@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CosmoNaut",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "identifier": "com.cosmonaut.desktop",
   "build": {
     "frontendDist": "../out",
@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "CosmoNaut",
         "width": 800,
         "height": 600,
