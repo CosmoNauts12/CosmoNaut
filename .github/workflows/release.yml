@@ -38,14 +38,14 @@ jobs:
       - name: Install frontend dependencies
         run: bun install
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__ # This will be replaced by the tauri-action automatically
+          tagName: v__VERSION__
           releaseName: "CosmoNaut v__VERSION__"
-          releaseBody: "See the assets, to download the latest version."
+          releaseBody: "CosmoNaut Desktop Update"
           releaseDraft: true
           prerelease: false
