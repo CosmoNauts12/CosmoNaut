@@ -67,7 +67,7 @@ export default function FlowChat({ flow, embedded = false }: { flow: Flow, embed
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[9px] font-bold text-muted uppercase">Gemini 2.0</div>
+                    <div className="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[9px] font-bold text-muted uppercase">Gemini Flash</div>
                 </div>
             </div>
 
@@ -75,7 +75,7 @@ export default function FlowChat({ flow, embedded = false }: { flow: Flow, embed
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide custom-scrollbar">
                 {messages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                        <div className={`max-w-[85%] p-4 rounded-3xl text-[12px] font-medium leading-relaxed ${m.role === 'user'
+                        <div className={`max-w-[85%] p-4 rounded-3xl text-[12px] font-medium leading-relaxed break-words whitespace-pre-wrap overflow-hidden [word-break:break-all] [overflow-wrap:anywhere] [hyphens:auto] ${m.role === 'user'
                             ? 'bg-primary text-white rounded-tr-none shadow-[0_10px_30px_rgba(var(--primary-rgb),0.2)]'
                             : 'bg-black/5 dark:bg-white/5 text-foreground/80 dark:text-white/80 rounded-tl-none border border-black/5 dark:border-white/5 backdrop-blur-sm'
                             }`}>
