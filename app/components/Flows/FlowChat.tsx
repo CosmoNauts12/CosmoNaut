@@ -32,10 +32,15 @@ export default function FlowChat({ flow, embedded = false }: { flow: Flow, embed
         setIsTyping(true);
 
         // Prepare history for Gemini
-        const history = messages.map(m => ({
+        // Gemini expects history to strictly start with a 'user' role.
+        let history = messages.map(m => ({
             role: m.role === 'user' ? 'user' as const : 'model' as const,
             parts: [{ text: m.content }]
         }));
+
+        if (history.length > 0 && history[0].role === 'model') {
+            history = history.slice(1);
+        }
 
         try {
             const response = await getFlowChatResponse(flow, history, userMessage);
