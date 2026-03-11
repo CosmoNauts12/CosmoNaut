@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
-import { Collection, SavedRequest, saveCollectionsToDisk, loadCollectionsFromDisk } from "@/app/lib/collections";
+import { Collection, SavedRequest, Flow, FlowBlock, saveCollectionsToDisk, loadCollectionsFromDisk } from "@/app/lib/collections";
 import { Workspace } from "@/app/lib/workspaces";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
@@ -18,6 +18,7 @@ interface CollectionsContextType {
   collections: Collection[];           // List of all collections
   workspaces: Workspace[];             // List of available workspaces
   history: HistoryItem[];              // Request history
+  flows: Flow[];                       // List of all flows
   activeWorkspaceId: string;           // Currently selected workspace ID
   loading: boolean;                    // Loading state for data fetching
   currentRole: "owner" | "write" | "read"; // Role of the user in the active workspace
@@ -32,6 +33,13 @@ interface CollectionsContextType {
   createCollection: (name: string) => Promise<string>;
   deleteCollection: (collectionId: string) => Promise<void>;
   renameCollection: (collectionId: string, newName: string) => Promise<void>;
+
+  // Flow Actions
+  createFlow: (name: string) => Promise<string>;
+  createFlowFromTemplate: (templateId: string) => Promise<string>;
+  updateFlow: (flow: Flow) => Promise<void>;
+  deleteFlow: (flowId: string) => Promise<void>;
+  renameFlow: (flowId: string, newName: string) => Promise<void>;
 
   // Request Actions
   saveRequest: (request: Omit<SavedRequest, 'id'>, collectionId: string) => Promise<void>;
@@ -65,19 +73,34 @@ const CollectionsContext = createContext<CollectionsContextType | undefined>(und
  * Handles disk persistence and reactive updates across the application.
  */
 export function CollectionsProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>("default");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [flows, setFlows] = useState<Flow[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load Workspaces on Login (Real-time Firestore Sync)
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWorkspaces([]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveWorkspaceId("default");
+      return;
+    }
+
+    if (isDemo) {
+      setWorkspaces([{
+        id: "demo-workspace",
+        name: "Demo Workspace",
+        ownerId: "demo-user",
+        isOwner: true
+      } as any]);
+      setActiveWorkspaceId("demo-workspace");
+      setLoading(false);
       return;
     }
 
@@ -162,12 +185,20 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       unsubOwned();
       unsubCollab();
     };
-  }, [user]);
+  }, [user, isDemo]);
 
   // Load Collections when Workspace changes (Real-time Firestore Sync)
   useEffect(() => {
     if (!user || !activeWorkspaceId || activeWorkspaceId === "default") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCollections([]);
+      return;
+    }
+
+    if (isDemo) {
+      setCollections([]);
+      setHistory([]);
+      setLoading(false);
       return;
     }
 
@@ -202,6 +233,21 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       setHistory([]);
     });
 
+    // Load Flows (Real-time Firestore Sync)
+    const qFlows = collection(db, "workspaces", activeWorkspaceId, "flows");
+    const unsubFlows = onSnapshot(qFlows, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Flow[];
+      // Sort by createdAt descending
+      data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setFlows(data);
+    }, (error) => {
+      console.error("Firestore flows sync error:", error);
+      setFlows([]);
+    });
+
     // Persist last active workspace across reloads
     if (settings.lastWorkspaceId !== activeWorkspaceId) {
       updateSettings({ lastWorkspaceId: activeWorkspaceId });
@@ -209,8 +255,9 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     return () => {
       unsubscribe(); // Cleanup collections
       unsubHistory(); // Cleanup history
+      unsubFlows(); // Cleanup flows
     };
-  }, [user, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
+  }, [user, isDemo, activeWorkspaceId, updateSettings, settings.lastWorkspaceId]);
 
   const currentRole = useMemo(() => {
     if (activeWorkspaceId === "default") return "owner";
@@ -226,6 +273,12 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const createWorkspace = async (name: string) => {
     if (!user) return "";
     const id = `w_${Date.now()}`;
+
+    if (isDemo) {
+      setWorkspaces(prev => [...prev, { id, name, ownerId: "demo-user", isOwner: true } as any]);
+      setActiveWorkspaceId(id);
+      return id;
+    }
 
     try {
       await setDoc(doc(db, "workspaces", id), {
@@ -245,6 +298,16 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteWorkspace = async (id: string) => {
     if (currentRole === "read") return;
+
+    if (isDemo) {
+      const remaining = workspaces.filter(w => w.id !== id);
+      setWorkspaces(remaining);
+      if (activeWorkspaceId === id) {
+        setActiveWorkspaceId(remaining[0]?.id || "default");
+      }
+      return;
+    }
+
     try {
       await deleteDoc(doc(db, "workspaces", id));
       if (activeWorkspaceId === id) {
@@ -262,6 +325,12 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameWorkspace = async (id: string, name: string) => {
     if (currentRole === "read") return;
+
+    if (isDemo) {
+      setWorkspaces(prev => prev.map(w => w.id === id ? { ...w, name } as any : w));
+      return;
+    }
+
     try {
       await setDoc(doc(db, "workspaces", id), { name }, { merge: true });
     } catch (e) {
@@ -275,6 +344,11 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const createCollection = async (name: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
     const id = `c_${Date.now()}`;
+
+    if (isDemo) {
+      setCollections(prev => [...prev, { name, requests: [], id, createdAt: new Date() as any }]);
+      return id;
+    }
 
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", id), {
@@ -296,6 +370,13 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     const id = `r_${Date.now()}`;
     const newRequest = { ...requestData, id };
 
+    if (isDemo) {
+      setCollections(prev => prev.map(c =>
+        c.id === collectionId ? { ...c, requests: [...c.requests, newRequest] } : c
+      ));
+      return;
+    }
+
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -313,6 +394,14 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const updateRequest = async (request: SavedRequest, collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setCollections(prev => prev.map(c =>
+        c.id === collectionId ? { ...c, requests: c.requests.map(r => r.id === request.id ? request : r) } : c
+      ));
+      return;
+    }
+
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -331,6 +420,14 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteRequest = async (requestId: string, collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setCollections(prev => prev.map(c =>
+        c.id === collectionId ? { ...c, requests: c.requests.filter(r => r.id !== requestId) } : c
+      ));
+      return;
+    }
+
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -349,6 +446,14 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameRequest = async (requestId: string, collectionId: string, newName: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setCollections(prev => prev.map(c =>
+        c.id === collectionId ? { ...c, requests: c.requests.map(r => r.id === requestId ? { ...r, name: newName } : r) } : c
+      ));
+      return;
+    }
+
     const targetCollection = collections.find(c => c.id === collectionId);
     if (!targetCollection) return;
 
@@ -367,6 +472,12 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const deleteCollection = async (collectionId: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setCollections(prev => prev.filter(c => c.id !== collectionId));
+      return;
+    }
+
     try {
       await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId));
     } catch (e) {
@@ -379,10 +490,236 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const renameCollection = async (collectionId: string, newName: string) => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setCollections(prev => prev.map(c => c.id === collectionId ? { ...c, name: newName } : c));
+      return;
+    }
+
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "collections", collectionId), { name: newName }, { merge: true });
     } catch (e) {
       console.error("Failed to rename collection in Firestore:", e);
+    }
+  };
+
+  /**
+   * Creates a new empty flow in the active workspace.
+   */
+  const createFlow = async (name: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
+    const id = `f_${Date.now()}`;
+    const now = Date.now();
+
+    const defaultBlock: FlowBlock = {
+      id: `b_${now}`,
+      name: "New API Step",
+      method: "GET",
+      url: "",
+      params: [{ key: '', value: '', enabled: true }],
+      headers: [{ key: '', value: '', enabled: true }],
+      body: "",
+      order: 0,
+      x: 100,
+      y: 100
+    };
+
+    if (isDemo) {
+      setFlows(prev => [...prev, { id, name, blocks: [defaultBlock], createdAt: now, updatedAt: now }]);
+      return id;
+    }
+
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "flows", id), {
+        name,
+        blocks: [defaultBlock],
+        createdAt: now,
+        updatedAt: now
+      });
+    } catch (e) {
+      console.error("Failed to create flow in Firestore:", e);
+    }
+    return id;
+  };
+
+  /**
+   * Creates a new flow populated with template blocks.
+   */
+  const createFlowFromTemplate = async (templateId: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return "";
+    const id = `f_${Date.now()}`;
+    const now = Date.now();
+    let name = "New Flow";
+    let blocks: FlowBlock[] = [];
+
+    if (templateId === "chaining") {
+      name = "API Chaining Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "1. Authenticate",
+          method: "POST",
+          url: "https://api.example.com/v1/auth",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "clientId": "your_id",\n  "secret": "your_secret"\n}',
+          order: 0,
+          x: 100, y: 100
+        },
+        {
+          id: `b_${now}_2`,
+          name: "2. Fetch Secure Data",
+          method: "GET",
+          url: "https://api.example.com/v1/protected/data",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [
+            { key: 'Authorization', value: 'Bearer {{1. Authenticate.body.token}}', enabled: true }
+          ],
+          body: "",
+          order: 1,
+          x: 100, y: 250 // Positioned below
+        }
+      ];
+    } else if (templateId === "aggregation") {
+      name = "Data Aggregation Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "Get User Info",
+          method: "GET",
+          url: "https://api.example.com/users/123",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 0,
+          x: 50, y: 100 // Left
+        },
+        {
+          id: `b_${now}_2`,
+          name: "Get Company Info",
+          method: "GET",
+          url: "https://api.example.com/companies/456",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 1,
+          x: 400, y: 100 // Right (Parallel)
+        },
+        {
+          id: `b_${now}_3`,
+          name: "Sync to Dashboard",
+          method: "POST",
+          url: "https://internal.dashboard.com/sync",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "user": {{Get User Info.body}},\n  "company": {{Get Company Info.body}}\n}',
+          order: 2,
+          x: 225, y: 300 // Below, centered
+        }
+      ];
+    } else if (templateId === "scheduled") {
+      name = "Scheduled Sync Template";
+      blocks = [
+        {
+          id: `b_${now}_1`,
+          name: "Export Daily Records",
+          method: "GET",
+          url: "https://api.crm.com/v2/records?date={{$today}}",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: '', value: '', enabled: true }],
+          body: "",
+          order: 0,
+          x: 100, y: 100
+        },
+        {
+          id: `b_${now}_2`,
+          name: "Push to Webhook",
+          method: "POST",
+          url: "https://hooks.slack.com/services/T000/B000/XXX",
+          params: [{ key: '', value: '', enabled: true }],
+          headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }],
+          body: '{\n  "text": "Daily records exported:\\n {{Export Daily Records.body.summary}}"\n}',
+          order: 1,
+          x: 100, y: 250
+        }
+      ];
+    }
+
+    if (isDemo) {
+      setFlows(prev => [...prev, { id, name, blocks, createdAt: now, updatedAt: now }]);
+      return id;
+    }
+
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "flows", id), {
+        name,
+        blocks,
+        createdAt: now,
+        updatedAt: now
+      });
+    } catch (e) {
+      console.error("Failed to create flow template in Firestore:", e);
+    }
+    return id;
+  };
+
+  /**
+   * Updates an existing flow.
+   */
+  const updateFlow = async (flow: Flow) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+    const now = Date.now();
+    const updatedFlow = { ...flow, updatedAt: now };
+
+    if (isDemo) {
+      setFlows(prev => prev.map(f => f.id === flow.id ? updatedFlow : f));
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, "workspaces", activeWorkspaceId, "flows", flow.id), updatedFlow);
+    } catch (e) {
+      console.error("Failed to update flow in Firestore:", e);
+    }
+  };
+
+  /**
+   * Deletes a flow.
+   */
+  const deleteFlow = async (flowId: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setFlows(prev => prev.filter(f => f.id !== flowId));
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "workspaces", activeWorkspaceId, "flows", flowId));
+    } catch (e) {
+      console.error("Failed to delete flow in Firestore:", e);
+    }
+  };
+
+  /**
+   * Renames a flow.
+   */
+  const renameFlow = async (flowId: string, newName: string) => {
+    if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+    const now = Date.now();
+
+    if (isDemo) {
+      setFlows(prev => prev.map(f => f.id === flowId ? { ...f, name: newName, updatedAt: now } : f));
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "workspaces", activeWorkspaceId, "flows", flowId), {
+        name: newName,
+        updatedAt: now
+      });
+    } catch (e) {
+      console.error("Failed to rename flow in Firestore:", e);
     }
   };
 
@@ -397,6 +734,16 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       timestamp: Date.now()
     };
 
+    // Firestore does not support undefined values
+    if (newItem.error === undefined) {
+      delete newItem.error;
+    }
+
+    if (isDemo) {
+      setHistory(prev => [newItem, ...prev].slice(0, 50));
+      return;
+    }
+
     try {
       await setDoc(doc(db, "workspaces", activeWorkspaceId, "history", newItem.id), newItem);
     } catch (error) {
@@ -409,6 +756,12 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
    */
   const clearHistory = async () => {
     if (!activeWorkspaceId || activeWorkspaceId === "default" || currentRole === "read") return;
+
+    if (isDemo) {
+      setHistory([]);
+      return;
+    }
+
     try {
       const historyCol = collection(db, "workspaces", activeWorkspaceId, "history");
       // Since it's client-side without batch limits usually hit here (max 50), looping is fine for clear.
@@ -425,6 +778,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     <CollectionsContext.Provider value={{
       collections,
       workspaces,
+      flows,
       activeWorkspaceId,
       loading,
       currentRole,
@@ -436,6 +790,11 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       createCollection,
       deleteCollection,
       renameCollection,
+      createFlow,
+      createFlowFromTemplate,
+      updateFlow,
+      deleteFlow,
+      renameFlow,
       createWorkspace,
       deleteWorkspace,
       renameWorkspace,

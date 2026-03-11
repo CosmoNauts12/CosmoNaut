@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useSettings } from "./SettingsProvider";
 import { executeRequest, CosmoResponse } from "./RequestEngine";
 import { useCollections } from "./CollectionsProvider";
@@ -51,6 +52,16 @@ export default function RequestPanel({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [saveName, setSaveName] = useState(activeRequest.name);
   const [targetCollectionId, setTargetCollectionId] = useState("");
+
+  const streamUnlistenRef = useRef<UnlistenFn | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (streamUnlistenRef.current) {
+        streamUnlistenRef.current();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if ('url' in activeRequest) {
@@ -105,15 +116,6 @@ export default function RequestPanel({
    * 5. Logs results to history.
    */
   const handleSend = async () => {
-    if (isDemo) {
-      const count = parseInt(localStorage.getItem('demo_request_count') || '0', 10);
-      if (count >= 2) {
-        setShowUpgradeModal(true);
-        return;
-      }
-      localStorage.setItem('demo_request_count', (count + 1).toString());
-    }
-
     onExecuting(true);
     let targetUrl = cleanUrl(url);
 
@@ -160,13 +162,39 @@ export default function RequestPanel({
     }
 
     try {
+      if (streamUnlistenRef.current) {
+        streamUnlistenRef.current();
+        streamUnlistenRef.current = null;
+      }
+
       const response = await executeRequest({
         method,
         url: targetUrl,
         headers: finalHeaders,
         body: finalBody,
-      });
-      onResponse(response);
+      }, isDemo ? 'demo' : 'authenticated');
+
+      if (response.error && response.error.error_type === 'DemoLimitReached') {
+        setShowUpgradeModal(true);
+        onExecuting(false);
+        return;
+      }
+
+      if (response.is_stream && response.stream_channel_id) {
+        onExecuting(false); // Stop loader, start streaming visually
+        onResponse(response);
+
+        let currentBody = "";
+        streamUnlistenRef.current = await listen<string>(response.stream_channel_id, (event) => {
+          currentBody += event.payload;
+          onResponse({
+            ...response,
+            body: currentBody
+          });
+        });
+      } else {
+        onResponse(response);
+      }
 
       // Persist to History
       await addToHistory({
@@ -183,7 +211,11 @@ export default function RequestPanel({
     } catch (error: any) {
       console.error("Critical Execution Error:", error);
     } finally {
-      onExecuting(false);
+      if (!streamUnlistenRef.current) {
+        // Only turn off executing state if we aren't streaming, 
+        // as streaming handles it internally once started.
+        onExecuting(false);
+      }
     }
   };
 
@@ -233,6 +265,21 @@ export default function RequestPanel({
 
     setShowSaveModal(false);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSave, handleSend]);
 
   return (
     <div className="flex flex-col h-full bg-card-bg/20 backdrop-blur-sm">

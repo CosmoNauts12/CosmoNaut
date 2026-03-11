@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
     isOpen: boolean;
@@ -33,14 +34,13 @@ export default function Modal({ isOpen, onClose, title, children, allowOverflow 
     const [mounted, setMounted] = React.useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
     if (!isOpen || !mounted) return null;
 
-    // Use createPortal to render outside the current DOM hierarchy (e.g., inside Sidebar)
-    // This allows fixed positioning to work relative to the viewport, not a transformed parent.
-    const { createPortal } = require("react-dom");
+
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 font-sans">

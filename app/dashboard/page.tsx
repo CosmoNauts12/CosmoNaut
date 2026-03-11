@@ -7,6 +7,9 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useSettings } from "../components/SettingsProvider";
 import { useCollections } from "../components/CollectionsProvider";
 import dynamic from "next/dynamic";
+import { check } from "@tauri-apps/plugin-updater";
+import { sendNotification, requestPermission, isPermissionGranted } from "@tauri-apps/plugin-notification";
+import UpdatesModal from "../components/UpdatesModal";
 
 const AnalyticsDashboard = dynamic(() => import("../components/AnalyticsDashboard"), {
   ssr: false,
@@ -34,12 +37,32 @@ import InviteModal from "../components/InviteModal";
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const { settings, setSettingsOpen, updateSettings, openSettings } = useSettings();
-  const { createWorkspace } = useCollections();
+  const { createWorkspace, createFlow } = useCollections();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
+
+  // Auto-check for updates
+  useEffect(() => {
+    async function checkUpdates() {
+      try {
+        const update = await check();
+        if (update) {
+          // Open the updates modal automatically
+          setIsUpdatesModalOpen(true);
+        }
+      } catch (error) {
+        console.error("Failed to check for updates:", error);
+      }
+    }
+
+    // Delay a bit to not interfere with initial load
+    const timeout = setTimeout(checkUpdates, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -70,6 +93,8 @@ export default function Dashboard() {
     }
   };
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -93,7 +118,7 @@ export default function Dashboard() {
       </div>
 
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-screen w-64 hidden md:flex flex-col border-r border-card-border bg-card-bg/50 backdrop-blur-md z-20 overflow-hidden">
+      <aside className="fixed top-0 left-0 h-screen w-64 hidden md:flex flex-col border-r border-card-border bg-card-bg/50 backdrop-blur-md z-50 overflow-visible">
         <div className="p-6">
           {/* User Profile in Sidebar - Dropdown */}
           <div className="relative mb-6">
@@ -255,11 +280,11 @@ export default function Dashboard() {
           {/* CosmoNaut Resources */}
           <div className="mt-8 px-2 space-y-2">
             {[
-              { label: 'What is CosmoNaut', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'How to Publish', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'Learning Center', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'Support Center', href: 'https://cosmonaut-website.vercel.app/' },
-              { label: 'CosmoNaut Enterprise', href: 'https://cosmonaut-website.vercel.app/' }
+              { label: 'What is CosmoNaut', href: 'https://cosmonautweb.vercel.app/index_download.html#resources' },
+              { label: 'How to Publish', href: 'https://github.com/Adith1207/CosmoNaut#readme' },
+              { label: 'Learning Center', href: 'https://github.com/Adith1207/CosmoNaut/wiki' },
+              { label: 'Support Center', href: 'https://github.com/Adith1207/CosmoNaut/issues' },
+              { label: 'CosmoNaut Enterprise', href: 'https://cosmonautweb.vercel.app/index_download.html#download' }
             ].map((link, i) => (
               <button
                 key={i}
@@ -295,15 +320,22 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Actions */}
-        <div className="mt-auto p-6 border-t border-card-border">
-          <button onClick={handleLogout} className="text-xs font-medium text-muted hover:text-foreground transition-colors px-4">
+        <div className="mt-auto p-6 border-t border-card-border space-y-2">
+          <button
+            onClick={() => setIsUpdatesModalOpen(true)}
+            className="w-full text-left px-4 py-2 text-xs font-medium text-muted hover:text-primary transition-colors flex items-center justify-between group"
+          >
+            <span>Inbox & Updates</span>
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+          <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-xs font-medium text-muted hover:text-red-500 transition-colors">
             Log Out
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen relative z-10 overflow-y-auto">
+      <main className="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen relative z-0 overflow-y-auto">
 
         {/* Top Header */}
         <header className="h-14 flex items-center justify-between px-8 border-b border-card-border bg-card-bg/30 backdrop-blur-sm sticky top-0 z-30">
@@ -320,6 +352,9 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-6">
             <ThemeToggle />
+            <div className="flex items-center justify-center transition-all ml-2">
+              <img src="/logo.svg" alt="App Logo" className="w-10 h-10 object-contain drop-shadow-md hover:scale-105 transition-transform" />
+            </div>
           </div>
         </header>
 
@@ -337,17 +372,17 @@ export default function Dashboard() {
                 <div className="relative z-10 w-full flex flex-col md:flex-row items-center justify-between p-10 gap-8">
 
                   <div className="text-foreground max-w-lg text-center md:text-left">
-                    <div className="flex flex-col items-center md:items-start gap-0 mb-4">
-                      <span className="font-cursive text-10xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-2 pr-2">
+                    <div className="flex flex-row items-baseline justify-center md:justify-start gap-4 mb-6 flex-wrap">
+                      <span className="font-cursive text-7xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 drop-shadow-sm leading-none py-1">
                         Hello,
                       </span>
-                      <span className="font-cursive text-5xl md:text-6xl text-foreground pb-2 ml-4">
+                      <span className="font-sans font-light tracking-wide text-4xl md:text-5xl text-foreground pb-1">
                         {user.displayName || "Explorer"}
                       </span>
                     </div>
 
                     <p className="text-base text-muted mb-8 max-w-md font-normal leading-relaxed">
-                      Let's streamline your workflow. Whether you're building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
+                      Let&apos;s streamline your workflow. Whether you&apos;re building new APIs, debugging calls, or running automated tests, everything you need is right here. Ready to create your first request?
                     </p>
 
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
@@ -397,10 +432,13 @@ export default function Dashboard() {
           ) : activeTab === 'reports' ? (
             <AnalyticsDashboard />
           ) : null}
+
+
         </div>
       </main>
 
       <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+      <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
     </div>
   );
 }

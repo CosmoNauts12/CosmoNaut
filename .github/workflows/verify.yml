@@ -11,6 +11,7 @@ on:
 
 jobs:
   test-frontend:
+    name: Frontend & Integration Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +19,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
       - name: Install dependencies
         run: bun install
-      - name: Run tests
+      - name: Run Unit & Integration Tests
         run: bun run test
 
   test-backend:

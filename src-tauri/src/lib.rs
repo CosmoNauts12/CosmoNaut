@@ -2,6 +2,8 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Instant;
+use futures_util::StreamExt;
+use uuid::Uuid;
 
 mod auth;
 
@@ -47,12 +49,20 @@ pub struct CosmoResponse {
     pub headers: HashMap<String, String>,
     /// Request duration in milliseconds
     pub duration_ms: u128,
+    /// Whether this response is a stream
+    pub is_stream: bool,
+    /// Channel ID for Server-Sent Events stream
+    pub stream_channel_id: Option<String>,
 }
 
 /// Executes an HTTP request using reqwest.
 /// Handles normalization, client initialization, and execution timing.
 #[tauri::command]
-async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
+async fn execute_cosmo_request(app_handle: tauri::AppHandle, request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
+    do_execute_cosmo_request(Some(app_handle), request).await
+}
+
+async fn do_execute_cosmo_request(app_handle: Option<tauri::AppHandle>, request: CosmoRequest) -> Result<CosmoResponse, CosmoError> {
     let client = reqwest::Client::builder()
         .user_agent("Cosmonaut/1.0 (Desktop API Client)")
         .build()
@@ -116,11 +126,47 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
 
     let status = response.status().as_u16();
     let mut headers = HashMap::new();
+    let mut is_stream = false;
     for (name, value) in response.headers().iter() {
-        headers.insert(
-            name.to_string(),
-            value.to_str().unwrap_or("").to_string(),
-        );
+        let name_str = name.to_string();
+        let val_str = value.to_str().unwrap_or("").to_string();
+        if name_str.to_lowercase() == "content-type" && val_str.contains("text/event-stream") {
+            is_stream = true;
+        }
+        headers.insert(name_str, val_str);
+    }
+
+    if is_stream {
+        let stream_channel_id = Uuid::new_v4().to_string();
+        let channel_id_clone = stream_channel_id.clone();
+        
+        if let Some(handle) = app_handle {
+            use tauri::Emitter;
+            tokio::spawn(async move {
+                let mut stream = response.bytes_stream();
+                while let Some(chunk_result) = stream.next().await {
+                    match chunk_result {
+                        Ok(bytes) => {
+                            let text = String::from_utf8_lossy(&bytes).to_string();
+                            let _ = handle.emit(&channel_id_clone, text);
+                        }
+                        Err(e) => {
+                            log::error!("Error reading stream chunk: {}", e);
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+        
+        return Ok(CosmoResponse {
+            status,
+            body: "".to_string(),
+            headers,
+            duration_ms: duration,
+            is_stream: true,
+            stream_channel_id: Some(stream_channel_id),
+        });
     }
 
     let body = response.text().await.map_err(|e| CosmoError {
@@ -133,6 +179,8 @@ async fn execute_cosmo_request(request: CosmoRequest) -> Result<CosmoResponse, C
         body,
         headers,
         duration_ms: duration,
+        is_stream: false,
+        stream_channel_id: None,
     })
 }
 
@@ -272,13 +320,57 @@ async fn load_user_preferences(
     std::fs::read_to_string(file_path).map_err(|e| e.to_string())
 }
 
+
+
+/// Gets the current demo request count from secure local storage
+#[tauri::command]
+async fn get_demo_request_count(app_handle: tauri::AppHandle) -> Result<u32, String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    
+    let file_path = app_dir.join("demo_state.json");
+    if !file_path.exists() {
+        return Ok(0);
+    }
+    
+    let content = std::fs::read_to_string(file_path).unwrap_or_else(|_| "0".to_string());
+    let count: u32 = content.parse().unwrap_or(0);
+    Ok(count)
+}
+
+/// Increments the current demo request count in secure local storage
+#[tauri::command]
+async fn increment_demo_request_count(app_handle: tauri::AppHandle) -> Result<u32, String> {
+    let app_dir = app_handle.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?;
+    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    
+    let file_path = app_dir.join("demo_state.json");
+    
+    let mut count: u32 = 0;
+    if file_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&file_path) {
+            count = content.parse().unwrap_or(0);
+        }
+    }
+    
+    count += 1;
+    
+    std::fs::write(&file_path, count.to_string()).map_err(|e| e.to_string())?;
+    
+    Ok(count)
+}
+
 /// Entry point for the Tauri application.
+
 /// Configures handlers, plugins, and setup logic.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_opener::init())
+    .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_notification::init())
+    .plugin(tauri_plugin_process::init())
     .invoke_handler(tauri::generate_handler![
         execute_cosmo_request,
         save_collections,
@@ -294,6 +386,8 @@ pub fn run() {
         auth::token::refresh_token,
         save_user_preferences,
         load_user_preferences,
+        get_demo_request_count,
+        increment_demo_request_count,
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {
@@ -330,7 +424,7 @@ mod tests {
             body: None,
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_ok());
         let response = result.unwrap();
         assert_eq!(response.status, 200);
@@ -354,7 +448,7 @@ mod tests {
             body: Some(r#"{"data": 123}"#.to_string()),
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_ok());
         let response = result.unwrap();
         assert_eq!(response.status, 201);
@@ -370,7 +464,7 @@ mod tests {
             body: None,
         };
 
-        let result = execute_cosmo_request(request).await;
+        let result = do_execute_cosmo_request(None, request).await;
         assert!(result.is_err());
         let error = result.unwrap_err();
         match error.error_type {

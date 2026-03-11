@@ -137,9 +137,10 @@ describe("Integration: Request loading lifecycle", () => {
     /* response body */
     await waitFor(() =>
       expect(
-        screen.getByText((t) =>
-          t.includes('"ok": true')
-        )
+        screen.getByText((_, element) => {
+          return element?.tagName.toLowerCase() === 'code' &&
+            element.textContent?.replace(/\s/g, '').includes('"ok":true');
+        })
       ).toBeInTheDocument()
     );
 
