@@ -87,13 +87,29 @@ export default function FlowBlockUI({
         { name: 'Schedule', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> }
     ];
 
+    const isSuccess = !!block.status && block.status < 400 && !block.error;
+    const isError = !!block.error || (!!block.status && block.status >= 400);
+
     return (
         <div className="flex flex-col items-center group/node">
-            <div className={`relative w-[450px] bg-white dark:bg-[#1E1E1E] rounded-xl border border-black/5 dark:border-white/10 shadow-2xl transition-all duration-300 ${block.isExecuting ? 'ring-2 ring-primary ring-offset-4 ring-offset-background' : ''} overflow-visible`}>
+            <div className={`relative w-[450px] bg-white dark:bg-[#1E1E1E] rounded-xl border transition-all duration-300 shadow-2xl overflow-visible ${block.isExecuting
+                    ? 'ring-2 ring-primary ring-offset-4 ring-offset-background border-primary/20'
+                    : isSuccess
+                        ? 'ring-2 ring-emerald-500 ring-offset-4 ring-offset-background border-emerald-500/20 shadow-emerald-500/10'
+                        : isError
+                            ? 'ring-2 ring-rose-500 ring-offset-2 ring-offset-background border-rose-500/20 shadow-rose-500/10'
+                            : 'border-black/5 dark:border-white/10'
+                }`}>
 
-                {/* Postman-Style Orange/Blue Accent Side */}
-                {/* Postman-Style Blue Accent Side */}
-                <div className={`absolute top-0 left-0 bottom-0 w-1.5 bg-[#00A5FF] rounded-l-xl`} />
+                {/* Postman-Style Status Accent Side */}
+                <div className={`absolute top-0 left-0 bottom-0 w-1.5 rounded-l-xl transition-colors duration-300 ${block.isExecuting
+                        ? 'bg-primary animate-pulse'
+                        : isSuccess
+                            ? 'bg-emerald-500'
+                            : isError
+                                ? 'bg-rose-500'
+                                : 'bg-[#00A5FF]'
+                    }`} />
 
                 {/* Node Header */}
                 <div
