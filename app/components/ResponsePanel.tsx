@@ -458,16 +458,9 @@ export default function ResponsePanel({
 
           <div className="w-[1px] h-4 bg-muted/20" />
 
-          <button className="flex items-center gap-2 group">
-            <span className="text-[10px] font-black text-muted group-hover:text-primary uppercase tracking-[0.1em] transition-colors">Save</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted group-hover:text-primary transition-colors"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-          </button>
-
-          <button className="p-1 hover:text-primary transition-colors opacity-60 hover:opacity-100">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 3 6 6-12 12H3v-6L15 3z"></path><path d="m9 7 8 8"></path></svg>
-          </button>
         </div>
       </div>
+
 
       {/* Body Content */}
       <div className="flex-1 overflow-hidden relative group/content">
