@@ -55,7 +55,7 @@ export default function Dashboard() {
           setIsUpdatesModalOpen(true);
         }
       } catch (error) {
-        console.error("Failed to check for updates:", error);
+        console.error("Dashboard: Failed to check for updates:", error);
       }
     }
 

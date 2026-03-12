@@ -46,8 +46,8 @@ export default function UpdatesModal({ isOpen, onClose }: UpdatesModalProps) {
                     setUpdateStatus("App is up to date");
                 }
             } catch (error) {
-                console.error("Failed to check for updates:", error);
-                setUpdateStatus("Could not check for updates");
+                console.error("UpdatesModal: Failed to check for updates:", error);
+                setUpdateStatus(`Check failed: ${error}`);
             } finally {
                 setCheckingUpdate(false);
             }
